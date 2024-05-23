@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "377912528395",
+    "project_id": "nlcs-e2992",
+    "storage_bucket": "nlcs-e2992.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:377912528395:android:3b95c24342a325137c810e",
+        "android_client_info": {
+          "package_name": "com.example.nlcs"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBDrXnkZ89geFtDQrbev6Fbpqzi4Xf3VLY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
