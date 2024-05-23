@@ -2,9 +2,11 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="grey">#999</color>"
+    <color name="brightRed">#FF0000</color>
     <color name="primaryColor">#00acec</color>
     <color name="secondaryColor">#1c57a5</color>
     <color name="textColorPrimary">#555</color>
     <color name="textColorSecondary">#F8EFEC</color>
-    <color name="grey">#999</color>"
+
 </resources>

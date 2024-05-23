@@ -1,5 +1,6 @@
 package com.example.nlcs
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
@@ -10,6 +11,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
 
 
+@SuppressLint("CustomSplashScreen")
 class SplashActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySplashBinding
@@ -34,6 +36,6 @@ class SplashActivity : AppCompatActivity() {
                 startActivity(intent)
             }
             finish()
-        }, 800)
+        }, 1000)
     }
 }
