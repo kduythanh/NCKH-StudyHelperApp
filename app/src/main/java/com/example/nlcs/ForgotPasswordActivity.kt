@@ -20,12 +20,15 @@ class ForgotPasswordActivity : AppCompatActivity() {
         binding = ActivityForgotPasswordBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // Initialize Firebase Auth
         firebaseAuth = Firebase.auth
 
+        // Click listeners for reset button
         binding.forgotPasswordResetButton.setOnClickListener {
             forgotPassword()
         }
 
+        // Click listener for back button
         binding.forgotPasswordBackButton.setOnClickListener {
             val intent = Intent(this, LogInActivity::class.java)
             startActivity(intent)
@@ -33,12 +36,14 @@ class ForgotPasswordActivity : AppCompatActivity() {
         }
     }
 
+    // Forgot password function
     private fun forgotPassword() {
         val mail = binding.forgotPasswordEmailEditText.text.toString()
         val isValid = validateEmail(mail)
 
         if(!isValid) return
 
+        // Send password reset email to user's email
         firebaseAuth.sendPasswordResetEmail(mail).addOnCompleteListener(this) { task ->
             if (task.isSuccessful) {
                 Toast.makeText(this, "Password reset email sent", Toast.LENGTH_SHORT).show()
@@ -51,6 +56,7 @@ class ForgotPasswordActivity : AppCompatActivity() {
         }
     }
 
+    // validate email
     private fun validateEmail(mail: String): Boolean {
         if (mail.isEmpty()) {
             binding.forgotPasswordEmailEditText.error = "Please enter your email"

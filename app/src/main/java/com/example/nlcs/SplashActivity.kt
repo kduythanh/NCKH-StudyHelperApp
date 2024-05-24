@@ -22,10 +22,13 @@ class SplashActivity : AppCompatActivity() {
         binding = ActivitySplashBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // Initialize Firebase
         firebaseAuth = Firebase.auth
 
+        // Create an async Handler for the main Looper
         val handler = HandlerCompat.createAsync(mainLooper)
 
+        // Delay for 1 second and move the app to the next activity depend on login status
         handler.postDelayed({
             val currentUser = FirebaseAuth.getInstance().currentUser
             if(currentUser == null){

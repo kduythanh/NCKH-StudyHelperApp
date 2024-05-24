@@ -20,18 +20,22 @@ class SignUpActivity : AppCompatActivity() {
         binding = ActivitySignUpBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // Initialize Firebase
         firebaseAuth = Firebase.auth
 
+        // Click listener for sign up button
         binding.signUpCreateAccountButton.setOnClickListener{
             createAccount()
         }
 
+        // Click listener for sign in text view
         binding.SignInLink.setOnClickListener{
             val intent = Intent(this,LogInActivity::class.java)
             startActivity(intent)
         }
     }
 
+    // Create account
     private fun createAccount() {
         val mail = binding.signUpEmailEditText.text.toString()
         val passwd = binding.signUpPasswordEditText.text.toString()
@@ -43,10 +47,12 @@ class SignUpActivity : AppCompatActivity() {
         createAccountFirebase(mail, passwd)
     }
 
+    // Create account in Firebase
     private fun createAccountFirebase(mail: String, passwd: String){
         firebaseAuth.createUserWithEmailAndPassword(mail, passwd).addOnCompleteListener(this){ task ->
             if(task.isSuccessful){
                 Toast.makeText(this, "Account created", Toast.LENGTH_SHORT).show()
+                // Send verification email
                 firebaseAuth.currentUser?.sendEmailVerification()
                 firebaseAuth.signOut()
                 finish()
@@ -56,7 +62,9 @@ class SignUpActivity : AppCompatActivity() {
         }
     }
 
+    // Validate account
     private fun validateAccount(mail: String, passwd: String, confirmPasswd: String): Boolean{
+
         if(!Patterns.EMAIL_ADDRESS.matcher(mail).matches()){
             binding.signUpEmailEditText.error = "Invalid email format"
             return false

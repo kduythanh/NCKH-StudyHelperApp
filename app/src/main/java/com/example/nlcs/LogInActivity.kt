@@ -21,23 +21,28 @@ class LogInActivity : AppCompatActivity() {
         binding = ActivityLogInBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // Initialize Firebase Auth
         firebaseAuth = Firebase.auth
 
+        // Click listeners for login button
         binding.LogInButton.setOnClickListener {
             loginUser()
         }
 
+        // Click listener for create account text view
         binding.createAccountLink.setOnClickListener {
             val intent = Intent(this, SignUpActivity::class.java)
             startActivity(intent)
         }
 
+        // Click listener for forgot password text view
         binding.forgotPasswordTextView.setOnClickListener{
             val intent = Intent(this, ForgotPasswordActivity::class.java)
             startActivity(intent)
         }
     }
 
+    // Login user
     private fun loginUser(){
         val mail = binding.LogInEmailEditText.text.toString()
         val passwd = binding.LogInPasswordEditText.text.toString()
@@ -48,6 +53,7 @@ class LogInActivity : AppCompatActivity() {
         loginAccountInFirebase(mail, passwd)
     }
 
+    // Login account in firebase
     private fun loginAccountInFirebase(mail: String, passwd: String){
         firebaseAuth.signInWithEmailAndPassword(mail, passwd).addOnCompleteListener(this){ task ->
             if(task.isSuccessful){
@@ -63,6 +69,7 @@ class LogInActivity : AppCompatActivity() {
         }
     }
 
+    // Validate account
     private fun validateAccount(mail: String, passwd: String): Boolean{
         if(!Patterns.EMAIL_ADDRESS.matcher(mail).matches()){
             binding.LogInEmailEditText.error = "Invalid email format"

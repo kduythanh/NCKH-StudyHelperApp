@@ -19,6 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "NLCS"
+rootProject.name = "NCKH"
 include(":app")
  
