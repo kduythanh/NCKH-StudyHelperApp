@@ -6,7 +6,7 @@
     <color name="brightRed">#FF0000</color>
     <color name="primaryColor">#00acec</color>
     <color name="secondaryColor">#1c57a5</color>
-    <color name="textColorPrimary">#555</color>
-    <color name="textColorSecondary">#F8EFEC</color>
-
+    <color name="textColorPrimary">#FF000000</color>
+    <color name="textColorSecondary">#555</color>
+    <color name="textColorTertiary">#F8EFEC</color>
 </resources>

@@ -26,7 +26,7 @@
         android:text="@string/loginTitle"
         android:textColor="@color/textColorPrimary"
         android:textSize="40sp"
-        android:textStyle="bold" />
+        android:fontFamily="@font/roboto_bold"/>
 
     <LinearLayout
         android:id="@+id/LogInFormLayout"
@@ -49,6 +49,7 @@
             android:maxLines="1"
             android:padding="16dp"
             android:textSize="20sp"
+            android:fontFamily="@font/roboto_medium"
             tools:ignore="TextContrastCheck,TextFields,VisualLintTextFieldSize" />
 
         <EditText
@@ -65,6 +66,7 @@
             android:maxLines="1"
             android:padding="16dp"
             android:textSize="20sp"
+            android:fontFamily="@font/roboto_medium"
             tools:ignore="TextContrastCheck,VisualLintTextFieldSize" />
 
 
@@ -80,6 +82,7 @@
             android:text="@string/login"
             android:textSize="20sp"
             app:cornerRadius="10dp"
+            android:fontFamily="@font/roboto_bold"
             tools:ignore="TextContrastCheck,VisualLintButtonSize" />
 
         <TextView
@@ -92,7 +95,7 @@
             android:layout_marginTop="10dp"
             android:layout_marginEnd="16dp"
             android:textSize="16sp"
-            android:textStyle="bold|italic"/>
+            android:fontFamily="@font/roboto_bold_italic"/>
     </LinearLayout>
 
     <LinearLayout
@@ -107,15 +110,16 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="14sp"
+            android:fontFamily="@font/roboto_bold_italic"
             android:text="@string/haveNoAccount"/>
 
         <TextView
             android:id="@+id/createAccountLink"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textStyle="bold"
             android:textSize="16sp"
             android:textColor="@color/brightRed"
+            android:fontFamily="@font/roboto_bold"
             android:text="@string/signUpLink"/>
     </LinearLayout>
 </RelativeLayout>
