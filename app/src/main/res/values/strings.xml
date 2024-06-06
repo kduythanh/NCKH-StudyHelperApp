@@ -1,21 +1,56 @@
 <resources>
     <string name="app_name">NKCH</string>
     <string name="logo_description">CTU logo</string>
-    <string name="signUp">Sign Up</string>
+
+    <string name="signUp">Đăng kí</string>
     <string name="email">Email</string>
-    <string name="password">Password</string>
-    <string name="confirmPassword">Confirm Password</string>
-    <string name="createAccount">CREATE ACCOUNT</string>
-    <string name="haveAnAccount">Already have an account?\ </string>
-    <string name="loginLink">Login</string>
-    <string name="login">LOGIN</string>
-    <string name="loginTitle">Log In</string>
-    <string name="haveNoAccount">Doesn\'t have an account yet?\ </string>
-    <string name="signUpLink">Create Account</string>
-    <string name="forgotPassword">Forgot Password?</string>
-    <string name="forgotPasswordLogo">Forgot Password Logo</string>
-    <string name="forgotPasswordTitle">FORGOT PASSWORD</string>
-    <string name="forgotPasswordSubtext">Provide the account email for which you want to reset the password!</string>
-    <string name="resetPasswordButton">RESET PASSWORD</string>
-    <string name="backButton">BACK</string>
+    <string name="password">Mật khẩu</string>
+    <string name="confirmPassword">Xác nhận mật khẩu</string>
+
+    <string name="createAccount">TẠO TÀI KHOẢN</string>
+    <string name="haveAnAccount">Đã có tài khoản?\ </string>
+
+    <string name="loginLink">Đăng nhập</string>
+    <string name="login">ĐĂNG NHẬP</string>
+    <string name="loginTitle">Đăng Nhập</string>
+    <string name="haveNoAccount">Chưa có tài khoản?\ </string>
+
+    <string name="signUpLink">Tạo tài khoản</string>
+    <string name="forgotPassword">Quên mật khẩu?</string>
+    <string name="forgotPasswordLogo">Quên mật khẩu Logo</string>
+    <string name="forgotPasswordTitle">QUÊN MẬT KHẨU</string>
+
+    <string name="forgotPasswordSubtext">Xin hãy cung cấp email của tài khoản mà bạn muốn đặt lại mật khẩu!</string>
+    <string name="resetPasswordButton">ĐẶT LẠI MẬT KHẨU</string>
+    <string name="backButton">QUAY VỀ</string>
+
+    <string name="logout">Đăng xuất</string>
+
+    <string name="setting">Cài đặt</string>
+    <string name="userProfile">Thông tin người dùng</string>
+
+    <string name="open_nav">Mở Navigation Drawer</string>
+    <string name="close_nav">Đóng Navigation Drawer</string>
+
+    <string name="FlashCardsDesc">Flash Cards</string>
+    <string name="FlashCards">Flash cards</string>
+
+    <string name="MindMapDesc">Mind Map</string>
+    <string name="MindMap">Mind map</string>
+
+    <string name="FocusDesc">Focus Mode</string>
+    <string name="Focus">Hẹn giờ tập trung</string>
+
+    <string name="ProgressTrackerDesc">Progress Tracker</string>
+    <string name="ProgressTracker">Theo dỗi tiến trình</string>
+
+    <string name="NoteDesc">Note</string>
+    <string name="Note">Ghi chú</string>
+
+    <string name="ReminderDesc">Reminder</string>
+    <string name="Reminder">Nhắc nhở</string>
+
+    <string name="UserImageDesc">User Image</string>
+    <string name="Hello">Xin chào,</string>
+    <string name="UserName">-Tên người dùng-</string>
 </resources>
