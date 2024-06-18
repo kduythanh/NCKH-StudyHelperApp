@@ -11,7 +11,6 @@
     tools:context=".MainActivity">
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/toolbar_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -26,7 +25,7 @@
             app:layout_constraintTop_toTopOf="parent"
             app:titleTextColor="@color/black"
             app:subtitleTextAppearance="@font/roboto_bold"
-            app:title="Menu"
+            app:title="Trang chủ"
             app:titleMarginStart="110dp" />
 
         <GridLayout
@@ -283,4 +282,5 @@
         app:headerLayout="@layout/nav_header"
         app:menu="@menu/nav_menu"
         android:paddingTop="15dp"/>
+
 </androidx.drawerlayout.widget.DrawerLayout>
