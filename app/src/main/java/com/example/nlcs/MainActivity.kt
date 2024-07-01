@@ -43,11 +43,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        binding.card3.setOnClickListener{
-            val intent = Intent(this, FocusActivity::class.java)
-            startActivity(intent)
-        }
-
         binding.navigationView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId){
                 R.id.nav_home -> {
@@ -84,6 +79,8 @@ class MainActivity : AppCompatActivity() {
                 else -> false
             }
         }
+
+        // new line for test
 
         onBackPressedDispatcher.addCallback(this, object: OnBackPressedCallback(true){
             override fun handleOnBackPressed(){
