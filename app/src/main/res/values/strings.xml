@@ -53,4 +53,22 @@
     <string name="UserImageDesc">User Image</string>
     <string name="Hello">Xin chào,</string>
     <string name="UserName">-Tên người dùng-</string>
+
+    <string name="AddButton">Nút Add</string>
+    <string name="Done">Hoàn Thành</string>
+
+    <string name="TextBox">Hộp Thoại</string>
+    <string name="Arrow">Mũi Tên</string>
+    <string name="SquareTextBox">Hộp thoại vuông</string>
+    <string name="CircleTextBox">Hộp thoại tròn</string>
+    <string name="TriangleTextBox">Hộp thoại tam giác</string>
+    <string name="LineTextBox">Hộp thoại nhánh cây</string>
+    <string name="StraightArrow">Mũi tên thẳng</string>
+    <string name="CurveArrow">Mũi tên cong</string>
+
+    <string name="MindMapTitleTextView">Tạo sơ đồ mới</string>
+    <string name="ChangeMindMapTitleTextView">Đổi tên sơ đồ</string>
+    <string name="InputMindMapTitleEditText">Nhập tên</string>
+    <string name="CancelButton">Hủy bỏ</string>
+    <string name="ConfirmButton">Xác nhận</string>
 </resources>

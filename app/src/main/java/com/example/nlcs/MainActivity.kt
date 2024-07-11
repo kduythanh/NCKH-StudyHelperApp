@@ -43,6 +43,12 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+
+        binding.card2.setOnClickListener{
+            val intent = Intent(this, MindMapMenuActivity::class.java)
+            startActivity(intent)
+        }
+
         binding.navigationView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId){
                 R.id.nav_home -> {
