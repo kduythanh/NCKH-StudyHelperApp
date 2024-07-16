@@ -20,7 +20,6 @@ import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.firestore
 
 class MindMapMenuActivity : AppCompatActivity() {
 
@@ -29,7 +28,6 @@ class MindMapMenuActivity : AppCompatActivity() {
     private lateinit var drawerLayout: DrawerLayout
     private lateinit var recyclerView: RecyclerView
     private lateinit var mindMapList: ArrayList<MindMap>
-    private var db = Firebase.firestore
     private lateinit var mindMapAdapter: MindMapAdapter
 
 
@@ -79,10 +77,7 @@ class MindMapMenuActivity : AppCompatActivity() {
                 .setView(dialogView)
                 .create()
 
-            dialogView.findViewById<Button>(R.id.dialogAddButtonCancel).setOnClickListener {
-                dialog.dismiss()
-            }
-
+            // Setting the click listeners for the confirm button
             dialogView.findViewById<Button>(R.id.dialogAddButtonConfirm).setOnClickListener {
                 val title = dialogView.findViewById<EditText>(R.id.dialogAddMindMapItemEditText).text.toString()
                 if(title.isNotEmpty()){
@@ -92,6 +87,12 @@ class MindMapMenuActivity : AppCompatActivity() {
                     Toast.makeText(this, "Please enter a title", Toast.LENGTH_SHORT).show()
                 }
             }
+
+            // Setting the click listeners for the cancel button
+            dialogView.findViewById<Button>(R.id.dialogAddButtonCancel).setOnClickListener {
+                dialog.dismiss()
+            }
+
             dialog.show()
         }
 
@@ -153,42 +154,43 @@ class MindMapMenuActivity : AppCompatActivity() {
     // Create a new mind map in Firestore
     private fun createMindMapInFireBase(title: String){
         val db = FirebaseFirestore.getInstance()
-        val docRef = db.collection("mindMapTemp").document() // thêm .document()
         val mindMap = hashMapOf(
-            "id" to docRef.id,
             "title" to title
         )
 
         db.collection("mindMapTemp")
             .add(mindMap)
             .addOnSuccessListener {
-                Toast.makeText(this, "Mind Map Created", Toast.LENGTH_SHORT).show()
-
+                Toast.makeText(this, "Mind Map Created" , Toast.LENGTH_SHORT).show()
             }
             .addOnFailureListener {
                 Toast.makeText(this, "Failed to create mind map", Toast.LENGTH_SHORT).show()
             }
     }
 
-    // Fetch the mind maps from Firestore and display them in the RecyclerView
+    // Fetch the mind maps from Firestore
     private fun fetchMindMaps(){
         val db = FirebaseFirestore.getInstance()
         val docRef = db.collection("mindMapTemp")
 
         docRef.addSnapshotListener { snapshots, e ->
-                if (e != null) {
-                    Log.w(TAG, "Listen failed.", e)
-                    return@addSnapshotListener
-                }
+            if (e != null){
+                Log.w(TAG, "Listen failed.", e)
+                return@addSnapshotListener
+            }
+            if(snapshots != null){
                 val newMindMapList = arrayListOf<MindMap>()
-                for (doc in snapshots!!) {
-                    val mindMap = doc.toObject(MindMap::class.java)
+                for (doc in snapshots){
+                    val mindMap = doc.toObject(MindMap::class.java).apply{
+                        id = doc.id
+                    }
                     newMindMapList.add(mindMap)
                 }
                 mindMapList.clear()
                 mindMapList.addAll(newMindMapList)
                 mindMapAdapter.notifyDataSetChanged()
-                }
+            }
+        }
     }
 
 }
