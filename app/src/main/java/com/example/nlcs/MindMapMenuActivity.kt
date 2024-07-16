@@ -45,7 +45,7 @@ class MindMapMenuActivity : AppCompatActivity() {
         recyclerView = findViewById(R.id.mindMapMenuRecycleView)
         mindMapList = arrayListOf()
 
-//        // Initialize the adapter
+        // Initialize the adapter
         mindMapAdapter = MindMapAdapter(mindMapList, this)
 
         // Initialize the drawer layout
@@ -55,7 +55,7 @@ class MindMapMenuActivity : AppCompatActivity() {
         toggle.syncState()
 
 
-        // Setup RecyclerView
+        // Setup RecyclerView and Adapter
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = mindMapAdapter
 
@@ -153,7 +153,7 @@ class MindMapMenuActivity : AppCompatActivity() {
     // Create a new mind map in Firestore
     private fun createMindMapInFireBase(title: String){
         val db = FirebaseFirestore.getInstance()
-        val docRef = db.collection("mindMapTemp")
+        val docRef = db.collection("mindMapTemp").document() // thêm .document()
         val mindMap = hashMapOf(
             "id" to docRef.id,
             "title" to title
@@ -163,7 +163,7 @@ class MindMapMenuActivity : AppCompatActivity() {
             .add(mindMap)
             .addOnSuccessListener {
                 Toast.makeText(this, "Mind Map Created", Toast.LENGTH_SHORT).show()
-                fetchMindMaps()
+
             }
             .addOnFailureListener {
                 Toast.makeText(this, "Failed to create mind map", Toast.LENGTH_SHORT).show()
@@ -175,19 +175,20 @@ class MindMapMenuActivity : AppCompatActivity() {
         val db = FirebaseFirestore.getInstance()
         val docRef = db.collection("mindMapTemp")
 
-        docRef
-            .addSnapshotListener { snapshots, e ->
+        docRef.addSnapshotListener { snapshots, e ->
                 if (e != null) {
                     Log.w(TAG, "Listen failed.", e)
                     return@addSnapshotListener
                 }
-                mindMapList.clear()
+                val newMindMapList = arrayListOf<MindMap>()
                 for (doc in snapshots!!) {
                     val mindMap = doc.toObject(MindMap::class.java)
-                    mindMapList.add(mindMap)
+                    newMindMapList.add(mindMap)
                 }
+                mindMapList.clear()
+                mindMapList.addAll(newMindMapList)
                 mindMapAdapter.notifyDataSetChanged()
-            }
+                }
     }
 
 }

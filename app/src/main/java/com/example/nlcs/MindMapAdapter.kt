@@ -73,8 +73,24 @@ class MindMapAdapter(
         holder.deleteButton.setOnClickListener{
             val documentId = mindMap.id
             Log.d(TAG, "Delete button clicked for document with ID: $documentId")
+
             if (documentId != null) {
-                deleteMindMapFromFirestore(documentId, position)
+                val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_confirm_deletion_mind_map, null)
+                val dialog = AlertDialog.Builder(context).setView(dialogView).create()
+
+                val mindMapIdTextView = dialogView.findViewById<TextView>(R.id.mindMapIdTextView)
+                mindMapIdTextView.text = documentId
+
+                dialogView.findViewById<Button>(R.id.dialogConfirmDeletionButtonYes).setOnClickListener {
+                    deleteMindMapFromFirestore(documentId, position)
+                    dialog.dismiss()
+                }
+
+                dialogView.findViewById<Button>(R.id.dialogConfirmDeletionButtonNo).setOnClickListener {
+                    dialog.dismiss()
+                }
+
+                dialog.show()
             }
         }
 
@@ -104,8 +120,10 @@ class MindMapAdapter(
 
     private fun deleteMindMapFromFirestore(documentId: String, position: Int) {
         val db = FirebaseFirestore.getInstance()
+//        val docsRef = db.collection("mindMapTemp")
         val docRef = db.collection("mindMapTemp").document(documentId)
 
+//        val docRef = docsRef.document(documentId)
         docRef.delete()
             .addOnSuccessListener {
                 mindMapList = mindMapList.toMutableList().also {
