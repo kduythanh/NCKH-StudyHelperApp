@@ -1,5 +1,6 @@
 package com.example.nlcs
 
+import android.annotation.SuppressLint
 import android.content.ContentValues.TAG
 import android.content.Intent
 import android.os.Bundle
@@ -155,7 +156,8 @@ class MindMapMenuActivity : AppCompatActivity() {
     private fun createMindMapInFireBase(title: String){
         val db = FirebaseFirestore.getInstance()
         val mindMap = hashMapOf(
-            "title" to title
+            "title" to title,
+            "date" to System.currentTimeMillis()
         )
 
         db.collection("mindMapTemp")
@@ -169,6 +171,7 @@ class MindMapMenuActivity : AppCompatActivity() {
     }
 
     // Fetch the mind maps from Firestore
+    @SuppressLint("NotifyDataSetChanged")
     private fun fetchMindMaps(){
         val db = FirebaseFirestore.getInstance()
         val docRef = db.collection("mindMapTemp")
@@ -186,9 +189,24 @@ class MindMapMenuActivity : AppCompatActivity() {
                     }
                     newMindMapList.add(mindMap)
                 }
+
+                // Calculate the starting position for new items
+                val startPosition = mindMapList.size
+
+                // Clear the list and add the new items
                 mindMapList.clear()
                 mindMapList.addAll(newMindMapList)
-                mindMapAdapter.notifyDataSetChanged()
+
+                // Sort items by date in in ascending order
+                mindMapList.sortBy { it.date }
+
+                // Notify the adapter of the newly inserted items
+                // Refresh the recycler view when adding new items to an empty list
+                mindMapAdapter.notifyItemRangeInserted(startPosition, newMindMapList.size)
+
+                // Notify the adapter that the data has changed
+                // This prevent the app from crashing when either updating the title or deleting the the mind map
+                mindMapAdapter.notifyDataSetChanged( )
             }
         }
     }

@@ -26,10 +26,12 @@ class MindMapActivity : AppCompatActivity() {
 
         setSupportActionBar(binding.toolbar)
 
-//        val mindMapTitle = intent.getStringExtra("mindMapTitle")
-//        if(mindMapTitle != null){
-//            supportActionBar?.title = mindMapTitle
-//        }
+        // Get the mind map title from the intent
+        val mindMapTitle = intent.getStringExtra("mindMapTitle")
+        if(mindMapTitle != null){
+            //Set the title of the toolbar to the mind map title
+            supportActionBar?.title = mindMapTitle
+        }
 
         drawerLayout = binding.drawerLayout
         val toggle = ActionBarDrawerToggle(this, drawerLayout, binding.toolbar, R.string.open_nav, R.string.close_nav)

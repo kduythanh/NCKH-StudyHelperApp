@@ -21,27 +21,27 @@
             android:background="@color/background_2"
             app:title="@string/MindMap"
             app:titleTextColor="@color/black"
-            app:titleMarginStart="30dp"
+            app:titleMarginEnd="150dp"
             android:theme="@style/ThemeOverlay.AppCompat.DayNight.ActionBar"
-            android:maxWidth="570dp"
             android:ellipsize="end"
             android:maxLines="1"
             android:layout_alignParentTop="true"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/doneButton"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="end"
-            android:layout_marginEnd="16dp"
-            android:layout_marginTop="8dp"
             android:layout_alignParentTop="true"
             android:layout_alignParentEnd="true"
+            android:layout_gravity="end"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="16dp"
             android:text="@string/Done"
             android:textAllCaps="false"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:textColor="@color/black"
             app:cornerRadius="20dp"
-            tools:ignore="RelativeOverlap" />
+            tools:ignore="RelativeOverlap,TextContrastCheck" />
     </RelativeLayout>
 
     <!--Check the theme.xml file-->

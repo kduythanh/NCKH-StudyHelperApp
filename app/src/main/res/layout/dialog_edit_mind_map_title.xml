@@ -47,7 +47,8 @@
                 android:lines="3"
                 android:maxLines="3"
                 android:minHeight="48dp"
-                android:minLines="1" />
+                android:minLines="1"
+                android:textColorHint="#757575"/>
         </LinearLayout>
 
         <LinearLayout

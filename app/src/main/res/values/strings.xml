@@ -71,4 +71,8 @@
     <string name="InputMindMapTitleEditText">Nhập tên</string>
     <string name="CancelButton">Hủy bỏ</string>
     <string name="ConfirmButton">Xác nhận</string>
+
+    <string name="TitlePlaceHolder">Title</string>
+    <string name="MindMapItemEditButtonDescription">Chỉnh sửa tiêu đề sơ đồ tư duy</string>
+    <string name="MindMapItemDeleteButtonDescription">Xóa sơ đồ tư duy</string>
 </resources>
