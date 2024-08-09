@@ -75,4 +75,12 @@
     <string name="TitlePlaceHolder">Title</string>
     <string name="MindMapItemEditButtonDescription">Chỉnh sửa tiêu đề sơ đồ tư duy</string>
     <string name="MindMapItemDeleteButtonDescription">Xóa sơ đồ tư duy</string>
+
+    <string name="AddTextBoxButton">Add Text Box</string>
+    <string name="MainIdea">Ý tưởng chính</string>
+
+    <string name="DeleteChild">Delete Child node</string>
+    <string name="AddChild">Add Child node</string>
+    <string name="CopyText">Copy Text"</string>
+
 </resources>

@@ -16,11 +16,13 @@ import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.nlcs.databinding.ActivityMindMapMenuBinding
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FirebaseFirestore
+import java.util.UUID
 
 class MindMapMenuActivity : AppCompatActivity() {
 
@@ -30,10 +32,10 @@ class MindMapMenuActivity : AppCompatActivity() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var mindMapList: ArrayList<MindMap>
     private lateinit var mindMapAdapter: MindMapAdapter
+    private lateinit var swipeRefreshLayout: SwipeRefreshLayout
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
-
         super.onCreate(savedInstanceState)
         binding = ActivityMindMapMenuBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -41,7 +43,7 @@ class MindMapMenuActivity : AppCompatActivity() {
         // Initializing some variables
         firebaseAuth = Firebase.auth
         setSupportActionBar(binding.toolbar)
-        recyclerView = findViewById(R.id.mindMapMenuRecycleView)
+        recyclerView = binding.mindMapMenuRecycleView
         mindMapList = arrayListOf()
 
         // Initialize the adapter
@@ -53,11 +55,15 @@ class MindMapMenuActivity : AppCompatActivity() {
         drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
 
-
         // Setup RecyclerView and Adapter
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = mindMapAdapter
 
+        // Initialize the swipe refresh layout
+        swipeRefreshLayout = binding.mindMapMenuSwipeRefreshLayout
+        swipeRefreshLayout.setOnRefreshListener {
+            fetchMindMaps()
+        }
 
         // Open the drawer when the menu button is clicked
         binding.toolbar.setNavigationOnClickListener{
@@ -157,13 +163,15 @@ class MindMapMenuActivity : AppCompatActivity() {
         val db = FirebaseFirestore.getInstance()
         val mindMap = hashMapOf(
             "title" to title,
-            "date" to System.currentTimeMillis()
+            "date" to System.currentTimeMillis(),
+            "MasterNode" to Node(id = UUID.randomUUID().toString(), text = "Main Idea", children = listOf())
         )
 
         db.collection("mindMapTemp")
             .add(mindMap)
             .addOnSuccessListener {
                 Toast.makeText(this, "Mind Map Created" , Toast.LENGTH_SHORT).show()
+                fetchMindMaps()
             }
             .addOnFailureListener {
                 Toast.makeText(this, "Failed to create mind map", Toast.LENGTH_SHORT).show()
@@ -207,6 +215,9 @@ class MindMapMenuActivity : AppCompatActivity() {
                 // Notify the adapter that the data has changed
                 // This prevent the app from crashing when either updating the title or deleting the the mind map
                 mindMapAdapter.notifyDataSetChanged( )
+
+                // Stop The refreshing animation
+                swipeRefreshLayout.isRefreshing = false
             }
         }
     }

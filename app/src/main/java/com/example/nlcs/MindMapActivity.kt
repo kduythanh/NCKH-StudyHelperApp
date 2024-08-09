@@ -1,59 +1,69 @@
 package com.example.nlcs
 
 import android.os.Bundle
-import androidx.activity.OnBackPressedCallback
-import androidx.appcompat.app.ActionBarDrawerToggle
+import android.view.View
+import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
+import android.widget.ImageView
+import android.widget.RelativeLayout
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.GravityCompat
-import androidx.drawerlayout.widget.DrawerLayout
+import androidx.core.view.isVisible
 import com.example.nlcs.databinding.ActivityMindMapBinding
-import com.google.firebase.Firebase
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.auth
+import java.util.UUID
 
 class MindMapActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMindMapBinding
-    private lateinit var firebaseAuth: FirebaseAuth
-    private lateinit var drawerLayout: DrawerLayout
+    private lateinit var rootNode: Node
+//    private lateinit var contentLayout: RelativeLayout
+    private var currentContextMenu: View? = null
+    private var isContextMenuOpen = false
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMindMapBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        firebaseAuth = Firebase.auth
-
+        // Enable the back arrow
         setSupportActionBar(binding.toolbar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        // Get the mind map title from the intent
+        // Initialize the edit text
+        val editTextBox = findViewById<EditText>(R.id.textBox)
+
+//        val zoomableView = findViewById<ZoomableView>(R.id.zoomableView)
+//        contentLayout = findViewById(R.id.mindMapContent)
+
+        // Insert the title of the mind map into the toolbar
         val mindMapTitle = intent.getStringExtra("mindMapTitle")
-        if(mindMapTitle != null){
+        if (mindMapTitle != null) {
             //Set the title of the toolbar to the mind map title
             supportActionBar?.title = mindMapTitle
         }
 
-        drawerLayout = binding.drawerLayout
-        val toggle = ActionBarDrawerToggle(this, drawerLayout, binding.toolbar, R.string.open_nav, R.string.close_nav)
-        drawerLayout.addDrawerListener(toggle)
-        toggle.syncState()
+        // Get the root node from the intent
+        @Suppress("DEPRECATION")
+        rootNode = intent.getSerializableExtra("rootNode")
+                as Node? ?: Node(
+            id = UUID.randomUUID().toString(),
+            text = "Main Idea2",
+            children = listOf()
+        )
 
-        binding.toolbar.setNavigationOnClickListener{
-            if(drawerLayout.isDrawerOpen(binding.navigationView)){
-                drawerLayout.closeDrawer(binding.navigationView)
-            }else{
-                drawerLayout.openDrawer(binding.navigationView)
-            }
+        // Ends the activity when clicked back arrow functionality
+        binding.toolbar.setNavigationOnClickListener {
+            finish()
         }
 
-        onBackPressedDispatcher.addCallback(this, object: OnBackPressedCallback(true){
-            override fun handleOnBackPressed(){
-                if(drawerLayout.isDrawerOpen(GravityCompat.START)){
-                    drawerLayout.closeDrawer(GravityCompat.START)
-                }else{
-                    finish()
-                }
-            }
-        })
+        // Set initial text to the EditText
+        editTextBox.setText(rootNode.text)
+
+        editTextBox.setOnClickListener {
+
+        }
     }
 }

@@ -147,7 +147,9 @@ class MindMapAdapter(
                 notifyItemRemoved(position)
                 // Notify the adapter that the list has changed
                 notifyItemChanged(position, mindMapList.size)
+//                notifyItemRangeChanged(position, itemCount - position)
                 Log.d(TAG, "Mind map successfully deleted!")
+
             }
             .addOnFailureListener { e ->
                 Log.w(TAG, "Error deleting document with ID: $documentId", e)

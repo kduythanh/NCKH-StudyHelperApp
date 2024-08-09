@@ -25,13 +25,21 @@
             android:theme="@style/ThemeOverlay.AppCompat.DayNight.ActionBar"
             android:layout_alignParentTop="true"/>
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/mindMapMenuRecycleView"
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            android:id="@+id/mindMapMenuSwipeRefreshLayout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_below="@id/toolbar"
-            tools:listitem="@layout/mind_map_item"
-            android:padding="16dp"/>
+            android:layout_below="@+id/toolbar">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/mindMapMenuRecycleView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_below="@id/toolbar"
+                tools:listitem="@layout/mind_map_item"
+                android:padding="16dp"/>
+
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/mindMapAddButton"
