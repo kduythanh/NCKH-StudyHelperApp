@@ -25,6 +25,8 @@ class NoteFunctionAcitivity : AppCompatActivity() {
         const val TYPE_ADD = "TYPE_ADD"
     }
 
+
+    //Check which activity return data for handle
     private var startCheckType =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
             if (result.resultCode == Activity.RESULT_OK) {

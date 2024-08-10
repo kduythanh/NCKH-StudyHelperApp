@@ -20,6 +20,7 @@
         android:background="@color/black" />
 
     <androidx.recyclerview.widget.RecyclerView
+        android:padding="10dp"
         android:id="@+id/RecycleView"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
