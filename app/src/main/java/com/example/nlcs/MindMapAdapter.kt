@@ -58,11 +58,12 @@ class MindMapAdapter(
             }
         }
 
-        // Setting the click listener for the item itself
+        // Set the click listener for the item itself to go to the mind map activity ------------------------------------------
         holder.itemView.setOnClickListener {
             val intent = Intent(context, MindMapActivity::class.java)
             // Passing the mind map item title to the mind map activity
             intent.putExtra("mindMapTitle", mindMap.title)
+            intent.putExtra("documentID", mindMap.id)
             context.startActivity(intent)
         }
     }

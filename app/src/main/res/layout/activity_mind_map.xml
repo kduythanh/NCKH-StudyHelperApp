@@ -21,6 +21,7 @@
         android:layout_alignParentTop="true"
         app:navigationIcon="@drawable/ic_back_arrow"/>
 
+
     <com.google.android.material.button.MaterialButton
         android:id="@+id/doneButton"
         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
@@ -56,7 +57,7 @@
                 >
 
                 <EditText
-                    android:id="@+id/textBox"
+                    android:id="@+id/mainNode"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:autofillHints="NOOO"
@@ -78,48 +79,3 @@
             </RelativeLayout>
     </com.example.nlcs.ZoomableView>
 </RelativeLayout>
-
-
-<!--This code is for when the zoom and pan features are implemented in the MindMapActivity.kt-->
-    <!--    <RelativeLayout-->
-    <!--        android:id="@+id/mindMapContent"-->
-    <!--        android:layout_width="match_parent"-->
-    <!--        android:layout_height="match_parent"-->
-    <!--        android:layout_below="@id/toolbar">-->
-
-    <!--        <RelativeLayout-->
-    <!--            android:layout_width="wrap_content"-->
-    <!--            android:layout_height="wrap_content"-->
-    <!--            android:padding="8dp">-->
-
-    <!--            <EditText-->
-    <!--                android:id="@+id/testbox"-->
-    <!--                android:layout_width="wrap_content"-->
-    <!--                android:layout_height="wrap_content"-->
-    <!--                android:layout_centerInParent="true"-->
-    <!--                android:autofillHints="NOOO"-->
-    <!--                android:background="@drawable/mind_map_text_box_background"-->
-    <!--                android:hint="Main Idea"-->
-    <!--                android:inputType="textMultiLine"-->
-    <!--                android:maxLines="10"-->
-    <!--                android:minWidth="48dp"-->
-    <!--                android:minHeight="48dp"-->
-    <!--                android:minLines="1"-->
-    <!--                android:padding="8dp"-->
-    <!--                android:textColorHint="@color/black"-->
-    <!--                android:textSize="16sp"-->
-    <!--                android:focusable="true"-->
-    <!--                android:focusableInTouchMode="true"-->
-    <!--                android:clickable="true"-->
-    <!--                android:longClickable="true"-->
-    <!--                />-->
-    <!--        </RelativeLayout>-->
-
-    <!--    </RelativeLayout>-->
-
-    <!--    <com.example.nlcs.ZoomableView-->
-    <!--        android:id="@+id/zoomableView"-->
-    <!--        android:layout_width="match_parent"-->
-    <!--        android:layout_height="match_parent"-->
-    <!--        android:layout_below="@id/toolbar"-->
-    <!--        android:background="@color/white"/>-->
