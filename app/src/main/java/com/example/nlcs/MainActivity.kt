@@ -47,6 +47,7 @@ class MainActivity : AppCompatActivity() {
 =======
 
         binding.card2.setOnClickListener{
+            val intent = Intent(this, MindMapMenuActivity::class.java)
             startActivity(intent)
         }
 
