@@ -49,6 +49,13 @@
 
     <string name="ReminderDesc">Reminder</string>
     <string name="Reminder">Nhắc nhở</string>
+    <string name="ChangeReminderTitleTextView">Sửa nhắc nhở</string>
+    <string name="ReminderTitleTextView">Tạo nhắc nhở mới</string>
+    <string name="selectTime">Giờ:</string>
+    <string name="selectDate">Ngày:</string>
+    <string name="InputReminderNameEditText">Nhập tên</string>
+    <string name="ReminderItemEditButtonDescription">Chỉnh sửa nhắc nhở</string>
+    <string name="ReminderItemDeleteButtonDescription">Xóa nhắc nhở</string>
 
     <string name="UserImageDesc">User Image</string>
     <string name="Hello">Xin chào,</string>
