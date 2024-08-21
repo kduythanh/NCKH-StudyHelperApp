@@ -26,13 +26,13 @@
             android:layout_alignParentTop="true"/>
 
         <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-            android:id="@+id/mindMapMenuSwipeRefreshLayout"
+            android:id="@+id/reminderMenuSwipeRefreshLayout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_below="@+id/toolbar">
 
             <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/mindMapMenuRecycleView"
+                android:id="@+id/reminderMenuRecycleView"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_below="@id/toolbar"
@@ -42,13 +42,13 @@
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/mindMapAddButton"
+            android:id="@+id/reminderAddButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             android:layout_alignParentEnd="true"
             android:layout_margin="16dp"
-            android:contentDescription="@string/AddButton"
+            android:contentDescription="@string/ReminderAddButton"
             android:src="@drawable/ic_add"
             android:backgroundTint="@color/background_2"
             android:tint="@color/black"/>

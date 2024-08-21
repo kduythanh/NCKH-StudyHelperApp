@@ -6,7 +6,9 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
+import android.widget.DatePicker
 import android.widget.EditText
+import android.widget.TimePicker
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.ActionBarDrawerToggle
@@ -21,6 +23,7 @@ import com.example.nlcs.databinding.ActivityReminderMenuBinding
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
+import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.firestore.FirebaseFirestore
 import java.util.Calendar
 import java.util.UUID
@@ -42,9 +45,14 @@ class ReminderMenuActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         // Initializing some variables
+        val reminderName = findViewById<EditText>(R.id.dialogAddReminderItemEditText)
+        val timePicker = findViewById<TimePicker>(R.id.time_picker)
+        val datePicker = findViewById<DatePicker>(R.id.date_picker)
+//        val switchNhacNho = findViewById<Switch>(R.id.switch_nhac_nho)
+        val reminderAddButton = findViewById<Button>(R.id.dialogAddButtonConfirm)
         firebaseAuth = Firebase.auth
         setSupportActionBar(binding.toolbar)
-        recyclerView = binding.mindMapMenuRecycleView
+        recyclerView = binding.reminderMenuRecycleView
         reminderList = arrayListOf()
 
         // Initialize the adapter
@@ -79,21 +87,31 @@ class ReminderMenuActivity : AppCompatActivity() {
         fetchReminders()
 
         // Open the dialog that adds a new mind map when the button is clicked
-        binding.mindMapAddButton.setOnClickListener{
+        reminderAddButton.setOnClickListener{
+            // Lưu vào Firebase
+
             val dialogView = layoutInflater.inflate(R.layout.dialog_add_reminder, null)
             val dialog = AlertDialog.Builder(this)
                 .setView(dialogView)
                 .create()
 
-            // Setting the click listeners for the confirm button
+//             Setting the click listeners for the confirm button
             dialogView.findViewById<Button>(R.id.dialogAddButtonConfirm).setOnClickListener {
-                val title = dialogView.findViewById<EditText>(R.id.dialogAddReminderItemEditText).text.toString()
-
-                if(title.isNotEmpty()){
-                    createReminderInFireBase(id, time, date, name, isActivated)
-                    dialog.dismiss()
-                }else{
-                    Toast.makeText(this, "Please enter a name", Toast.LENGTH_SHORT).show()
+                val id = String
+                val title = reminderName.text.toString()
+                val gio = timePicker.hour
+                val phut = timePicker.minute
+                val ngay = datePicker.dayOfMonth
+                val thang = datePicker.month + 1
+                val nam = datePicker.year
+                val isActivated = true
+                if (title.isNotEmpty()) {
+                    val reminder = Reminder(id.toString(), title, gio, phut, ngay, thang, nam, isActivated)
+                    val database = FirebaseDatabase.getInstance()
+                    val myRef = database.getReference("/reminderTemp")
+                    myRef.push().setValue(reminder)
+                } else {
+                    Toast.makeText(this, "Vui lòng điền tên nhắc nhở!", Toast.LENGTH_SHORT).show()
                 }
             }
 
@@ -108,40 +126,40 @@ class ReminderMenuActivity : AppCompatActivity() {
 
 
         // Setting the navigation listener
-        binding.navigationView.setNavigationItemSelectedListener { menuItem ->
-            when (menuItem.itemId){
-                R.id.nav_home -> {
-                    finish()
-                    drawerLayout.closeDrawer(GravityCompat.START)
-                    true
-                }
-                R.id.nav_user_profile -> {
-                    if (!isCurrentActivity(MainActivity::class.java)) {
-                        startActivity(Intent(this, MainActivity::class.java))
-                    }
-                    drawerLayout.closeDrawer(GravityCompat.START)
-                    true
-                }
-                R.id.nav_setting -> {
-                    if (!isCurrentActivity(MainActivity::class.java)) {
-                        startActivity(Intent(this, MainActivity::class.java))
-                    }
-                    drawerLayout.closeDrawer(GravityCompat.START)
-                    true
-                }
-                R.id.nav_logout -> {
-                    drawerLayout.closeDrawer(GravityCompat.START)
-                    firebaseAuth.signOut()
-                    val intent = Intent(this, LogInActivity::class.java)
-                    startActivity(intent)
-                    Toast.makeText(this, "Logged Out", Toast.LENGTH_SHORT).show()
-                    finish()
-                    true
-                }
-
-                else -> false
-            }
-        }
+//        binding.navigationView.setNavigationItemSelectedListener { menuItem ->
+//            when (menuItem.itemId){
+//                R.id.nav_home -> {
+//                    finish()
+//                    drawerLayout.closeDrawer(GravityCompat.START)
+//                    true
+//                }
+//                R.id.nav_user_profile -> {
+//                    if (!isCurrentActivity(MainActivity::class.java)) {
+//                        startActivity(Intent(this, MainActivity::class.java))
+//                    }
+//                    drawerLayout.closeDrawer(GravityCompat.START)
+//                    true
+//                }
+//                R.id.nav_setting -> {
+//                    if (!isCurrentActivity(MainActivity::class.java)) {
+//                        startActivity(Intent(this, MainActivity::class.java))
+//                    }
+//                    drawerLayout.closeDrawer(GravityCompat.START)
+//                    true
+//                }
+//                R.id.nav_logout -> {
+//                    drawerLayout.closeDrawer(GravityCompat.START)
+//                    firebaseAuth.signOut()
+//                    val intent = Intent(this, LogInActivity::class.java)
+//                    startActivity(intent)
+//                    Toast.makeText(this, "Logged Out", Toast.LENGTH_SHORT).show()
+//                    finish()
+//                    true
+//                }
+//
+//                else -> false
+//            }
+//        }
 
         // On back pressed listener for the drawer
         onBackPressedDispatcher.addCallback(this, object: OnBackPressedCallback(true){
@@ -161,26 +179,26 @@ class ReminderMenuActivity : AppCompatActivity() {
     }
 
     // Create a new reminder in Firestore
-    private fun createReminderInFireBase(id: String, time: Calendar, date: Calendar, name: String, isActivated: Boolean){
-        val db = FirebaseFirestore.getInstance()
-        val mindMap = hashMapOf(
-            "id" to id,
-            "time" to time,
-            "date" to date,
-            "name" to name,
-            "isActivated" to isActivated
-        )
-
-        db.collection("reminderTemp")
-            .add(mindMap)
-            .addOnSuccessListener {
-                Toast.makeText(this, "Reminder Created" , Toast.LENGTH_SHORT).show()
-                fetchReminders()
-            }
-            .addOnFailureListener {
-                Toast.makeText(this, "Failed to create reminder", Toast.LENGTH_SHORT).show()
-            }
-    }
+//    private fun createReminderInFireBase(id: String, time: Calendar, date: Calendar, name: String, isActivated: Boolean){
+//        val db = FirebaseFirestore.getInstance()
+//        val mindMap = hashMapOf(
+//            "id" to id,
+//            "time" to time,
+//            "date" to date,
+//            "name" to name,
+//            "isActivated" to isActivated
+//        )
+//
+//        db.collection("reminderTemp")
+//            .add(mindMap)
+//            .addOnSuccessListener {
+//                Toast.makeText(this, "Reminder Created" , Toast.LENGTH_SHORT).show()
+//                fetchReminders()
+//            }
+//            .addOnFailureListener {
+//                Toast.makeText(this, "Failed to create reminder", Toast.LENGTH_SHORT).show()
+//            }
+//    }
 
     // Fetch the mind maps from Firestore
     @SuppressLint("NotifyDataSetChanged")
@@ -210,7 +228,7 @@ class ReminderMenuActivity : AppCompatActivity() {
                 reminderList.addAll(newReminderList)
 
                 // Sort items by date in in ascending order
-                reminderList.sortBy { it.date }
+                reminderList.sortBy { it.day }
 
                 // Notify the adapter of the newly inserted items
                 // Refresh the recycler view when adding new items to an empty list

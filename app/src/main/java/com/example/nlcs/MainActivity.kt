@@ -43,20 +43,20 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-<<<<<<< Updated upstream
-=======
+//<<<<<<< Updated upstream
+//=======
 
-        binding.card2.setOnClickListener{
-            val intent = Intent(this, MindMapMenuActivity::class.java)
-            startActivity(intent)
-        }
+//        binding.card2.setOnClickListener{
+//            val intent = Intent(this, MindMapMenuActivity::class.java)
+//            startActivity(intent)
+//        }
 
         binding.card6.setOnClickListener {
             val intent = Intent(this, ReminderMenuActivity::class.java)
             startActivity(intent)
         }
 
->>>>>>> Stashed changes
+//>>>>>>> Stashed changes
         binding.navigationView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId){
                 R.id.nav_logout -> {

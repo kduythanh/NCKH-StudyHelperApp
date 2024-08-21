@@ -16,11 +16,11 @@
         android:gravity="center">
 
         <TextView
-            android:id="@+id/dialogAddMindMapTitle"
+            android:id="@+id/dialogEditReminder"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:text="@string/ReminderTitleTextView"
+            android:text="@string/EditReminderTitleTextView"
             android:textSize="25sp"
             android:fontFamily="@font/roboto_bold"
             android:textColor="@color/black"
@@ -35,7 +35,7 @@
             android:orientation="horizontal">
 
             <EditText
-                android:id="@+id/dialogAddReminderItemEditText"
+                android:id="@+id/dialogEditReminderItemEditText"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -57,7 +57,7 @@
             android:orientation="vertical">
 
             <TextView
-                android:id="@+id/selectTimeTextView"
+                android:id="@+id/EditTimeTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/roboto_bold"
@@ -110,7 +110,7 @@
             android:orientation="vertical">
 
             <TextView
-                android:id="@+id/selectDateTextView"
+                android:id="@+id/EditDateTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/roboto_bold"
@@ -155,7 +155,7 @@
             android:paddingBottom="5dp">
 
             <Button
-                android:id="@+id/dialogAddButtonCancel"
+                android:id="@+id/dialogEditButtonCancel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="16dp"
@@ -163,7 +163,7 @@
                 tools:ignore="ButtonStyle" />
 
             <Button
-                android:id="@+id/dialogAddButtonConfirm"
+                android:id="@+id/dialogEditButtonConfirm"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"

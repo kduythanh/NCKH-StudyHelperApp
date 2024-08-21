@@ -8,29 +8,29 @@
     android:elevation="4dp"
     android:background="@drawable/mind_map_text_box_background">
 
-    <ImageView
-        android:id="@+id/addChildIcon"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:src="@drawable/ic_add_child"
-        android:padding="4dp"
-        android:contentDescription="@string/AddChild"/>
+<!--    <ImageView-->
+<!--        android:id="@+id/addChildIcon"-->
+<!--        android:layout_width="24dp"-->
+<!--        android:layout_height="24dp"-->
+<!--        android:src="@drawable/ic_add_child"-->
+<!--        android:padding="4dp"-->
+<!--        android:contentDescription="@string/AddChild"/>-->
 
-    <!-- Delete icon -->
-    <ImageView
-        android:id="@+id/deleteChildIcon"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:src="@drawable/ic_delete"
-        android:padding="4dp"
-        android:contentDescription="@string/DeleteChild"/>
+<!--    &lt;!&ndash; Delete icon &ndash;&gt;-->
+<!--    <ImageView-->
+<!--        android:id="@+id/deleteChildIcon"-->
+<!--        android:layout_width="24dp"-->
+<!--        android:layout_height="24dp"-->
+<!--        android:src="@drawable/ic_delete"-->
+<!--        android:padding="4dp"-->
+<!--        android:contentDescription="@string/DeleteChild"/>-->
 
-    <!-- Copy text icon -->
-    <ImageView
-        android:id="@+id/copyTextIcon"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:src="@drawable/ic_copy"
-        android:padding="4dp"
-        android:contentDescription="@string/CopyText"/>
+<!--    &lt;!&ndash; Copy text icon &ndash;&gt;-->
+<!--    <ImageView-->
+<!--        android:id="@+id/copyTextIcon"-->
+<!--        android:layout_width="24dp"-->
+<!--        android:layout_height="24dp"-->
+<!--        android:src="@drawable/ic_copy"-->
+<!--        android:padding="4dp"-->
+<!--        android:contentDescription="@string/CopyText"/>-->
 </LinearLayout>

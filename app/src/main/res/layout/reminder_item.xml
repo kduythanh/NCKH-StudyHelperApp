@@ -19,11 +19,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:orientation="horizontal">
+            android:orientation="vertical">
 
             <TextView
-                android:id="@+id/titleMindMapMenuItemTextView"
-                android:layout_width="wrap_content"
+                android:id="@+id/titleReminderMenuItemTextView"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="35dp"
                 android:fontFamily="@font/roboto_bold"
@@ -31,24 +31,48 @@
                 android:text="@string/TitlePlaceHolder"
                 android:textColor="@color/black"
                 android:textSize="19sp"
-                android:textStyle="bold"/>
+                android:textStyle="bold" />
 
-            <ImageView
-                android:id="@+id/EditTitleMindMapMenuItemButton"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_alignParentEnd="true"
-                android:layout_marginEnd="30dp"
-                android:contentDescription="@string/ReminderItemEditButtonDescription"
-                android:src="@drawable/ic_edit" />
+            <TextView
+                android:id="@+id/DateTimeReminderMenuItemTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="35dp"
+                android:fontFamily="@font/roboto_bold"
+                android:maxLines="3"
+                android:text="@string/DateTime"
+                android:textColor="@color/black"
+                android:textSize="19sp"
+                android:textStyle="bold" />
 
-            <ImageView
-                android:id="@+id/deleteMindMapMenuItemButton"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_alignParentEnd="true"
-                android:src="@drawable/ic_delete"
-                android:contentDescription="@string/ReminderItemDeleteButtonDescription"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="end">
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/switchReminder"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp" />
+
+                <ImageView
+                    android:id="@+id/EditReminderMenuItemButton"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginEnd="30dp"
+                    android:contentDescription="@string/ReminderItemEditButtonDescription"
+                    android:src="@drawable/ic_edit" />
+
+                <ImageView
+                    android:id="@+id/deleteReminderMenuItemButton"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_alignParentEnd="true"
+                    android:contentDescription="@string/ReminderItemDeleteButtonDescription"
+                    android:src="@drawable/ic_delete" />
+            </LinearLayout>
+
 
         </RelativeLayout>
 

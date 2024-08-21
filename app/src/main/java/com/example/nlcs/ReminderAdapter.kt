@@ -12,6 +12,9 @@ import androidx.recyclerview.widget.RecyclerView
 import android.content.Context
 import android.content.Intent
 import android.widget.Button
+import android.widget.DatePicker
+import android.widget.EditText
+import android.widget.TimePicker
 import androidx.appcompat.app.AlertDialog
 import com.google.firebase.firestore.FirebaseFirestore
 import java.util.Calendar
@@ -26,7 +29,7 @@ class ReminderAdapter(
     class ReminderViewHolder(itemView: View): RecyclerView.ViewHolder(itemView){
         val titleTextView: TextView = itemView.findViewById(R.id.titleReminderMenuItemTextView)
         val deleteButton: ImageView = itemView.findViewById(R.id.deleteReminderMenuItemButton)
-        val updateButton: ImageView = itemView.findViewById(R.id.EditTitleReminderMenuItemButton)
+        val updateButton: ImageView = itemView.findViewById(R.id.EditReminderMenuItemButton)
     }
 
     // Setting the layout
@@ -71,20 +74,26 @@ class ReminderAdapter(
     private fun showUpdateDialog(reminder: Reminder, position: Int){
         val oldTitle = reminder.name
 
-        val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_edit_mind_map_title, null)
+        val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_edit_reminder, null)
         val builder = AlertDialog.Builder(context).setView(dialogView)
-        val editTextTitle = dialogView.findViewById<TextView>(R.id.mindMapEditText)
-        editTextTitle.text = oldTitle
+        val editTextName = dialogView.findViewById<EditText>(R.id.dialogEditReminderItemEditText)
+        editTextName.setText(oldTitle)
+        val editTime = dialogView.findViewById<TimePicker>(R.id.time_picker)
+        val editDate = dialogView.findViewById<DatePicker>(R.id.date_picker)
 
         val dialog = builder.create()
 
         // Setting the click listeners for the the confirm button
         dialogView.findViewById<Button>(R.id.dialogEditButtonConfirm).setOnClickListener {
-            val newTime = editTextTitle.text.toString()
-            val newDate = editTextTitle.text.toString()
-            val newName = editTextTitle.text.toString()
+            val newName = editTextName.text.toString()
+            val newHour = editTime.hour
+            val newMinute = editTime.minute
+            val newDay = editDate.dayOfMonth
+            val newMonth = editDate.month
+            val newYear = editDate.year
+
             // Update title in firebase
-            updateReminderTitle(reminder, newTime, newDate, newName, position)
+            updateReminderTitle(reminder, newName, newHour, newMinute, newDay, newMonth, newYear, position)
             // Update the title in the adapter
             notifyItemChanged(position)
             dialog.dismiss()
@@ -101,7 +110,7 @@ class ReminderAdapter(
         val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_confirm_deletion_reminder, null)
         val dialog = AlertDialog.Builder(context).setView(dialogView).create()
 
-        val reminderIdTextView = dialogView.findViewById<TextView>(R.id.ReminderIdTextView)
+        val reminderIdTextView = dialogView.findViewById<TextView>(R.id.reminderIdTextView)
         reminderIdTextView.text = documentId
 
         dialogView.findViewById<Button>(R.id.dialogConfirmDeletionButtonYes).setOnClickListener {
@@ -117,22 +126,25 @@ class ReminderAdapter(
     }
 
     // Update title method
-    private fun updateReminderTitle(reminder: Reminder, newTime: Calendar, newDate: Calendar, newName: String, position: Int) {
+    private fun updateReminderTitle(reminder: Reminder, newName: String, newHour: Int, newMinute: Int, newDay: Int, newMonth: Int, newYear: Int,  position: Int) {
         val documentId = reminder.id ?: return
 
         val db = FirebaseFirestore.getInstance()
         val docRef = db.collection("reminderTemp").document(documentId)
 
-        docRef.update("title", newTime, newDate, newName)
+        docRef.update("title", newName, newHour, newMinute, newDay, newMonth, newYear)
             .addOnSuccessListener {
-                reminder.time = newTime
-                reminder.date = newDate
                 reminder.name = newName
+                reminder.hour = newHour
+                reminder.minute = newMinute
+                reminder.day = newDay
+                reminder.month = newMonth
+                reminder.year = newYear
                 notifyItemChanged(position)
                 Log.d(TAG, "Reminder updated successfully!")
             }
             .addOnFailureListener { e ->
-                Log.w(TAG, "Error updating reminder title", e)
+                Log.w(TAG, "Error updating reminder item", e)
             }
     }
 

@@ -18,8 +18,11 @@ data class Node(
 
 data class Reminder (
     var id: String? = null,
-    var time: Calendar? = null,
-    var date: Calendar? = null,
     var name: String? = null,
+    var hour: Int,
+    var minute: Int,
+    var day: Int,
+    var month: Int,
+    var year: Int,
     var isActivated: Boolean? = null
 )
