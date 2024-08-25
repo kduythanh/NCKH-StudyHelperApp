@@ -43,8 +43,35 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+
+        binding.card1.setOnClickListener{
+            val intent = Intent(this, FlashcardActivity::class.java)
+            startActivity(intent)
+        }
+
         binding.navigationView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId){
+                R.id.nav_home -> {
+                    if (!isCurrentActivity(MainActivity::class.java)) {
+                        startActivity(Intent(this, MainActivity::class.java))
+                    }
+                    drawerLayout.closeDrawer(GravityCompat.START)
+                    true
+                }
+                R.id.nav_user_profile -> {
+                    if (!isCurrentActivity(MainActivity::class.java)) {
+                        startActivity(Intent(this, MainActivity::class.java))
+                    }
+                    drawerLayout.closeDrawer(GravityCompat.START)
+                    true
+                }
+                R.id.nav_setting -> {
+                    if (!isCurrentActivity(MainActivity::class.java)) {
+                        startActivity(Intent(this, MainActivity::class.java))
+                    }
+                    drawerLayout.closeDrawer(GravityCompat.START)
+                    true
+                }
                 R.id.nav_logout -> {
                     drawerLayout.closeDrawer(GravityCompat.START)
                     firebaseAuth.signOut()
@@ -59,6 +86,8 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        // new line for test
+
         onBackPressedDispatcher.addCallback(this, object: OnBackPressedCallback(true){
             override fun handleOnBackPressed(){
                 if(drawerLayout.isDrawerOpen(GravityCompat.START)){
@@ -69,18 +98,9 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
-        // Test Click listener for log out button
-//        binding.logOutTestButton.setOnClickListener {
-//            firebaseAuth.signOut()
-//            val intent = Intent(this, LogInActivity::class.java)
-//            startActivity(intent)
-//            Toast.makeText(this, "Logged Out", Toast.LENGTH_SHORT).show()
-//            finish()
-//        }
-
     }
 
-//    private fun isCurrentActivity(activityClass: Class<*>): Boolean {
-//        return activityClass == this::class.java
-//    }
+    private fun isCurrentActivity(activityClass: Class<*>): Boolean {
+        return activityClass == this::class.java
+    }
 }
