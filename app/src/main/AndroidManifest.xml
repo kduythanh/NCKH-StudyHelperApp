@@ -31,6 +31,22 @@
             android:name=".MainActivity"
             android:exported="false" />
         <activity
+            android:name=".AddCardsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".CreateDeck"
+            android:exported="false" />
+
+        <activity
+            android:name=".FlashcardActivity"
+            android:exported="false" />
+        <activity
+            android:name=".PublicDecks"
+            android:exported="false" />
+        <activity
+            android:name=".ViewCard"
+            android:exported="false" />
+        <activity
             android:name=".SplashActivity"
             android:exported="true">
             <intent-filter>
