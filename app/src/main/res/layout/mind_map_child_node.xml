@@ -6,13 +6,13 @@
     android:padding="8dp">
 
     <EditText
-        android:id="@+id/editTextBox"
+        android:id="@+id/childTextBox"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         android:autofillHints="Main Idea"
         android:background="@drawable/mind_map_text_box_background"
-        android:hint="@string/MainIdea"
+        android:hint="@string/ChildNode"
         android:inputType="textMultiLine"
         android:maxLines="10"
         android:minWidth="48dp"
@@ -27,6 +27,3 @@
         android:longClickable="true"
         />
 </RelativeLayout>
-
-<!--    android:focusable="false"-->
-<!--    android:focusableInTouchMode="false"-->

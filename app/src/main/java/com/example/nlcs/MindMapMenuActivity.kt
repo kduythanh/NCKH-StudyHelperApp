@@ -22,7 +22,6 @@ import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FirebaseFirestore
-import java.util.UUID
 
 class MindMapMenuActivity : AppCompatActivity() {
 
@@ -164,7 +163,7 @@ class MindMapMenuActivity : AppCompatActivity() {
         val mindMap = hashMapOf(
             "title" to title,
             "date" to System.currentTimeMillis(),
-            "MasterNode" to Node(id = UUID.randomUUID().toString(), text = "Main Idea", children = listOf())
+            "rootNode" to TreeNode(data = "Main Idea")
         )
 
         db.collection("mindMapTemp")
@@ -200,22 +199,17 @@ class MindMapMenuActivity : AppCompatActivity() {
 
                 // Calculate the starting position for new items
                 val startPosition = mindMapList.size
-
                 // Clear the list and add the new items
                 mindMapList.clear()
                 mindMapList.addAll(newMindMapList)
-
                 // Sort items by date in in ascending order
                 mindMapList.sortBy { it.date }
-
                 // Notify the adapter of the newly inserted items
                 // Refresh the recycler view when adding new items to an empty list
                 mindMapAdapter.notifyItemRangeInserted(startPosition, newMindMapList.size)
-
                 // Notify the adapter that the data has changed
                 // This prevent the app from crashing when either updating the title or deleting the the mind map
                 mindMapAdapter.notifyDataSetChanged( )
-
                 // Stop The refreshing animation
                 swipeRefreshLayout.isRefreshing = false
             }
