@@ -15,38 +15,54 @@ import android.widget.Button
 import android.widget.DatePicker
 import android.widget.EditText
 import android.widget.TimePicker
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.SwitchCompat
 import com.google.firebase.firestore.FirebaseFirestore
+import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Locale
 
 
 class ReminderAdapter(
-    private var reminderList: MutableList<Reminder>,
+    private val reminderList: MutableList<Reminder>,
     private val context: Context
 ): RecyclerView.Adapter<ReminderAdapter.ReminderViewHolder>(){
 
     // Calling elements of the layout
-    class ReminderViewHolder(itemView: View): RecyclerView.ViewHolder(itemView){
+    inner class ReminderViewHolder(itemView: View): RecyclerView.ViewHolder(itemView){
         val titleTextView: TextView = itemView.findViewById(R.id.titleReminderMenuItemTextView)
+        val dateTimeTextView: TextView = itemView.findViewById(R.id.DateTimeReminderMenuItemTextView)
         val deleteButton: ImageView = itemView.findViewById(R.id.deleteReminderMenuItemButton)
         val updateButton: ImageView = itemView.findViewById(R.id.EditReminderMenuItemButton)
+        val switchReminder: SwitchCompat = itemView.findViewById(R.id.switchReminder)
+
+        init {
+            // Xử lý sự kiện khi trạng thái switch thay đổi
+            switchReminder.setOnCheckedChangeListener { _, isChecked ->
+                val reminder = reminderList[adapterPosition]
+                reminder.isActivated = isChecked
+                updateReminderStatus(reminder)
+            }
+        }
     }
 
     // Setting the layout
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ReminderViewHolder {
-        val itemView = LayoutInflater.from(parent.context).inflate(R.layout.mind_map_item, parent, false)
+        val itemView = LayoutInflater.from(parent.context).inflate(R.layout.reminder_item, parent, false)
         return ReminderViewHolder(itemView)
     }
 
-    // Setting the size of the list
-    override fun getItemCount() = reminderList.size
 
     @SuppressLint("InflateParams")
     override fun onBindViewHolder(holder: ReminderViewHolder, position: Int) {
         val reminder= reminderList[position]
 
         holder.titleTextView.text = reminder.name
-
+        // Set the DateTime text
+        val formatter = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
+        holder.dateTimeTextView.text = formatter.format(reminder.date)
+//        holder.dateTimeTextView.text = SimpleDateFormat("dd/MM/yyyy HH:mm").format(reminder.date)
         // Setting the click listeners for the update button
         holder.updateButton.setOnClickListener{
             showUpdateDialog(reminder, position)
@@ -61,7 +77,7 @@ class ReminderAdapter(
                 showDeleteConfirmationDialog(documentId, position)
             }
         }
-
+        holder.switchReminder.isChecked = reminder.isActivated
         // Setting the click listener for the item itself
 //        holder.itemView.setOnClickListener {
 //            val intent = Intent(context, MindMapActivity::class.java)
@@ -70,7 +86,8 @@ class ReminderAdapter(
 //            context.startActivity(intent)
 //        }
     }
-
+    // Setting the size of the list
+    override fun getItemCount() = reminderList.size
     private fun showUpdateDialog(reminder: Reminder, position: Int){
         val oldTitle = reminder.name
 
@@ -89,7 +106,7 @@ class ReminderAdapter(
             val newHour = editTime.hour
             val newMinute = editTime.minute
             val newDay = editDate.dayOfMonth
-            val newMonth = editDate.month
+            val newMonth = editDate.month+1
             val newYear = editDate.year
 
             // Update title in firebase
@@ -128,18 +145,18 @@ class ReminderAdapter(
     // Update title method
     private fun updateReminderTitle(reminder: Reminder, newName: String, newHour: Int, newMinute: Int, newDay: Int, newMonth: Int, newYear: Int,  position: Int) {
         val documentId = reminder.id ?: return
-
+        val calendar = Calendar.getInstance()
+        calendar.set(newYear, newMonth - 1, newDay, newHour, newMinute, 0)
+        val newDate = calendar.time
         val db = FirebaseFirestore.getInstance()
         val docRef = db.collection("reminderTemp").document(documentId)
 
-        docRef.update("title", newName, newHour, newMinute, newDay, newMonth, newYear)
+        docRef.update("title", newName, "hour", newHour, "minute", newMinute, "date", newDate, "isActivated", reminder.isActivated)
             .addOnSuccessListener {
                 reminder.name = newName
                 reminder.hour = newHour
                 reminder.minute = newMinute
-                reminder.day = newDay
-                reminder.month = newMonth
-                reminder.year = newYear
+                reminder.date = newDate
                 notifyItemChanged(position)
                 Log.d(TAG, "Reminder updated successfully!")
             }
@@ -147,32 +164,33 @@ class ReminderAdapter(
                 Log.w(TAG, "Error updating reminder item", e)
             }
     }
-
-    // Delete mind map method
+    // Update reminder status
+    private fun updateReminderStatus(reminder: Reminder) {
+        val db = FirebaseFirestore.getInstance()
+        db.collection("reminderTemp").document(reminder.id)
+            .update("isActivated", reminder.isActivated)
+            .addOnSuccessListener {
+                Toast.makeText(context, "Reminder status updated", Toast.LENGTH_SHORT).show()
+            }
+            .addOnFailureListener { e ->
+                Toast.makeText(context, "Failed to update reminder status", Toast.LENGTH_SHORT).show()
+                Log.w(TAG, "Error updating reminder status", e)
+            }
+    }
+    // Delete reminder method
     private fun deleteReminderFromFirestore(documentId: String, position: Int) {
         val db = FirebaseFirestore.getInstance()
-        val docRef = db.collection("reminderTemp").document(documentId)
-
-        docRef.delete()
+        db.collection("reminders").document(documentId).delete()
             .addOnSuccessListener {
-                // Safely remove the mind map at the specified position from the local list.
-                // Created a mutable copy to avoid potential issues with concurrent modification.
-                reminderList = reminderList.toMutableList().also {
-                    if (position in 0 until it.size) it.removeAt(position)
-                }
-                // Remove the mind map from the adapter
+                reminderList.removeAt(position)
                 notifyItemRemoved(position)
-                // Notify the adapter that the list has changed
-                notifyItemChanged(position, reminderList.size)
-//                notifyItemRangeChanged(position, itemCount - position)
                 Log.d(TAG, "Reminder successfully deleted!")
-
             }
             .addOnFailureListener { e ->
                 Log.w(TAG, "Error deleting document with ID: $documentId", e)
             }
-
     }
+
 }
 
 

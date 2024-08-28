@@ -1,6 +1,7 @@
 package com.example.nlcs
 
 import java.util.Calendar
+import java.util.Date
 import java.util.UUID
 
 data class MindMap(
@@ -17,12 +18,11 @@ data class Node(
 )
 
 data class Reminder (
-    var id: String? = null,
-    var name: String? = null,
-    var hour: Int,
-    var minute: Int,
-    var day: Int,
-    var month: Int,
-    var year: Int,
-    var isActivated: Boolean? = null
+    var id: String = "",
+    var user: String = "",
+    var name: String = "",
+    var hour: Int = 0,
+    var minute: Int = 0,
+    var date: Date = Date(),
+    var isActivated: Boolean = true
 )
