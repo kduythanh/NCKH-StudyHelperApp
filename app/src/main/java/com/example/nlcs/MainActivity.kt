@@ -52,7 +52,7 @@ class MainActivity : AppCompatActivity() {
 //        }
 
         binding.card6.setOnClickListener {
-            val intent = Intent(this, ReminderMenuActivity::class.java)
+            val intent = Intent(this, ReminderMenuActivityAPI::class.java)
             startActivity(intent)
         }
 

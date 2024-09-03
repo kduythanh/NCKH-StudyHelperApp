@@ -10,7 +10,6 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import android.content.Context
-import android.content.Intent
 import android.widget.Button
 import android.widget.DatePicker
 import android.widget.EditText
@@ -40,7 +39,13 @@ class ReminderAdapter(
         init {
             // Xử lý sự kiện khi trạng thái switch thay đổi
             switchReminder.setOnCheckedChangeListener { _, isChecked ->
-                val reminder = reminderList[adapterPosition]
+                handleSwitchChange(isChecked)
+            }
+        }
+        private fun handleSwitchChange(isChecked: Boolean) {
+            val reminder = reminderList[adapterPosition]
+            if (reminder.isActivated != isChecked) {
+                // Cập nhật trạng thái reminder và Firestore chỉ khi trạng thái thực sự thay đổi
                 reminder.isActivated = isChecked
                 updateReminderStatus(reminder)
             }
@@ -63,6 +68,7 @@ class ReminderAdapter(
         val formatter = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
         holder.dateTimeTextView.text = formatter.format(reminder.date)
 //        holder.dateTimeTextView.text = SimpleDateFormat("dd/MM/yyyy HH:mm").format(reminder.date)
+        holder.switchReminder.isChecked = reminder.isActivated
         // Setting the click listeners for the update button
         holder.updateButton.setOnClickListener{
             showUpdateDialog(reminder, position)
@@ -72,10 +78,7 @@ class ReminderAdapter(
         holder.deleteButton.setOnClickListener{
             val documentId = reminder.id
             Log.d(TAG, "Delete button clicked for document with ID: $documentId")
-
-            if (documentId != null) {
-                showDeleteConfirmationDialog(documentId, position)
-            }
+            showDeleteConfirmationDialog(documentId, position)
         }
         holder.switchReminder.isChecked = reminder.isActivated
         // Setting the click listener for the item itself
@@ -144,7 +147,7 @@ class ReminderAdapter(
 
     // Update title method
     private fun updateReminderTitle(reminder: Reminder, newName: String, newHour: Int, newMinute: Int, newDay: Int, newMonth: Int, newYear: Int,  position: Int) {
-        val documentId = reminder.id ?: return
+        val documentId = reminder.id
         val calendar = Calendar.getInstance()
         calendar.set(newYear, newMonth - 1, newDay, newHour, newMinute, 0)
         val newDate = calendar.time
@@ -180,11 +183,14 @@ class ReminderAdapter(
     // Delete reminder method
     private fun deleteReminderFromFirestore(documentId: String, position: Int) {
         val db = FirebaseFirestore.getInstance()
-        db.collection("reminders").document(documentId).delete()
+        db.collection("reminderTemp").document(documentId).delete()
             .addOnSuccessListener {
-                reminderList.removeAt(position)
-                notifyItemRemoved(position)
-                Log.d(TAG, "Reminder successfully deleted!")
+                if (position >= 0 && position < reminderList.size) {
+                    reminderList.removeAt(position)
+                    notifyItemRemoved(position)
+                    Log.d(TAG, "Reminder successfully deleted!")
+                    notifyItemRangeChanged(position, reminderList.size - position)
+                }
             }
             .addOnFailureListener { e ->
                 Log.w(TAG, "Error deleting document with ID: $documentId", e)
