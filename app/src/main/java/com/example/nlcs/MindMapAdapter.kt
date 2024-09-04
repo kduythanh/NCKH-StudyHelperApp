@@ -51,10 +51,11 @@ class MindMapAdapter(
         // Setting the click listener for the delete button
         holder.deleteButton.setOnClickListener{
             val documentId = mindMap.id
-            Log.d(TAG, "Delete button clicked for document with ID: $documentId")
+            val mindMapID = mindMap.mindMapID
+            Log.d(TAG, "Delete button clicked for document with ID: $documentId and mindMapId: $mindMapID")
 
             if (documentId != null) {
-                showDeleteConfirmationDialog(documentId, position)
+                showDeleteConfirmationDialog(documentId, position, mindMapID)
             }
         }
 
@@ -64,6 +65,7 @@ class MindMapAdapter(
             // Passing the mind map item title to the mind map activity
             intent.putExtra("mindMapTitle", mindMap.title)
             intent.putExtra("documentID", mindMap.id)
+            intent.putExtra("mindMapID", mindMap.mindMapID)
             context.startActivity(intent)
         }
     }
@@ -95,7 +97,7 @@ class MindMapAdapter(
         dialog.show()
     }
 
-    private fun showDeleteConfirmationDialog(documentId: String, position: Int) {
+    private fun showDeleteConfirmationDialog(documentId: String, position: Int, mindMapID: String?) {
         val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_confirm_deletion_mind_map, null)
         val dialog = AlertDialog.Builder(context).setView(dialogView).create()
 
@@ -103,7 +105,7 @@ class MindMapAdapter(
         mindMapIdTextView.text = documentId
 
         dialogView.findViewById<Button>(R.id.dialogConfirmDeletionButtonYes).setOnClickListener {
-            deleteMindMapFromFirestore(documentId, position)
+            deleteMindMapFromFirestore(documentId, position, mindMapID)
             dialog.dismiss()
         }
 
@@ -133,7 +135,7 @@ class MindMapAdapter(
     }
 
     // Delete mind map method
-    private fun deleteMindMapFromFirestore(documentId: String, position: Int) {
+    private fun deleteMindMapFromFirestore(documentId: String, position: Int, mindMapID: String?) {
         val db = FirebaseFirestore.getInstance()
         val docRef = db.collection("mindMapTemp").document(documentId)
 
@@ -150,6 +152,11 @@ class MindMapAdapter(
                 notifyItemChanged(position, mindMapList.size)
 //                notifyItemRangeChanged(position, itemCount - position)
                 Log.d(TAG, "Mind map successfully deleted!")
+
+                // Delete the mind map from Neo4j
+                val neo4jService = Neo4jService("bolt+s://f4454805.databases.neo4j.io", "neo4j", "T79xAI8tRj6QzvCfiqDMBAlxb4pabJ1UBh_H7qIqlaQ")
+                neo4jService.deleteAllNodes(mindMapID)
+                neo4jService.close()
 
             }
             .addOnFailureListener { e ->

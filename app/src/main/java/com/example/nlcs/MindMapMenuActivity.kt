@@ -22,6 +22,7 @@ import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FirebaseFirestore
+import java.util.UUID
 
 class MindMapMenuActivity : AppCompatActivity() {
 
@@ -32,6 +33,9 @@ class MindMapMenuActivity : AppCompatActivity() {
     private lateinit var mindMapList: ArrayList<MindMap>
     private lateinit var mindMapAdapter: MindMapAdapter
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
+    private val neo4jUri = "bolt+s://f4454805.databases.neo4j.io"
+    private val neo4jUser = "neo4j"
+    private val neo4jPassword = "T79xAI8tRj6QzvCfiqDMBAlxb4pabJ1UBh_H7qIqlaQ"
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -160,16 +164,27 @@ class MindMapMenuActivity : AppCompatActivity() {
     // Create a new mind map in Firestore
     private fun createMindMapInFireBase(title: String){
         val db = FirebaseFirestore.getInstance()
+        val mindMapId = UUID.randomUUID().toString()
         val mindMap = hashMapOf(
             "title" to title,
+            "mindMapID" to mindMapId,
             "date" to System.currentTimeMillis(),
-            "rootNode" to TreeNode(data = "Main Idea")
+            "userID" to firebaseAuth.currentUser?.uid
         )
 
         db.collection("mindMapTemp")
             .add(mindMap)
             .addOnSuccessListener {
                 Toast.makeText(this, "Mind Map Created" , Toast.LENGTH_SHORT).show()
+                // Create a Master Node upon creating a new Mind Map item
+                val userId = firebaseAuth.currentUser?.uid
+
+                if(userId != null){
+                    val neo4jService = Neo4jService(neo4jUri, neo4jUser, neo4jPassword)
+                    neo4jService.createNode("Main Node", userId, mindMapId)
+                    neo4jService.close()
+                }
+
                 fetchMindMaps()
             }
             .addOnFailureListener {
@@ -193,6 +208,8 @@ class MindMapMenuActivity : AppCompatActivity() {
                 for (doc in snapshots){
                     val mindMap = doc.toObject(MindMap::class.java).apply{
                         id = doc.id
+//                        mindMapID = doc.getString("mindMapID")
+
                     }
                     newMindMapList.add(mindMap)
                 }

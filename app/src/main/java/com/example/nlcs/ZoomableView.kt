@@ -136,7 +136,7 @@ class ZoomableView @JvmOverloads constructor(
                 translationX -= distanceX
                 translationY -= distanceY
             }
-            // Invalidate the content layout to redraw with changes
+            // Invalidate the content layout to redraw with changes  
             ViewCompat.postInvalidateOnAnimation(contentLayout)
             return true
         }

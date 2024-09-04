@@ -86,7 +86,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // new line for test
 
         onBackPressedDispatcher.addCallback(this, object: OnBackPressedCallback(true){
             override fun handleOnBackPressed(){

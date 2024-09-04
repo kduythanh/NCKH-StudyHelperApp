@@ -1,28 +1,29 @@
 package com.example.nlcs
 
 import android.annotation.SuppressLint
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.ContentValues.TAG
-import android.content.Context
 import android.os.Bundle
-import android.util.Log
-import android.view.MotionEvent
+import android.view.Gravity
+import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.ImageView
+import android.widget.LinearLayout
+import android.widget.PopupWindow
 import android.widget.RelativeLayout
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.example.nlcs.databinding.ActivityMindMapBinding
-import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.auth.FirebaseAuth
+
 
 class MindMapActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMindMapBinding
-    private lateinit var rootNode: TreeNode<String>
-    private var currentContextMenu: View? = null
+    private lateinit var neo4jService: Neo4jService
+    private val neo4jUri = "bolt+s://f4454805.databases.neo4j.io"
+    private val neo4jUser = "neo4j"
+    private val neo4jPassword = "T79xAI8tRj6QzvCfiqDMBAlxb4pabJ1UBh_H7qIqlaQ"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,227 +38,221 @@ class MindMapActivity : AppCompatActivity() {
         val mindMapTitle = intent.getStringExtra("mindMapTitle")
         if (mindMapTitle != null) { supportActionBar?.title = mindMapTitle }
 
-        // Get the document ID from intent
-        val documentID = intent.getStringExtra("documentID") ?: ""
-
         // Ends the activity when clicked back arrow functionality
         binding.toolbar.setNavigationOnClickListener { finish() }
 
-        // Line 92
-        fetchRootNode(documentID)
+        // Initialize Neo4j service
+        neo4jService = Neo4jService(neo4jUri, neo4jUser, neo4jPassword)
 
-        // Line 114
-        setupOutsideTouchListener()
+        // Fetch nodes and display them
+        val mindMapID = intent.getStringExtra("mindMapID") ?: return
+        fetchAndDisplayAllNodes(mindMapID)
 
-        // Hide context menu when zooming or panning gesture is detected
-        binding.zoomableView.onGestureListener = {
-            currentContextMenu?.visibility = View.GONE
-            currentContextMenu = null
-        }
-
-        // Listener for the "Done" button
+        // Set up the done button click listener
         binding.doneButton.setOnClickListener {
-            // Line 73
-            saveRootNodeChanges(documentID)
-        }
-
-        // Set up the long click listener for the edit text / rootNode
-        binding.mainNode.setOnLongClickListener {
-            // Line 134
-            showContextMenu(binding.mainNode)
-            true
+            updateAllNodesTitles()
         }
     }
 
-    // Save changes method through the Done button
-    private fun saveRootNodeChanges(documentID: String) {
-        val db = FirebaseFirestore.getInstance()
-        val docRef = db.collection("mindMapTemp").document(documentID)
+    // Update all node titles
+    private fun updateAllNodesTitles() {
+        val nodeUpdates = mutableListOf<Map<String, String>>()
+        val parentLayout = binding.zoomableView.findViewById<RelativeLayout>(R.id.mindMapContent)
+        // Iterate through each child view of the parent layout
+        for (i in 0 until parentLayout.childCount) {
+            val nodeView = parentLayout.getChildAt(i) // Get the child view at the current index.
+            val nodeTitleEditText = nodeView.findViewById<EditText>(R.id.MindMapNode)
+            val newTitle = nodeTitleEditText.text.toString()
+            val nodeID = nodeView.getTag(R.id.node_id_tag) as? String
+            nodeUpdates.add(mapOf("nodeID" to nodeID!!, "newTitle" to newTitle))
+        }
 
-        // Convert the root node and its children to a map structure
-        val rootNodeMap = convertNodeToMap(rootNode)
-
-        // Update only the rootNode and children fields in Firestore
-        val updates = hashMapOf<String, Any>(
-            "rootNode" to rootNodeMap
-        )
-
-        docRef
-            .update(updates)
-            .addOnSuccessListener {
-                Toast.makeText(this, "Saved changes", Toast.LENGTH_SHORT).show()
+        // Update node titles in a background thread
+        Thread {
+            neo4jService.updateNodeTitles(nodeUpdates)
+            runOnUiThread {
+                Toast.makeText(this, "All changes saved successfully!", Toast.LENGTH_SHORT).show()
             }
-            .addOnFailureListener { e ->
-                Log.d(TAG, "Failed to save changes: ${e.message}")
-            }
+        }.start()
     }
 
-    // Get mind map data from Firestore
-    private fun fetchRootNode(documentID: String) {
-        val db = FirebaseFirestore.getInstance()
-        val docRef = db.collection("mindMapTemp").document(documentID)
+    // Fetches and displays all nodes for a given mind map ID
+    private fun fetchAndDisplayAllNodes(mindMapID: String) {
+        Thread {
+            val nodes = neo4jService.fetchNodesByMindMapID(mindMapID)
+            runOnUiThread {
+                val parentLayout = binding.zoomableView.findViewById<RelativeLayout>(R.id.mindMapContent)
+                for (node in nodes) {
+                    val nodeView = layoutInflater.inflate(R.layout.mind_map_node, parentLayout, false)
+                    val nodeTitleEditText = nodeView.findViewById<EditText>(R.id.MindMapNode)
+                    nodeTitleEditText.setText(node["title"] as String)
 
-        docRef.get()
-            .addOnSuccessListener { document ->
-                if (document != null && document.exists()) {
-                    val masterNodeMap = document.get("rootNode") as? Map<*, *>
-                    if (masterNodeMap != null) {
-                        // Convert the map structure back into a TreeNode
-                        rootNode = convertMapToNode(masterNodeMap)
-                        binding.mainNode.setText(rootNode.data)
+                    // Store the parent node ID as a tag
+                    val parentNodeID = node["nodeID"] as String?
+                    nodeView.setTag(R.id.node_id_tag, parentNodeID)
 
-                        // Add the root node and its children to the view
-                        addChildNodeToView(rootNode)
+                    // Disable default long-click behavior of EditText to ensure custom long-click listener works
+                    // Ensure custom long-click listener works by overriding default behavior
+                    nodeTitleEditText.setOnLongClickListener {
+                        // Pass the event to the parent node view
+                        nodeView.performLongClick()
+                        true
+                    }
+
+                    // Set up long press listener for context menu
+                    nodeView.setOnLongClickListener {
+                        showContextMenu(it)
+                        true
+                    }
+
+                    parentLayout.addView(nodeView)
+                }
+            }
+        }.start()
+    }
+
+
+    @SuppressLint("InflateParams")
+    private fun showContextMenu(view: View) {
+        // Inflate the context menu layout
+        val contextMenuView = LayoutInflater.from(this).inflate(R.layout.mind_map_context_menu, null)
+        val popupWindow = PopupWindow(contextMenuView, LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT, true)
+
+        // Set up click listeners for each icon in the context menu
+        contextMenuView.findViewById<ImageView>(R.id.addChildIcon).setOnClickListener {
+            // Get parentNodeID, childTitle, userID and mindMapID
+            val parentNodeID = view.getTag(R.id.node_id_tag) as? String
+            val childTitle = "New Child Node"
+            val userID = FirebaseAuth.getInstance().currentUser?.uid
+            val mindMapID = intent.getStringExtra("mindMapID") ?: return@setOnClickListener
+
+            Thread {
+                val newChildNode = neo4jService.addChildNode(parentNodeID, childTitle, userID, mindMapID)
+                if (newChildNode != null){
+                    runOnUiThread{
+                        // Display the new child node in the UI
+                        addNodeToView(newChildNode)
+                        Toast.makeText(this, "Child Node Added", Toast.LENGTH_SHORT).show()
+                    }
+                }else{
+                    runOnUiThread{
+                        Toast.makeText(this, "Failed to add child node", Toast.LENGTH_SHORT).show()
                     }
                 }
-            }
-            .addOnFailureListener { e ->
-                Log.d(TAG, "Failed to fetch document: ${e.message}")
-            }
-    }
+            }.start()
 
-    private fun convertNodeToMap(node: TreeNode<String>): Map<String, Any> {
-        val nodeMap = HashMap<String, Any>()
-        nodeMap["data"] = node.data ?: ""
-
-        // Convert children recursively
-        val childrenList = node.children.map { convertNodeToMap(it) }
-        nodeMap["children"] = childrenList
-
-        return nodeMap
-    }
-
-    private fun convertMapToNode(nodeMap: Map<*, *>): TreeNode<String> {
-        val data = nodeMap["data"] as? String ?: ""
-        val node = TreeNode(data)
-
-        // Convert children recursively
-        val childrenList = nodeMap["children"] as? List<Map<*, *>> ?: emptyList()
-        for (childMap in childrenList) {
-            val childNode = convertMapToNode(childMap)
-            node.addChild(childNode)
+            popupWindow.dismiss()
         }
 
-        return node
-    }
-
-
-    private fun addChildNodeToView(node: TreeNode<String>, parentView: ViewGroup? = null) {
-        // Inflate the view for the current node
-        val childView = layoutInflater.inflate(R.layout.mind_map_child_node, binding.mindMapContent, false)
-
-        val childEditText = childView.findViewById<EditText>(R.id.childTextBox)
-        (childEditText.parent as? ViewGroup)?.removeView(childEditText)
-        childEditText.setText(node.data)
-
-        // Positioning logic as needed
-        val layoutParams = RelativeLayout.LayoutParams(
-            RelativeLayout.LayoutParams.WRAP_CONTENT,
-            RelativeLayout.LayoutParams.WRAP_CONTENT
-        )
-        layoutParams.setMargins(0, 0, 0, 0) // Modify this to position your nodes correctly
-        childEditText.layoutParams = layoutParams
-
-        // Add the current node view to the parent or the root view
-        if (parentView != null) {
-            parentView.addView(childEditText)
-        } else {
-            binding.mindMapContent.addView(childEditText)
-        }
-
-        // Recursively add all children of the current node
-        node.children.forEach { childNode ->
-            addChildNodeToView(childNode, binding.mindMapContent)
-        }
-    }
-
-    // Set up the outside touch listener to hide the context menu when clicked outside
-    @SuppressLint("ClickableViewAccessibility")
-    private fun setupOutsideTouchListener() {
-        binding.root.setOnTouchListener { _, event ->
-            if (currentContextMenu != null && event.action == MotionEvent.ACTION_DOWN) {
-                val location = IntArray(2)
-                currentContextMenu?.getLocationOnScreen(location)
-
-                val x = event.rawX
-                val y = event.rawY
-
-                if (x < location[0] || x > location[0] + currentContextMenu!!.width ||
-                    y < location[1] || y > location[1] + currentContextMenu!!.height) {
-                    currentContextMenu?.visibility = View.GONE
-                    currentContextMenu = null
-                }
-            }
-            false
-        }
-    }
-
-    // Show context menu method
-    private fun showContextMenu(editTextBox: EditText?) {
-        val contextMenuView = layoutInflater.inflate(R.layout.mind_map_context_menu, binding.root, false)
-
-        // Add child button click listeners
-        contextMenuView.findViewById<ImageView>(R.id.addChildIcon).setOnClickListener {
-                addChildNode(rootNode)
-        }
-
+        // Set up click listener for delete icon
         contextMenuView.findViewById<ImageView>(R.id.deleteChildIcon).setOnClickListener {
-            // Implement the logic to delete a child node here
-            Toast.makeText(this, "Delete child clicked", Toast.LENGTH_SHORT).show()
+            // Get the parent node ID
+            val parentNodeID = view.getTag(R.id.node_id_tag) as? String ?: return@setOnClickListener
+
+            Thread {
+                // Find the first child of the selected node
+                val firstChild = neo4jService.fetchFirstChild(parentNodeID)
+
+                if (firstChild != null) {
+                    runOnUiThread {
+                        if (firstChild["hasChildren"] as Boolean) {
+                            // Show confirmation dialog if deleted node has children
+                            AlertDialog.Builder(this)
+                                .setTitle("Confirm Deletion")
+                                .setMessage("This child has its own children. Do you want to delete this entire branch?")
+                                .setPositiveButton("Delete") { _, _ ->
+                                    // Delete the first child and its descendants
+                                    deleteBranch(firstChild["nodeID"] as String)
+                                }
+                                .setNegativeButton("Cancel", null)
+                                .show()
+                        } else {
+                            // Directly delete the first child since it is a leaf node
+                            deleteLeafNode(firstChild["nodeID"] as String)
+                        }
+                    }
+                } else {
+                    runOnUiThread {
+                        Toast.makeText(this, "No children to delete.", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }.start()
+            popupWindow.dismiss()
         }
 
-        // Copy Text button click listener
+        // Set up click listener for copy icon
         contextMenuView.findViewById<ImageView>(R.id.copyTextIcon).setOnClickListener {
-            val textToCopy = editTextBox?.text.toString()
-            if (textToCopy.isNotEmpty()) {
-                val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                val clip = ClipData.newPlainText("Copied Text", textToCopy)
-                clipboard.setPrimaryClip(clip)
-                Toast.makeText(this, "Text copied to clipboard", Toast.LENGTH_SHORT).show()
-            } else {
-                Toast.makeText(this, "No text to copy", Toast.LENGTH_SHORT).show()
-            }
+            val nodeText = (view as RelativeLayout).findViewById<EditText>(R.id.MindMapNode).text. toString()
+            val clipboard = getSystemService(CLIPBOARD_SERVICE) as android.content.ClipboardManager
+            val clip = android.content.ClipData.newPlainText("Copied Text", nodeText)
+            clipboard.setPrimaryClip(clip)
+            popupWindow.dismiss()
         }
 
-        // Position the context menu above the text box
-        val layoutParams = RelativeLayout.LayoutParams(
-            RelativeLayout.LayoutParams.WRAP_CONTENT,
-            RelativeLayout.LayoutParams.WRAP_CONTENT
-        )
-
-        // Calculate the position of the context menu based on the position of the text box
+        // Show the popup window at the center of the long-pressed view
+        popupWindow.elevation = 10f
         val location = IntArray(2)
-        editTextBox?.getLocationInWindow(location)
-        layoutParams.setMargins(location[0] - 30, location[1] - 150, 0, 0)
-
-        // Add the context menu to the root view
-        binding.root.addView(contextMenuView, layoutParams)
-
-        // Show the context menu
-        contextMenuView.visibility = View.VISIBLE
-        currentContextMenu = contextMenuView
+        view.getLocationOnScreen(location)
+        popupWindow.showAtLocation(view, Gravity.NO_GRAVITY, location[0] - 80, location[1] - 100)
     }
 
-    private fun addChildNode(parentNode: TreeNode<String>) {
-        val childNode = TreeNode("New Child Node")
-        parentNode.addChild(childNode)
+    // Add a newly added child node to view
+    private fun addNodeToView(node: Map<String, Any>) {
+        val parentLayout = binding.zoomableView.findViewById<RelativeLayout>(R.id.mindMapContent)
+        val nodeView = layoutInflater.inflate(R.layout.mind_map_node, parentLayout, false)
+        val nodeTitleEditText = nodeView.findViewById<EditText>(R.id.MindMapNode)
+        nodeTitleEditText.setText(node["title"] as String)
 
-        val childView = layoutInflater.inflate(R.layout.mind_map_child_node, binding.mindMapContent, false)
-        val childEditText = childView.findViewById<EditText>(R.id.childTextBox)
-        (childEditText.parent as? ViewGroup)?.removeView(childEditText)
-        childEditText.setText(childNode.data)
+        // Retrieve and set the node ID as a tag to identify the node uniquely
+        val nodeID = node["nodeID"] as String?
+        nodeView.setTag(R.id.node_id_tag, nodeID)
 
-        binding.mindMapContent.addView(childEditText)
+        // Disable default long-click behavior of EditText to ensure custom long-click listener works
+        nodeTitleEditText.setOnLongClickListener {
+            // Pass the event to the parent node view
+            nodeView.performLongClick()
+            true
+        }
 
-        childEditText.layoutParams = RelativeLayout.LayoutParams(
-            RelativeLayout.LayoutParams.WRAP_CONTENT,
-            RelativeLayout.LayoutParams.WRAP_CONTENT
-        )
+        // Set up long press listener for context menu
+        nodeView.setOnLongClickListener {
+            showContextMenu(it)
+            true
+        }
 
-        val parentLocation = IntArray(2)
-        binding.mainNode.getLocationInWindow(parentLocation)
+        parentLayout.addView(nodeView)
+    }
 
-        val layoutParams = childEditText.layoutParams as RelativeLayout.LayoutParams
-        layoutParams.setMargins(parentLocation[0] + binding.mainNode.width - 550, parentLocation[1] - 400, 0, 0)
+    // Delete a node leaf
+    private fun deleteLeafNode(nodeID: String) {
+        Thread {
+            neo4jService.deleteLeafNode(nodeID)
+            runOnUiThread {
+                Toast.makeText(this, "Node deleted successfully", Toast.LENGTH_SHORT).show()
+                refreshMindMap()
+            }
+        }.start()
+    }
+
+    // Delete a branch
+    private fun deleteBranch(nodeID: String) {
+        Thread {
+            neo4jService.deleteBranch(nodeID)
+            runOnUiThread {
+                Toast.makeText(this, "Node and its descendants deleted successfully", Toast.LENGTH_SHORT).show()
+                refreshMindMap()
+            }
+        }.start()
+    }
+
+    // Refresh the mind map view after deletion
+    private fun refreshMindMap() {
+        val parentLayout = binding.zoomableView.findViewById<RelativeLayout>(R.id.mindMapContent)
+        parentLayout.removeAllViews() // Clear the current nodes
+        val mindMapID = intent.getStringExtra("mindMapID") ?: return
+        fetchAndDisplayAllNodes(mindMapID) // Fetch and display updated nodes
     }
 }
+
+
+
