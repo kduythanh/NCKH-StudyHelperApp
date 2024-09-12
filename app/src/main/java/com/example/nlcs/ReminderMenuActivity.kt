@@ -5,6 +5,7 @@ import android.content.ContentValues.TAG
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.MenuItem
 import android.widget.Button
 import android.widget.DatePicker
 import android.widget.EditText
@@ -46,7 +47,14 @@ class ReminderMenuActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityReminderMenuBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        setSupportActionBar(binding.toolbar)
+        // Xử lý hành động của nút mũi tên
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.setHomeButtonEnabled(true)
 
+        binding.toolbar.setNavigationOnClickListener {
+            finish() // Quay lại màn hình trước đó
+        }
         // Initializing some variables
         firebaseAuth = FirebaseAuth.getInstance()
         setSupportActionBar(binding.toolbar)
@@ -68,6 +76,15 @@ class ReminderMenuActivity : AppCompatActivity() {
         }
         // Fetch the mind maps from Firestore
         fetchReminders()
+    }
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            android.R.id.home -> {
+                finish() // Quay lại màn hình trước đó khi nhấn nút mũi tên
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
     private fun showAddReminderDialog() {
         val dialogView = layoutInflater.inflate(R.layout.dialog_add_reminder, null)

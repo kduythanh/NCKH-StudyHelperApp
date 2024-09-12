@@ -10,14 +10,21 @@ android {
 
     defaultConfig {
         applicationId = "com.example.nlcs"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
-
+    packagingOptions {
+        exclude("META-INF/DEPENDENCIES")
+        exclude("META-INF/INDEX.LIST")
+        exclude("META-INF/LICENSE")
+        exclude("META-INF/LICENSE.txt")
+        exclude("META-INF/NOTICE")
+        exclude("META-INF/NOTICE.txt")
+    }
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -57,4 +64,8 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+    implementation("com.google.api-client:google-api-client-android:1.33.2")
+    implementation("com.google.apis:google-api-services-calendar:v3-rev20240906-2.0.0")
+    implementation("com.google.android.gms:play-services-auth:20.4.0")
+    implementation(libs.google.http.client.jackson2)
 }

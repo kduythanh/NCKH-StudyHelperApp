@@ -102,4 +102,6 @@
     <string name="UserImageDesc">User Image</string>
     <string name="Hello">Xin chào,</string>
     <string name="UserName">-Tên người dùng-</string>
+    <string name="Exit">Thoát</string>
+    <string name="AddReminder">Thêm nhắc nhở</string>
 </resources>
