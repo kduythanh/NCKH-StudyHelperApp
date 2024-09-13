@@ -6,4 +6,7 @@
     </style>
 
     <style name="Theme.NCKH" parent="Base.Theme.NCKH" />
+    <style name="ToolBarTheme" parent="@style/ThemeOverlay.MaterialComponents">
+        <item name="colorControlNormal">@color/toolbar_color_control_normal</item>
+    </style>
 </resources>
