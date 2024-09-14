@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/titleLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/title"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <EditText
+        android:id="@+id/titleInput"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:hint="@string/title_hint"
+        app:layout_constraintTop_toBottomOf="@+id/titleLabel"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <TextView
+        android:id="@+id/startTimeLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/start_time"
+        app:layout_constraintTop_toBottomOf="@+id/titleInput"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <Button
+        android:id="@+id/startDateButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/start_date"
+        app:layout_constraintTop_toBottomOf="@+id/startTimeLabel"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <Button
+        android:id="@+id/startTimeButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/start_time"
+        app:layout_constraintTop_toBottomOf="@+id/startDateButton"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <TextView
+        android:id="@+id/endTimeLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/end_time"
+        app:layout_constraintTop_toBottomOf="@+id/startTimeButton"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <Button
+        android:id="@+id/endDateButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/end_date"
+        app:layout_constraintTop_toBottomOf="@+id/endTimeLabel"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <Button
+        android:id="@+id/endTimeButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/end_time"
+        app:layout_constraintTop_toBottomOf="@+id/endDateButton"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <Button
+        android:id="@+id/btnSaveReminder"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/save_reminder"
+        app:layout_constraintTop_toBottomOf="@+id/endTimeButton"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
