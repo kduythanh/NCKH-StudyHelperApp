@@ -120,4 +120,6 @@
     <string name="previous_week">Tuần trước</string>
     <string name="next_week">Tuần sau</string>
     <string name="week_navigation_text">Tuần trước - Tuần sau</string>
+    <string name="editReminderTitleTextView">Sửa thông tin sự kiện</string>
+    <string name="exit_description">Thoát</string>
 </resources>
