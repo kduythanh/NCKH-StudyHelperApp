@@ -16,6 +16,12 @@
             android:name=".FocusActivity"
             android:exported="false" />
         <activity
+            android:name=".FlashCardActivity"
+            android:exported="false" />
+        <activity
+            android:name=".MindMapActivity"
+            android:exported="false" />
+        <activity
             android:name=".ForgotPasswordActivity"
             android:exported="false" />
         <activity
@@ -29,6 +35,9 @@
             android:exported="false" />
         <activity
             android:name=".StatisticsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".NoteActivity"
             android:exported="false" />
         <activity
             android:name=".MainActivity"

@@ -2,8 +2,10 @@ package com.example.nlcs
 
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.os.CountDownTimer
+import android.os.SystemClock
 import android.text.Editable
 import android.util.Log
 import android.view.KeyEvent
@@ -29,6 +31,12 @@ import java.util.Calendar
 class FocusActivity : AppCompatActivity() {
 
     private var binding:ActivityFocusBinding? = null
+
+    // Declare usageTracker to use UsageTracker class
+    private lateinit var usageTracker: UsageTracker
+    // Setting saving time start at 0
+    private var startTime: Long = 0
+
 
     // hour
     private val buttonHourPlus: Button by lazy {
@@ -72,29 +80,26 @@ class FocusActivity : AppCompatActivity() {
     private var minutes = 0
     private var seconds = 0
 
-    private var countDownTimer: CountDownTimer? = null
-    private var isCounting = false
-
-
-    lateinit var hourInput: EditText
-
     // EditText for input
     private lateinit var editTextHour: EditText
     private lateinit var editTextMinute: EditText
     private lateinit var editTextSecond: EditText
 
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+
+        // import class usageTracker to count using time
+        usageTracker = UsageTracker(this)
+
         binding = ActivityFocusBinding.inflate(layoutInflater)
         enableEdgeToEdge()
         setContentView(binding?.root)
 
         setSupportActionBar(binding?.toolbarFocusMode)
-        // sửa code
+
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        // end tại đây
 
         if(supportActionBar != null) {
             supportActionBar?.setDisplayHomeAsUpEnabled(true)
@@ -125,7 +130,7 @@ class FocusActivity : AppCompatActivity() {
         setupEditorActionListener(editTextMinute)
         setupEditorActionListener(editTextSecond)
 
-//        val flStartButton : FrameLayout = findViewById(R.id.flStart)
+        // Set listener on start button
         binding?.flStart?.setOnClickListener {
             try {
                 saveInput()
@@ -233,7 +238,6 @@ class FocusActivity : AppCompatActivity() {
         }
     }
 
-
     // plusTime
 
     private fun plusTime(editText: EditText): Int {
@@ -316,6 +320,32 @@ class FocusActivity : AppCompatActivity() {
         updateUI()
     }
 
+
+// Save using time into statistic
+    override fun onResume() {
+        super.onResume()
+
+        // Lưu thời gian bắt đầu (mốc thời gian hiện tại) để tính thời gian sử dụng khi Activity bị tạm dừng
+        startTime = System.currentTimeMillis()
+    }
+
+    override fun onPause() {
+        super.onPause()
+
+        // Tính toán thời gian sử dụng Focus Mode
+        val endTime = System.currentTimeMillis()
+        val durationInMillis = endTime - startTime
+        val durationInMinutes = (durationInMillis / 1000 / 60).toInt() // Chuyển đổi thời gian từ milliseconds sang phút
+
+        // Kiểm tra nếu thời gian sử dụng hợp lệ (lớn hơn 0 phút) thì lưu vào UsageTracker
+        if (durationInMinutes > 0) {
+            usageTracker.addUsageTime("FocusMode", durationInMinutes)
+        }
+        else {
+            usageTracker.addUsageTime("FocusMode", 0)
+        }
+    }
+// End saving time to statistic
 
     override fun onDestroy() {
         super.onDestroy()

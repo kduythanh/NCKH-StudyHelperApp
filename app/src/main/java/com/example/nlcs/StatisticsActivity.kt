@@ -1,145 +1,154 @@
 package com.example.nlcs
 
-import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
+import android.view.View
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.example.nlcs.databinding.ActivityStatisticsBinding
+import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.components.XAxis
+import com.github.mikephil.charting.components.YAxis
 import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.data.BarDataSet
 import com.github.mikephil.charting.data.BarEntry
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
 import com.github.mikephil.charting.formatter.ValueFormatter
-import com.example.nlcs.databinding.ActivityStatisticsBinding
-import java.util.*
 
 class StatisticsActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityStatisticsBinding
-    private val features = listOf("Mindmap", "Focus Mode", "Flashcard", "Note", "Reminder")
-    private val timeRanges = listOf("Day", "Week", "Month", "Year")
+
+    //Import usageTracker class to get using time
+    private lateinit var usageTracker: UsageTracker
+
+    // Add list of function
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var adapter: FeatureListAdapter
+    //End
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityStatisticsBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Set up the toolbar
+        usageTracker = UsageTracker(this)  // Ensure UsageTracker is properly implemented
+
+        // Add list of function
+        recyclerView = findViewById(R.id.featureListRecyclerView)
+        recyclerView.layoutManager = LinearLayoutManager(this)
+        //End
+
+
+        // Load data - sort - Count using time except statistic
+        val sortedFeatureList = usageTracker.getSortedUsageData()
+        adapter = FeatureListAdapter(sortedFeatureList)
+        recyclerView.adapter = adapter
+        //end
+
+        //Set up toolbar
         setSupportActionBar(binding.toolbarStatistics)
+
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.title = "Quay lại"
+        supportActionBar?.title = "Về trang chủ"
+
         binding.toolbarStatistics.setNavigationOnClickListener {
             onBackPressed()
         }
 
-        // Set up the spinner and initial chart
+        // end
+
         setupSpinner()
-        updateChart("Day") // Initial chart setup with "Day" as default
+        setupBarChart()
+        setupSeeAllActivityButton()
     }
 
-    // Set up the spinner for selecting time ranges (Day, Week, Month, Year)
     private fun setupSpinner() {
-        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, timeRanges)
+        val timeFrames = arrayOf("Day", "Week", "Month", "Year")
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, timeFrames)
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.spinnerTimeRange.adapter = adapter
-        binding.spinnerTimeRange.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
-                updateChart(timeRanges[position])
+        binding.timeFrameSpinner.adapter = adapter
+
+        // Handling spinner selection
+        binding.timeFrameSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                updateChartData(timeFrames[position])
             }
-            override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+                // Do nothing if no selection
+            }
         }
     }
 
-    // Method to update the bar chart based on the selected time range
-    private fun updateChart(timeRange: String) {
-        val entries = mutableListOf<List<BarEntry>>()
-        val labels = when (timeRange) {
-            "Day" -> (0..23).map { it.toString() }
-            "Week" -> listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
-            "Month" -> (1..30).map { it.toString() }
-            "Year" -> listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
-            else -> listOf()
-        }
+    private fun setupBarChart() {
+        val barChart: BarChart = binding.barChart
+        barChart.description.isEnabled = false
+        barChart.setDrawValueAboveBar(false)
+        barChart.setDrawGridBackground(false)
+        barChart.setPinchZoom(false)
+        barChart.setScaleEnabled(false)
+        barChart.legend.isEnabled = false
 
-        // Gather data for each feature
-        for (feature in features) {
-            val featureEntries = getUsageDataForBar(feature, timeRange, labels.size)
-            entries.add(featureEntries)
-        }
+        val xAxis = barChart.xAxis
+        xAxis.position = XAxis.XAxisPosition.BOTTOM
+        xAxis.setDrawGridLines(false)
+        xAxis.granularity = 1f
 
-        // Create BarDataSets for each feature and style them
-        val dataSets = entries.mapIndexed { index, featureEntries ->
-            BarDataSet(featureEntries, features[index]).apply {
-                color = Color.rgb(Random().nextInt(256), Random().nextInt(256), Random().nextInt(256))
-                setDrawValues(true)
+        val leftAxis = barChart.axisLeft
+        leftAxis.setPosition(YAxis.YAxisLabelPosition.OUTSIDE_CHART)
+        leftAxis.spaceTop = 15f
+        leftAxis.axisMinimum = 0f
+        leftAxis.valueFormatter = object : ValueFormatter() {
+            override fun getFormattedValue(value: Float): String {
+                return "${value.toInt()} min"
             }
         }
 
-        // Configure the bar chart
-        binding.chart.apply {
-            data = BarData(dataSets)
-            description.isEnabled = false
-            legend.isEnabled = true
-            setTouchEnabled(true)
-            isDragEnabled = true
-            setScaleEnabled(true)
-            setPinchZoom(true)
+        barChart.axisRight.isEnabled = false
 
-            xAxis.apply {
-                position = XAxis.XAxisPosition.BOTTOM
-                valueFormatter = IndexAxisValueFormatter(labels)
-                granularity = 1f
-            }
-
-            axisRight.isEnabled = false
-
-            // Ensure Y-axis shows time in minutes
-            axisLeft.apply {
-                axisMinimum = 0f
-                valueFormatter = object : ValueFormatter() {
-                    override fun getFormattedValue(value: Float): String {
-                        return "${value.toInt()} min" // Display minutes
-                    }
-                }
-            }
-
-            invalidate() // Refresh the chart
-        }
+        // Load initial data for "Week"
+        updateChartData("Week")
     }
 
-    // Retrieve the usage data for the bar chart based on the selected time range
-    private fun getUsageDataForBar(feature: String, timeRange: String, dataPoints: Int): List<BarEntry> {
-        val sharedPref = getSharedPreferences("UsageStats", Context.MODE_PRIVATE)
-        return (0 until dataPoints).map { i ->
-            val key = "${feature}_${timeRange}_$i"
-            BarEntry(i.toFloat(), sharedPref.getFloat(key, 0f)) // Get saved minutes
+    private fun updateChartData(timeFrame: String) {
+        val usageData = when (timeFrame) {
+            "Day" -> usageTracker.getDailyUsageData()
+            "Week" -> usageTracker.getWeeklyUsageData()
+            "Month" -> usageTracker.getMonthlyUsageData()
+            "Year" -> usageTracker.getYearlyUsageData()
+            else -> usageTracker.getWeeklyUsageData()
         }
+
+        if (usageData.isEmpty()) {
+            // Xử lý khi không có dữ liệu
+            binding.barChart.clear()
+            return
+        }
+
+        // Fix: Sử dụng `map` để tạo các mục BarEntry
+        val entries = usageData.entries.map { (key, value) ->
+            BarEntry(usageData.keys.indexOf(key).toFloat(), value.toFloat())
+        }
+
+        val dataSet = BarDataSet(entries, "Feature Usage (minutes)")
+        dataSet.color = Color.GREEN
+        dataSet.setDrawValues(false)
+
+        val barData = BarData(dataSet)
+        binding.barChart.data = barData
+
+        // Đảm bảo nhãn xAxis khớp với thứ tự dữ liệu
+        binding.barChart.xAxis.valueFormatter = IndexAxisValueFormatter(usageData.keys.toList())
+        binding.barChart.invalidate()
     }
 
-    // Method to log the feature usage in minutes for Day, Week, Month, Year
-    fun logFeatureUsage(feature: String, duration: Long) {
-        val sharedPref = getSharedPreferences("UsageStats", Context.MODE_PRIVATE)
-        with(sharedPref.edit()) {
-            val minutes = duration / 60000f // Convert duration to minutes
-
-            // Log for day (based on hours)
-            val dayKey = "${feature}_Day_${Calendar.getInstance().get(Calendar.HOUR_OF_DAY)}"
-            putFloat(dayKey, sharedPref.getFloat(dayKey, 0f) + minutes)
-
-            // Log for week (based on days of the week)
-            val weekKey = "${feature}_Week_${Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 1}"
-            putFloat(weekKey, sharedPref.getFloat(weekKey, 0f) + minutes)
-
-            // Log for month (based on day of the month)
-            val monthKey = "${feature}_Month_${Calendar.getInstance().get(Calendar.DAY_OF_MONTH) - 1}"
-            putFloat(monthKey, sharedPref.getFloat(monthKey, 0f) + minutes)
-
-            // Log for year (based on month of the year)
-            val yearKey = "${feature}_Year_${Calendar.getInstance().get(Calendar.MONTH)}"
-            putFloat(yearKey, sharedPref.getFloat(yearKey, 0f) + minutes)
-
-            apply()
+    private fun setupSeeAllActivityButton() {
+        binding.seeAllActivityButton.setOnClickListener {
+            // Implement the action to see all activity
         }
     }
 }

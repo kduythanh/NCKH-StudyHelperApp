@@ -19,6 +19,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var firebaseAuth: FirebaseAuth
     private lateinit var drawerLayout: DrawerLayout
 
+
+    // sửa code tại đây
+    private lateinit var usageTracker: UsageTracker
+    private var startTime: Long = 0
+
+    // end here
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -41,15 +47,34 @@ class MainActivity : AppCompatActivity() {
                 drawerLayout.openDrawer(binding.navigationView)
             }
         }
+
+        // Set click listener for the Flash card
+        binding.card1.setOnClickListener {
+            val intent = Intent(this, FlashCardActivity::class.java)
+            startActivity(intent)
+        }
+
+        // Set click listener for the Mind map
+        binding.card2.setOnClickListener {
+            val intent = Intent(this, MindMapActivity::class.java)
+            startActivity(intent)
+        }
+
         // Set click listener for the Focus card
         binding.card3.setOnClickListener {
             val intent = Intent(this, FocusActivity::class.java)
             startActivity(intent)
         }
 
-        // Set click listener for the Focus card
+        // Set click listener for the Statistics
         binding.card4.setOnClickListener {
             val intent = Intent(this, StatisticsActivity::class.java)
+            startActivity(intent)
+        }
+
+        // Set click listener for the Focus card
+        binding.card5.setOnClickListener {
+            val intent = Intent(this, NoteActivity::class.java)
             startActivity(intent)
         }
 
@@ -80,3 +105,4 @@ class MainActivity : AppCompatActivity() {
         })
     }
 }
+

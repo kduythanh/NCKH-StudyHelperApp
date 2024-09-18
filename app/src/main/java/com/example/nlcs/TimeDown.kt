@@ -68,12 +68,16 @@ class TimeDown : AppCompatActivity() {
     private var isCounting = false
 
     // thử sửa code
-
+    private lateinit var usageTracker: UsageTracker
+    private var startTime: Long = 0
     // end tại đây
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        usageTracker = UsageTracker(this)
+
         binding = ActivityTimeDownBinding.inflate(layoutInflater)
+
         enableEdgeToEdge()
         setContentView(binding?.root)
 
@@ -121,13 +125,11 @@ class TimeDown : AppCompatActivity() {
 
 
     }
-    // Sửa code
     private fun toggleTimer() {
         if (hours == 0 && minutes == 0 && seconds == 0) return
         if (isCounting) stopCount() else startCount()
     }
 
-    // end tại đây
     @SuppressLint("SimpleDateFormat")
     private fun updateUI() {
         val calendar = Calendar.getInstance()
@@ -237,24 +239,56 @@ class TimeDown : AppCompatActivity() {
         super.onDestroy()
     }
 
-    // Override onBackPressed to show confirmation dialog
+    // Show the remain time when counting down
     override fun onBackPressed() {
         if (isCounting) {
-            // Show confirmation dialog
-            AlertDialog.Builder(this)
-                .setTitle("Exit Timer")
-                .setMessage("Are you sure you want to exit? The timer will be stopped. You'll get fail this focus time.")
-                .setPositiveButton("Yes") { dialog, _ ->
-                    stopCount()
-                    dialog.dismiss()
-                    super.onBackPressed()
-                }
-                .setNegativeButton("No") { dialog, _ ->
-                    dialog.dismiss()
-                }
-                .show()
+            // Kiểm tra nếu thời gian vẫn còn khi người dùng cố gắng thoát
+            val totalSecondsLeft = hours * 3600 + minutes * 60 + seconds
+            if (totalSecondsLeft > 0) {
+                // Hiển thị hộp thoại cảnh báo nếu còn thời gian
+                AlertDialog.Builder(this)
+                    .setTitle("Exit Timer")
+                    .setMessage("You still have $hours hours, $minutes minutes, and $seconds seconds remaining. Are you sure you want to exit? The timer will be stopped, and you will fail this focus time.")
+                    .setPositiveButton("Yes") { dialog, _ ->
+                        stopCount()
+                        dialog.dismiss()
+                        super.onBackPressed()
+                    }
+                    .setNegativeButton("No") { dialog, _ ->
+                        dialog.dismiss()
+                    }
+                    .show()
+            } else {
+                super.onBackPressed() // Thực hiện hành động thoát nếu không còn thời gian
+            }
         } else {
-            super.onBackPressed()
+            super.onBackPressed() // Thực hiện hành động thoát nếu không đếm ngược
+        }
+    }
+
+// Counting down time and save data into usageTracker
+    override fun onResume() {
+        super.onResume()
+
+        // tiếp tục đếm thời gian sử dụng function
+        startTime = System.currentTimeMillis()
+    }
+
+    override fun onPause() {
+        super.onPause()
+
+        // dừng thời gian sử dụng function và lưu vào ussageTracker
+        val endTime = System.currentTimeMillis()
+        val duration = (endTime - startTime) / 1000 / 60 // Convert to minutes
+
+//        usageTracker.addUsageTime("FocusMode", duration.toInt())
+
+        // Kiểm tra nếu thời gian sử dụng hợp lệ (lớn hơn 0 phút) thì lưu vào UsageTracker
+        if (duration > 0) {
+            usageTracker.addUsageTime("FocusMode", duration.toInt())
+        }
+        else {
+            usageTracker.addUsageTime("FocusMode", 0)
         }
     }
 }
