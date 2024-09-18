@@ -2,6 +2,7 @@ package com.example.nlcs
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.ActionBarDrawerToggle
@@ -42,6 +43,8 @@ class MainActivity : AppCompatActivity() {
                 drawerLayout.openDrawer(binding.navigationView)
             }
         }
+        // Update NavigationView header with user email
+        updateNavHeader()
 
 //<<<<<<< Updated upstream
 //=======
@@ -64,7 +67,7 @@ class MainActivity : AppCompatActivity() {
                     firebaseAuth.signOut()
                     val intent = Intent(this, LogInActivity::class.java)
                     startActivity(intent)
-                    Toast.makeText(this, "Logged Out", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Đăng xuất thành công!", Toast.LENGTH_SHORT).show()
                     finish()
                     true
                 }
@@ -93,7 +96,15 @@ class MainActivity : AppCompatActivity() {
 //        }
 
     }
+    private fun updateNavHeader() {
+        val headerView = binding.navigationView.getHeaderView(0)
+        val emailTextView: TextView = headerView.findViewById(R.id.nav_header_email)
 
+        val currentUser = firebaseAuth.currentUser
+        if (currentUser != null) {
+            emailTextView.text = currentUser.email // Set the email in the TextView
+        }
+    }
 //    private fun isCurrentActivity(activityClass: Class<*>): Boolean {
 //        return activityClass == this::class.java
 //    }

@@ -2,7 +2,7 @@
     <string name="app_name">NKCH</string>
     <string name="logo_description">CTU logo</string>
 
-    <string name="signUp">Đăng kí</string>
+    <string name="signUp">Đăng ký</string>
     <string name="email">Email</string>
     <string name="password">Mật khẩu</string>
     <string name="confirmPassword">Xác nhận mật khẩu</string>
@@ -12,7 +12,7 @@
 
     <string name="loginLink">Đăng nhập</string>
     <string name="login">ĐĂNG NHẬP</string>
-    <string name="loginTitle">Đăng Nhập</string>
+    <string name="loginTitle">Đăng nhập</string>
     <string name="haveNoAccount">Chưa có tài khoản?\ </string>
 
     <string name="signUpLink">Tạo tài khoản</string>
