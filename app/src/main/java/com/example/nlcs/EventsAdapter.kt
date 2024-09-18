@@ -58,7 +58,7 @@ class EventsAdapter(private val events: List<Event>, private val activity: Remin
             val endDateStr = dateFormat.format(endDate)
             val endTimeStr = timeFormat.format(endDate)
             // Ghép lại thành định dạng mong muốn
-            return "$startDateStr $startTimeStr - $startDateStr $endTimeStr"
+            return "$startDateStr $startTimeStr - $endDateStr $endTimeStr"
         } catch (e: Exception) {
             e.printStackTrace()
             return "Invalid time"
