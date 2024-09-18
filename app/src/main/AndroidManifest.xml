@@ -13,9 +13,6 @@
         android:theme="@style/Theme.NCKH"
         tools:targetApi="31">
         <activity
-            android:name=".MainActivity2"
-            android:exported="false" />
-        <activity
             android:name=".FocusActivity"
             android:exported="false" />
         <activity
@@ -31,23 +28,51 @@
             android:name=".MainActivity"
             android:exported="false" />
         <activity
-            android:name=".AddCardsActivity"
-            android:exported="false" />
-        <activity
-            android:name=".CreateDeck"
-            android:exported="false" />
+            android:name=".SplashActivity"
+            android:exported="true" />
 
         <activity
-            android:name=".FlashcardActivity"
-            android:exported="false" />
+            android:name=".ui.activities.learn.TrueFalseFlashCardsActivity"
+            android:exported="false"/>
         <activity
-            android:name=".PublicDecks"
-            android:exported="false" />
+            android:name=".ui.activities.learn.QuizFolderActivity"
+            android:exported="false"/>
         <activity
-            android:name=".ViewCard"
-            android:exported="false" />
+            android:name=".ui.activities.set.EditFlashCardActivity"
+            android:exported="false"/>
         <activity
-            android:name=".SplashActivity"
+            android:name=".ui.activities.set.ViewSetActivity"
+            android:exported="false"/>
+        <activity
+            android:name=".ui.activities.set.AddFlashCardActivity"
+            android:exported="false"/>
+        <activity
+            android:name=".ui.activities.folder.ViewFolderActivity"
+            android:exported="false"/>
+        <activity
+            android:name=".ui.activities.learn.SelectDefineActivity"
+            android:exported="false"/>
+        <activity
+            android:name=".ui.activities.folder.AddToFolderActivity"
+            android:exported="false"/>
+        <activity
+            android:name=".ui.activities.learn.QuizActivity"
+            android:exported="false"/>
+        <activity
+            android:name=".ui.activities.learn.LearnActivity"
+            android:exported="false"/>
+        <activity
+            android:name=".ui.activities.create.CreateFolderActivity"
+            android:exported="false"/>
+        <activity
+            android:name=".ui.activities.create.CreateSetActivity"
+            android:exported="false"/>
+        <activity
+            android:name=".ui.activities.FlashcardActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustNothing"/>
+        <activity
+            android:name=".ui.activities.auth.AuthenticationActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
