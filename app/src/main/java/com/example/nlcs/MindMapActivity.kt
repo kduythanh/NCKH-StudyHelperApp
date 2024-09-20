@@ -1,10 +1,6 @@
 package com.example.nlcs
 
 import android.annotation.SuppressLint
-import android.content.ContentValues.TAG
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
 import android.os.Bundle
 import android.util.Log
 import android.view.DragEvent
@@ -12,8 +8,6 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
-import android.view.ViewDebug.FlagToString
-import android.view.ViewTreeObserver
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -104,10 +98,10 @@ class MindMapActivity : AppCompatActivity() {
                     nodeView.setTag(R.id.node_id_tag, parentNodeID)
 
                     // Fetch and set node position (x and y coordinates)
-//                    val x = (node["x"] as? Float) ?: 0f
-//                    val y = (node["y"] as? Float) ?: 0f
-//                    nodeView.x = x
-//                    nodeView.y = y
+                    val x = (node["x"] as? Float) ?: 0f
+                    val y = (node["y"] as? Float) ?: 0f
+                    nodeView.x = x
+                    nodeView.y = y
 
                     nodeViews[parentNodeID] = nodeView
                     Log.d("fetchAndDisplayAllNodes", "Attempting to draw line between nodes")
@@ -162,7 +156,7 @@ class MindMapActivity : AppCompatActivity() {
                                 // Update position in the database
                                 val nodeID = draggedView.getTag(R.id.node_id_tag) as? String
                                 Log.d("Drop position", "dropX: $dropX, dropY: $dropY")
-//                                updateNodePosition(nodeID, dropX, dropY)
+                                updateNodePosition(nodeID, dropX, dropY)
                                 true
                             }
 
@@ -176,65 +170,17 @@ class MindMapActivity : AppCompatActivity() {
                     }
                 }
 
-                // Draw lines between parent and child nodes
-                for (node in nodes) {
-                    val nodeID = node["nodeID"] as String
-                    val parentNodeID = node["parentNodeID"] as String?
-
-                    if (parentNodeID != null) {
-                        val parentView = nodeViews[parentNodeID]
-                        val childView = nodeViews[nodeID]
-
-                        if (parentView != null && childView != null) {
-                            val parentX = parentView.x + parentView.width / 2
-                            val parentY = parentView.y + parentView.height / 2
-                            val childX = childView.x + childView.width / 2
-                            val childY = childView.y + childView.height / 2
-
-                            Log.d("fetchAndDisplayAllNodes", "Attempting to draw line between nodes")
-
-                            // Draw the line between parent and child
-                            drawLineBetweenNodes(parentLayout, parentX, parentY, childX, childY)
-                        }
-                    }
-                }
-
-
             }
         }.start()
     }
 
-    private fun drawLineBetweenNodes(parentLayout: RelativeLayout, startX: Float, startY: Float, endX: Float, endY: Float) {
-        val lineView = object : View(this) {
-            @SuppressLint("DrawAllocation")
-            override fun onDraw(canvas: Canvas) {
-                super.onDraw(canvas)
-                val paint = Paint().apply {
-                    color = Color.BLACK
-                    strokeWidth = 5f
-                }
-                canvas.drawLine(startX, startY, endX, endY, paint)
-            }
-        }
-
-        val layoutParams = RelativeLayout.LayoutParams(
-            RelativeLayout.LayoutParams.MATCH_PARENT,
-            RelativeLayout.LayoutParams.MATCH_PARENT
-        )
-        lineView.layoutParams = layoutParams
-
-        parentLayout.addView(lineView)
+    private fun updateNodePosition(nodeID: String?, x: Float, y: Float) {
+        if (nodeID == null) return
+        // Update node position in Neo4j on a background thread
+        Thread {
+            neo4jService.updateNodePositionDB(nodeID, x, y)
+        }.start()
     }
-
-
-
-//    private fun updateNodePosition(nodeID: String?, x: Float, y: Float) {
-//        if (nodeID == null) return
-//        // Update node position in Neo4j on a background thread
-//        Thread {
-//            neo4jService.updateNodePositionDB(nodeID, x, y)
-//        }.start()
-//    }
 
 
     @SuppressLint("InflateParams")
@@ -334,10 +280,10 @@ class MindMapActivity : AppCompatActivity() {
         nodeView.setTag(R.id.node_id_tag, nodeID)
 
         // Set node position for newly added nodes
-//        val x = (node["x"] as? Float)?.toFloat() ?: 0f
-//        val y = (node["y"] as? Float)?.toFloat() ?: 0f
-//        nodeView.x = x
-//        nodeView.y = y
+        val x = (node["x"] as? Float)?.toFloat() ?: 0f
+        val y = (node["y"] as? Float)?.toFloat() ?: 0f
+        nodeView.x = x
+        nodeView.y = y
 
 
         nodeTitleEditText.setOnLongClickListener {

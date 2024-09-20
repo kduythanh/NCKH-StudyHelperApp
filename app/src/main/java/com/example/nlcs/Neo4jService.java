@@ -93,29 +93,6 @@ public class Neo4jService {
         return nodes;
     }
 
-
-//    public List<Map<String, Object>> fetchNodesByMindMapID(final String mindMapID) {
-//        List<Map<String, Object>> nodes = new ArrayList<>();
-//        try (Session session = driver.session()) {
-//            session.readTransaction(tx -> {
-//                Result result = tx.run("MATCH (n:MindMap) WHERE n.mindMapID = $mindMapID RETURN n.title AS title, n.id AS id, n.nodeID AS nodeID",
-//                        parameters("mindMapID", mindMapID));
-//
-//                // Iterate through the result and add nodes to the list
-//                while (result.hasNext()) {
-//                    Record record = result.next();
-//                    Map<String, Object> node = new HashMap<>();
-//                    node.put("title", record.get("title").asString());
-//                    node.put("id", record.get("id").asString());
-//                    node.put("nodeID", record.get("nodeID").asString());
-//                    nodes.add(node);
-//                }
-//                return nodes;
-//            });
-//        }
-//        return nodes;
-//    }
-
     // Add a child node to a parent node via context menu
     public Map<String, Object> addChildNode(final String parentNodeID, final String childTitle, final String userId, final String mindMapID, final float x, final float y) {
         Map<String, Object> childNode;
@@ -137,38 +114,6 @@ public class Neo4jService {
         return childNode;
     }
 
-//    public Map<String, Object> addChildNode(final String parentNodeID, final String childTitle, final String userId, final String mindMapID){
-//        Map<String, Object> childNode;
-//        try (Session session = driver.session()){
-//            childNode = session.writeTransaction(tx -> {
-//                String query = "MATCH (parent:MindMap {nodeID: $parentNodeID}) " +
-//                        "CREATE (child:MindMap {nodeID: apoc.create.uuid(), title: $childTitle, userId: $userId, mindMapID: $mindMapID, creationTime: timestamp()}) " +
-//                        "CREATE (parent)-[:HAS_CHILD]->(child) " +
-//                        "RETURN child";
-//
-//                Result result = tx.run(query,
-//                        parameters("parentNodeID", parentNodeID, "childTitle", childTitle, "userId", userId, "mindMapID", mindMapID));
-//                if (result.hasNext()) {
-//                    return result.single().get("child").asMap();
-//                }
-//                return null;
-//            });
-//        }
-//        return childNode;
-//    }
-
-
-
-//    public void updateNodePosition(final String nodeId, final float x, final float y) {
-//        try (Session session = driver.session()) {
-//            session.writeTransaction((TransactionWork<Void>) tx -> {
-//                tx.run("MATCH (n:MindMap {nodeID: $nodeId}) SET n.x = $x, n.y = $y",
-//                        parameters("nodeId", nodeId, "x", x, "y", y));
-//                return null;
-//            });
-//        }
-//    }
-//
     // Update node titles via the done button
     public void updateNodeTitles(final List<Map<String, String>> nodeUpdates) {
         try (Session session = driver.session()) {
