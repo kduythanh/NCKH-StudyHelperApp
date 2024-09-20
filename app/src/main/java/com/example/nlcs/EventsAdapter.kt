@@ -31,6 +31,7 @@ class EventsAdapter(private val events: List<Event>, private val activity: Remin
         val endDateTime = event.end.dateTime ?: event.end.date
         // Chuyển đổi DateTime sang String với định dạng mong muốn
         val formattedTime = formatEventTime(startDateTime, endDateTime)
+        val participantsEmails = event.attendees?.joinToString(separator = ", ") { it.email } ?: ""
         holder.summary.text = event.summary
         holder.time.text = formattedTime
         // Xử lý nút xóa sự kiện
@@ -39,7 +40,7 @@ class EventsAdapter(private val events: List<Event>, private val activity: Remin
         }
         // Xử lý nút sửa sự kiện
         holder.updateButton.setOnClickListener {
-            activity.showEditEventDialog(event.id, event.summary, startDateTime, endDateTime)
+            activity.showEditEventDialog(event.id, event.summary, startDateTime, endDateTime, participantsEmails)
         }
     }
     override fun getItemCount(): Int = events.size

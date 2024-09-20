@@ -38,7 +38,7 @@
                 android:id="@+id/eventTitle"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
-                android:hint="Tên sự kiện/nhắc nhở"
+                android:hint="@string/eventTitle"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -52,7 +52,7 @@
                 android:id="@+id/startDate"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
-                android:hint="Ngày bắt đầu (dd/mm/yyyy)"
+                android:hint="@string/startDate"
                 android:inputType="date"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -68,7 +68,7 @@
                 android:id="@+id/startTime"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
-                android:hint="Giờ bắt đầu (hh:mm)"
+                android:hint="@string/startTime"
                 android:inputType="time"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -82,7 +82,7 @@
                 android:id="@+id/endDate"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
-                android:hint="Ngày kết thúc (dd/mm/yyyy)"
+                android:hint="@string/endDate"
                 android:inputType="date"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -96,11 +96,28 @@
                 android:id="@+id/endTime"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
-                android:hint="Giờ kết thúc (hh:mm)"
+                android:hint="@string/endTime"
                 android:inputType="time"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/endDate" />
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <EditText
+                android:id="@+id/participantsEmails"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:hint="@string/participantsEmails"
+                android:inputType="textEmailAddress"
+                android:lines="3"
+                android:scrollbars="vertical"
+                android:imeOptions="actionDone"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/endTime"/>
         </LinearLayout>
         <LinearLayout
             android:layout_width="match_parent"
@@ -112,13 +129,13 @@
                 android:id="@+id/cancelEventButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Hủy bỏ"
+                android:text="@string/cancelEventButton"
                 android:layout_marginEnd="30dp" />
             <Button
                 android:id="@+id/saveEventButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Lưu"/>
+                android:text="@string/saveEventButton"/>
         </LinearLayout>
     </LinearLayout>
 </androidx.cardview.widget.CardView>
