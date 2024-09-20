@@ -22,7 +22,7 @@ class ZoomableView @JvmOverloads constructor(
     // Initialize GestureDetector to detect other gestures like scrolling
     private val gestureDetector = GestureDetector(context, GestureListener())
     // Current scale factor, initialized to 1.0 (no zoom)
-    private var scaleFactor = 1.0f
+    var scaleFactor = 1.0f
     // Matrix to store transformations (scaling, translation)
     private val matrix = Matrix()
     // Variables to track last touch position for panning
@@ -61,6 +61,7 @@ class ZoomableView @JvmOverloads constructor(
                     // Calculate the distance moved
                     val dx = x - lastTouchX
                     val dy = y - lastTouchY
+
 
                     // Apply translation to the content layout
                     matrix.postTranslate(dx, dy)
@@ -111,6 +112,8 @@ class ZoomableView @JvmOverloads constructor(
             scaleFactor *= detector.scaleFactor
             // Clamp scale factor to a reasonable range
             scaleFactor = scaleFactor.coerceIn(0.1f, 5.0f)
+
+
             // Apply scaling to the content layout
             contentLayout.scaleX = scaleFactor
             contentLayout.scaleY = scaleFactor
@@ -136,7 +139,7 @@ class ZoomableView @JvmOverloads constructor(
                 translationX -= distanceX
                 translationY -= distanceY
             }
-            // Invalidate the content layout to redraw with changes  
+            // Invalidate the content layout to redraw with changes
             ViewCompat.postInvalidateOnAnimation(contentLayout)
             return true
         }

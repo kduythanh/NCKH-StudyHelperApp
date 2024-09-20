@@ -1,10 +1,19 @@
 package com.example.nlcs
 
 import android.annotation.SuppressLint
+import android.content.ContentValues.TAG
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
 import android.os.Bundle
+import android.util.Log
+import android.view.DragEvent
 import android.view.Gravity
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
+import android.view.ViewDebug.FlagToString
+import android.view.ViewTreeObserver
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -16,6 +25,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.nlcs.databinding.ActivityMindMapBinding
 import com.google.firebase.auth.FirebaseAuth
 
+//            parentNodeX: 597, parentNodeY: 139
 
 class MindMapActivity : AppCompatActivity() {
 
@@ -33,13 +43,11 @@ class MindMapActivity : AppCompatActivity() {
         // Enable the back arrow
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        binding.toolbar.setNavigationOnClickListener { finish() }
 
         // Get the title from intent and set it as the support action bar title
         val mindMapTitle = intent.getStringExtra("mindMapTitle")
         if (mindMapTitle != null) { supportActionBar?.title = mindMapTitle }
-
-        // Ends the activity when clicked back arrow functionality
-        binding.toolbar.setNavigationOnClickListener { finish() }
 
         // Initialize Neo4j service
         neo4jService = Neo4jService(neo4jUri, neo4jUser, neo4jPassword)
@@ -77,11 +85,15 @@ class MindMapActivity : AppCompatActivity() {
     }
 
     // Fetches and displays all nodes for a given mind map ID
+    @SuppressLint("ClickableViewAccessibility")
     private fun fetchAndDisplayAllNodes(mindMapID: String) {
         Thread {
             val nodes = neo4jService.fetchNodesByMindMapID(mindMapID)
             runOnUiThread {
                 val parentLayout = binding.zoomableView.findViewById<RelativeLayout>(R.id.mindMapContent)
+
+                val nodeViews = mutableMapOf<String?, View>()
+
                 for (node in nodes) {
                     val nodeView = layoutInflater.inflate(R.layout.mind_map_node, parentLayout, false)
                     val nodeTitleEditText = nodeView.findViewById<EditText>(R.id.MindMapNode)
@@ -91,6 +103,16 @@ class MindMapActivity : AppCompatActivity() {
                     val parentNodeID = node["nodeID"] as String?
                     nodeView.setTag(R.id.node_id_tag, parentNodeID)
 
+                    // Fetch and set node position (x and y coordinates)
+//                    val x = (node["x"] as? Float) ?: 0f
+//                    val y = (node["y"] as? Float) ?: 0f
+//                    nodeView.x = x
+//                    nodeView.y = y
+
+                    nodeViews[parentNodeID] = nodeView
+                    Log.d("fetchAndDisplayAllNodes", "Attempting to draw line between nodes")
+
+
                     // Disable default long-click behavior of EditText to ensure custom long-click listener works
                     // Ensure custom long-click listener works by overriding default behavior
                     nodeTitleEditText.setOnLongClickListener {
@@ -99,17 +121,120 @@ class MindMapActivity : AppCompatActivity() {
                         true
                     }
 
-                    // Set up long press listener for context menu
+                    // Disable default drag and drop behavior of EditText
+                    // To ensure custom drag and drop listener works
+                    nodeTitleEditText.setOnDragListener { _, _ -> true }
+
+                    // Set up long press listener for context menu --- change it to view is an option
                     nodeView.setOnLongClickListener {
                         showContextMenu(it)
                         true
                     }
 
                     parentLayout.addView(nodeView)
+
+                    // Set up drag and drop listener
+                    val dragHandle = nodeView.findViewById<ImageView>(R.id.dragHandle)
+                    dragHandle.setOnTouchListener { _, event ->
+                        if (event.action == MotionEvent.ACTION_DOWN) {
+                            val shadowBuilder = View.DragShadowBuilder(nodeView)
+                            nodeView.startDragAndDrop(null, shadowBuilder, nodeView, 0)
+                            true
+                        } else {
+                            false
+                        }
+                    }
+
+                    parentLayout.setOnDragListener { _, event ->
+                        when (event.action) {
+                            DragEvent.ACTION_DRAG_STARTED -> true
+
+                            DragEvent.ACTION_DRAG_LOCATION -> true
+
+                            DragEvent.ACTION_DROP -> {
+                                val draggedView = event.localState as View
+                                val dropX = event.x - (draggedView.width / 2)
+                                val dropY = event.y - (draggedView.height / 2)
+                                draggedView.x = dropX
+                                draggedView.y = dropY
+                                draggedView.visibility = View.VISIBLE
+
+                                // Update position in the database
+                                val nodeID = draggedView.getTag(R.id.node_id_tag) as? String
+                                Log.d("Drop position", "dropX: $dropX, dropY: $dropY")
+//                                updateNodePosition(nodeID, dropX, dropY)
+                                true
+                            }
+
+                            DragEvent.ACTION_DRAG_ENDED -> {
+                                val draggedView = event.localState as View
+                                draggedView.visibility = View.VISIBLE
+                                true
+                            }
+                            else -> false
+                        }
+                    }
                 }
+
+                // Draw lines between parent and child nodes
+                for (node in nodes) {
+                    val nodeID = node["nodeID"] as String
+                    val parentNodeID = node["parentNodeID"] as String?
+
+                    if (parentNodeID != null) {
+                        val parentView = nodeViews[parentNodeID]
+                        val childView = nodeViews[nodeID]
+
+                        if (parentView != null && childView != null) {
+                            val parentX = parentView.x + parentView.width / 2
+                            val parentY = parentView.y + parentView.height / 2
+                            val childX = childView.x + childView.width / 2
+                            val childY = childView.y + childView.height / 2
+
+                            Log.d("fetchAndDisplayAllNodes", "Attempting to draw line between nodes")
+
+                            // Draw the line between parent and child
+                            drawLineBetweenNodes(parentLayout, parentX, parentY, childX, childY)
+                        }
+                    }
+                }
+
+
             }
         }.start()
     }
+
+    private fun drawLineBetweenNodes(parentLayout: RelativeLayout, startX: Float, startY: Float, endX: Float, endY: Float) {
+        val lineView = object : View(this) {
+            @SuppressLint("DrawAllocation")
+            override fun onDraw(canvas: Canvas) {
+                super.onDraw(canvas)
+                val paint = Paint().apply {
+                    color = Color.BLACK
+                    strokeWidth = 5f
+                }
+                canvas.drawLine(startX, startY, endX, endY, paint)
+            }
+        }
+
+        val layoutParams = RelativeLayout.LayoutParams(
+            RelativeLayout.LayoutParams.MATCH_PARENT,
+            RelativeLayout.LayoutParams.MATCH_PARENT
+        )
+        lineView.layoutParams = layoutParams
+
+        parentLayout.addView(lineView)
+    }
+
+
+
+//    private fun updateNodePosition(nodeID: String?, x: Float, y: Float) {
+//        if (nodeID == null) return
+//        // Update node position in Neo4j on a background thread
+//        Thread {
+//            neo4jService.updateNodePositionDB(nodeID, x, y)
+//        }.start()
+//    }
 
 
     @SuppressLint("InflateParams")
@@ -127,7 +252,7 @@ class MindMapActivity : AppCompatActivity() {
             val mindMapID = intent.getStringExtra("mindMapID") ?: return@setOnClickListener
 
             Thread {
-                val newChildNode = neo4jService.addChildNode(parentNodeID, childTitle, userID, mindMapID)
+                val newChildNode = neo4jService.addChildNode(parentNodeID, childTitle, userID, mindMapID, 123f, 123f)
                 if (newChildNode != null){
                     runOnUiThread{
                         // Display the new child node in the UI
@@ -197,6 +322,7 @@ class MindMapActivity : AppCompatActivity() {
     }
 
     // Add a newly added child node to view
+    @SuppressLint("ClickableViewAccessibility")
     private fun addNodeToView(node: Map<String, Any>) {
         val parentLayout = binding.zoomableView.findViewById<RelativeLayout>(R.id.mindMapContent)
         val nodeView = layoutInflater.inflate(R.layout.mind_map_node, parentLayout, false)
@@ -207,17 +333,64 @@ class MindMapActivity : AppCompatActivity() {
         val nodeID = node["nodeID"] as String?
         nodeView.setTag(R.id.node_id_tag, nodeID)
 
-        // Disable default long-click behavior of EditText to ensure custom long-click listener works
+        // Set node position for newly added nodes
+//        val x = (node["x"] as? Float)?.toFloat() ?: 0f
+//        val y = (node["y"] as? Float)?.toFloat() ?: 0f
+//        nodeView.x = x
+//        nodeView.y = y
+
+
         nodeTitleEditText.setOnLongClickListener {
             // Pass the event to the parent node view
             nodeView.performLongClick()
             true
         }
 
-        // Set up long press listener for context menu
+        nodeTitleEditText.setOnDragListener { _, _ -> true }
+
         nodeView.setOnLongClickListener {
             showContextMenu(it)
             true
+        }
+
+        val dragHandle = nodeView.findViewById<ImageView>(R.id.dragHandle)
+        dragHandle.setOnTouchListener { _, event ->
+            if (event.action == MotionEvent.ACTION_DOWN) {
+                val shadowBuilder = View.DragShadowBuilder(nodeView)
+                nodeView.startDragAndDrop(null, shadowBuilder, nodeView, 0)
+                true
+            } else {
+                false
+            }
+        }
+
+        parentLayout.setOnDragListener { _, event ->
+            when (event.action) {
+                DragEvent.ACTION_DRAG_STARTED -> true
+
+                DragEvent.ACTION_DRAG_LOCATION -> true
+
+                DragEvent.ACTION_DROP -> {
+                    val draggedView = event.localState as View
+                    val dropX = event.x - (draggedView.width / 2)
+                    val dropY = event.y - (draggedView.height / 2)
+                    draggedView.x = dropX
+                    draggedView.y = dropY
+                    draggedView.visibility = View.VISIBLE
+
+                    // Update position in the database
+//                    val nodeID = draggedView.getTag(R.id.node_id_tag) as? String
+//                    updateNodePosition(nodeID, dropX, dropY)
+                    true
+                }
+
+                DragEvent.ACTION_DRAG_ENDED -> {
+                    val draggedView = event.localState as View
+                    draggedView.visibility = View.VISIBLE
+                    true
+                }
+                else -> false
+            }
         }
 
         parentLayout.addView(nodeView)

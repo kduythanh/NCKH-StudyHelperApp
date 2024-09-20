@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView
 import android.content.Context
 import android.content.Intent
 import android.widget.Button
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -59,7 +60,7 @@ class MindMapAdapter(
             }
         }
 
-        // Set the click listener for the item itself to go to the mind map activity ------------------------------------------
+        // Set the click listener for the item itself to go to the mind map activity
         holder.itemView.setOnClickListener {
             val intent = Intent(context, MindMapActivity::class.java)
             // Passing the mind map item title to the mind map activity
@@ -152,12 +153,12 @@ class MindMapAdapter(
                 notifyItemChanged(position, mindMapList.size)
 //                notifyItemRangeChanged(position, itemCount - position)
                 Log.d(TAG, "Mind map successfully deleted!")
+                Toast.makeText(context, "Mind map successfully deleted!", Toast.LENGTH_SHORT).show()
 
                 // Delete the mind map from Neo4j
                 val neo4jService = Neo4jService("bolt+s://f4454805.databases.neo4j.io", "neo4j", "T79xAI8tRj6QzvCfiqDMBAlxb4pabJ1UBh_H7qIqlaQ")
                 neo4jService.deleteAllNodes(mindMapID)
                 neo4jService.close()
-
             }
             .addOnFailureListener { e ->
                 Log.w(TAG, "Error deleting document with ID: $documentId", e)
