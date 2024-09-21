@@ -1,11 +1,6 @@
 package com.example.nlcs
 
-import android.app.AlarmManager
-import android.app.NotificationManager
-import android.app.PendingIntent
-import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
@@ -56,96 +51,36 @@ class ReminderMenuActivityAPI : AppCompatActivity() {
     private lateinit var nextWeekButton: ImageButton
     private lateinit var addButton: FloatingActionButton
     private lateinit var exitButton: ImageButton
-    private val REQUEST_NOTIFICATION_PERMISSION = 101
     private var currentWeekStartDate: JavaCalendar = JavaCalendar.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_reminder_menu_api)
-        // Cấu hình Google Sign-In
-        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN) // Cấu hình Google Sign-In
             .requestEmail()
             .requestScopes(Scope(CalendarScopes.CALENDAR))
             .build()
         googleSignInClient = GoogleSignIn.getClient(this, gso)
-        // Xử lý nút thoát khỏi chức năng
-        exitButton = findViewById(R.id.exitButton)
-        exitButton.setOnClickListener {
-            finish()
-        }
-        // Cấu hình RecyclerView
-        recyclerView = findViewById(R.id.recyclerView)
+        exitButton = findViewById(R.id.exitButton) // Xử lý nút thoát khỏi chức năng
+        exitButton.setOnClickListener { finish() }
+        recyclerView = findViewById(R.id.recyclerView) // Cấu hình RecyclerView
         recyclerView.layoutManager = LinearLayoutManager(this)
-        // Cấu hình SwipeRefreshLayout
-        swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout)
-        swipeRefreshLayout.setOnRefreshListener {
-            loadEventsForSelectedWeek()
-        }
-        previousWeekButton = findViewById(R.id.previousWeekButton)
-        // Button chuyển về tuần trước
+        swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout) // Cấu hình SwipeRefreshLayout
+        swipeRefreshLayout.setOnRefreshListener { loadEventsForSelectedWeek() }
+        previousWeekButton = findViewById(R.id.previousWeekButton) // Button chuyển về tuần trước
         previousWeekButton.setOnClickListener {
             currentWeekStartDate.add(JavaCalendar.DATE, -7) // Trừ 7 ngày để chuyển về tuần trước
             loadEventsForSelectedWeek()
         }
-        nextWeekButton = findViewById(R.id.nextWeekButton)
-        // Button chuyển về tuần sau
+        nextWeekButton = findViewById(R.id.nextWeekButton) // Button chuyển về tuần sau
         nextWeekButton.setOnClickListener {
             currentWeekStartDate.add(JavaCalendar.DATE, 7) // Cộng 7 ngày để chuyển về tuần sau
             loadEventsForSelectedWeek()
         }
-        // Button thêm nhắc nhở
-        addButton = findViewById(R.id.reminderAddButton)
-        addButton.setOnClickListener {
-            showAddEventDialog()
-        }
-        // Thoát khỏi Google Sign-In, đăng nhập lại
-        signOut()
+        addButton = findViewById(R.id.reminderAddButton) // Button thêm nhắc nhở
+        addButton.setOnClickListener { showAddEventDialog() }
+        signOut() // Thoát khỏi Google Sign-In, đăng nhập lại
     }
-    // Tạo thông báo
-    private fun scheduleNotification(eventTitle: String, eventStartTime: Long) {
-        // Kiểm tra quyền
-        if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-//            Toast.makeText(this, "Không có quyền gửi thông báo", Toast.LENGTH_SHORT).show()
-            return
-        }
-        val intent = Intent(this, NotificationReceiver::class.java).apply {
-            putExtra("title", "Sự kiện sắp diễn ra")
-            putExtra("message", "$eventTitle bắt đầu trong 30 phút!")
-        }
-
-        val pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
-
-        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val triggerTime = eventStartTime - 30 * 60 * 1000 // 30 phút trước sự kiện
-
-        if (triggerTime > System.currentTimeMillis()) {
-            alarmManager.setExact(AlarmManager.RTC_WAKEUP, triggerTime, pendingIntent)
-        }
-    }
-    // Kiểm tra quyền
-    private fun checkNotificationPermission() {
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-            if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(arrayOf(android.Manifest.permission.POST_NOTIFICATIONS), REQUEST_NOTIFICATION_PERMISSION)
-            }
-        }
-    }
-    // Xử lý kết quả yêu cầu quyền
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == REQUEST_NOTIFICATION_PERMISSION) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // Quyền đã được cấp, bạn có thể gửi thông báo
-            } else {
-                Toast.makeText(this, "Quyền thông báo bị từ chối", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
-    private fun cancelNotification(notificationId: Int) {
-        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.cancel(notificationId)
-    }
-
     // Load danh sách các sự kiện trong tuần được chọn
     private fun loadEventsForSelectedWeek() {
         val startOfWeek = currentWeekStartDate.clone() as JavaCalendar
@@ -156,8 +91,7 @@ class ReminderMenuActivityAPI : AppCompatActivity() {
         startOfWeek.set(JavaCalendar.MILLISECOND, 0)
         val endOfWeek = startOfWeek.clone() as JavaCalendar
         endOfWeek.add(JavaCalendar.WEEK_OF_YEAR, 1) // 0h ngày thứ 2 của tuần kế tiếp
-        // Gọi hàm fetchCalendarEvents với ngày bắt đầu và kết thúc
-        fetchCalendarEvents(startOfWeek.time, endOfWeek.time)
+        fetchCalendarEvents(startOfWeek.time, endOfWeek.time) // Gọi hàm fetchCalendarEvents với ngày bắt đầu và kết thúc
     }
     // Hiển thị menu thêm sự kiện
     private fun showAddEventDialog() {
@@ -259,18 +193,13 @@ class ReminderMenuActivityAPI : AppCompatActivity() {
         val emailPattern = android.util.Patterns.EMAIL_ADDRESS
         val emailsValid = if (participantsEmails.isNotEmpty()) {
             participantsEmails.split(",").all { emailPattern.matcher(it.trim()).matches() }
-        } else {
-            true
-        }
+        } else { true }
         return title.isNotEmpty() && startDate.isNotEmpty() && startTime.isNotEmpty() && endDate.isNotEmpty() && endTime.isNotEmpty() && emailsValid
     }
-
     // Chuyển đổi định dạng ngày tháng năm theo quy định
     private fun parseDateTime(date: String, time: String): DateTime {
-        // Định dạng ngày/giờ theo định dạng của người dùng
-        val inputFormat = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
-        // Định dạng ngày/giờ theo chuẩn ISO 8601
-        val outputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault())
+        val inputFormat = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()) // Định dạng ngày/giờ theo định dạng của người dùng
+        val outputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault()) // Định dạng ngày/giờ theo chuẩn ISO 8601
         outputFormat.timeZone = TimeZone.getTimeZone("UTC")
         val dateTimeString = "$date $time"
         val dateTime = inputFormat.parse(dateTimeString) ?: throw IllegalArgumentException("Invalid date/time format")
@@ -332,25 +261,23 @@ class ReminderMenuActivityAPI : AppCompatActivity() {
                 Log.e("CalendarError", "Error fetching events: ${e.localizedMessage}")
                 emptyList()
             }
-            Log.d("CalendarEvents", "Fetched ${events.size} events")
-            // Cập nhật giao diện trong luồng chính (Main thread)
-            withContext(Dispatchers.Main) {
-                // Kiểm tra danh sách sự kiện
-                if (events.isNotEmpty()) {
-                    // Lên lịch thông báo cho từng sự kiện
-                    events.forEach { event ->
-                        event.start?.dateTime?.value?.let { startTime ->
-                            scheduleNotification(event.summary, startTime)
-                        }
-                    }
-                }
+            // Gửi thông báo cho sự kiện sắp diễn ra
+            val currentTime = System.currentTimeMillis()
+            val thirtyMinutesLater = currentTime + 30 * 60 * 1000 // 30 phút sau
 
+            events.forEach { event ->
+                val start = event.start.dateTime?.value ?: event.start.date.value
+                if (start != null && start in currentTime..thirtyMinutesLater) {
+                    // Gửi thông báo
+                    NotificationService(this@ReminderMenuActivityAPI).sendNotification(event.summary, event.start)
+                }
+            }
+            Log.d("CalendarEvents", "Fetched ${events.size} events")
+            withContext(Dispatchers.Main) { // Cập nhật giao diện trong luồng chính (Main thread)
                 // Cập nhật dữ liệu cho RecyclerView adapter
                 val adapter = EventsAdapter(events, this@ReminderMenuActivityAPI)
                 recyclerView.adapter = adapter
-
-                // Tắt animation refresh của swipeRefreshLayout
-                swipeRefreshLayout.isRefreshing = false
+                swipeRefreshLayout.isRefreshing = false // Tắt animation refresh của swipeRefreshLayout
             }
         }
     }
@@ -371,16 +298,12 @@ class ReminderMenuActivityAPI : AppCompatActivity() {
                     EventAttendee().setEmail(email)
                 }
             }
-
             try {
                 val createdEvent = calendarService.events().insert("primary", event).execute()
                 // Sau khi sự kiện được thêm thành công, lên lịch thông báo
                 if (createdEvent != null) {
                     withContext(Dispatchers.Main) {
-                        // Chuyển về Main thread để lên lịch thông báo
-                        scheduleNotification(createdEvent.summary, createdEvent.start.dateTime.value)
                         Toast.makeText(this@ReminderMenuActivityAPI, "Sự kiện đã được thêm thành công!", Toast.LENGTH_SHORT).show()
-                        // Gọi hàm tải lại sự kiện sau khi thêm
                         loadEventsForSelectedWeek()
                     }
                 }
@@ -401,7 +324,6 @@ class ReminderMenuActivityAPI : AppCompatActivity() {
                 .setApplicationName("Reminder App")
                 .build()
             try {
-                cancelNotification(eventId.hashCode())
                 val event = calendarService.events().get("primary", eventId).execute()
                 event.summary = newSummary
                 event.start = EventDateTime().setDateTime(newStartDateTime)
@@ -411,8 +333,6 @@ class ReminderMenuActivityAPI : AppCompatActivity() {
                 }
                 event.attendees = attendees
                 calendarService.events().update("primary", eventId, event).execute()
-                val startTime = newStartDateTime.value
-                scheduleNotification(newSummary, startTime)
                 withContext(Dispatchers.Main) {
                     Toast.makeText(this@ReminderMenuActivityAPI, "Sự kiện đã được cập nhật thành công!", Toast.LENGTH_SHORT).show()
                     loadEventsForSelectedWeek()
@@ -434,8 +354,6 @@ class ReminderMenuActivityAPI : AppCompatActivity() {
                 .setApplicationName("Reminder App")
                 .build()
             try {
-                // Hủy thông báo liên quan đến sự kiện này trước khi xóa sự kiện
-                cancelNotification(eventId.hashCode())
                 calendarService.events().delete("primary", eventId).execute()
                 withContext(Dispatchers.Main) {
                     Toast.makeText(this@ReminderMenuActivityAPI, "Sự kiện đã được xóa thành công!", Toast.LENGTH_SHORT).show()
