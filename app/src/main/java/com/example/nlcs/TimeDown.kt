@@ -1,4 +1,4 @@
-// hiện thông báo khi còn thời gian fccus mà thoát
+// hiện thông báo khi còn thời gian focus mà thoát
 package com.example.nlcs
 
 import android.annotation.SuppressLint
@@ -67,10 +67,9 @@ class TimeDown : AppCompatActivity() {
     private var countDownTimer: CountDownTimer? = null
     private var isCounting = false
 
-    // thử sửa code
     private lateinit var usageTracker: UsageTracker
     private var startTime: Long = 0
-    // end tại đây
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -91,9 +90,9 @@ class TimeDown : AppCompatActivity() {
         startCount()
 
         setSupportActionBar(binding?.toolbarTimeDown)
-        // sửa code
+
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        // end tại đây
+
 
         if(supportActionBar != null) {
             supportActionBar?.setDisplayHomeAsUpEnabled(true)
@@ -153,9 +152,9 @@ class TimeDown : AppCompatActivity() {
 
         // update button text
         if(isCounting) {
-            buttonResume.text = "PAUSE"
+            buttonResume.text = "TẠM DỪNG"
         } else {
-            buttonResume.text = "RESUME" //Start
+            buttonResume.text = "TIẾP TỤC" //Start
         }
     }
 
@@ -194,8 +193,8 @@ class TimeDown : AppCompatActivity() {
 
                 // Display completion message
                 AlertDialog.Builder(this@TimeDown)
-                    .setTitle("Time's Up!")
-                    .setMessage("Congratulations! You have completed your focus time.")
+                    .setTitle("Hết thời gian!")
+                    .setMessage("Chúc mừng! Bạn đã hoàn thành thời gian tập trung đã đặt ra.")
                     .setPositiveButton("OK") { dialog, _ ->
                         // Stop and release the media player when the dialog is dismissed
                         if (mediaPlayer.isPlaying) {
@@ -204,7 +203,7 @@ class TimeDown : AppCompatActivity() {
                         mediaPlayer.release()
                         dialog.dismiss()
                     }
-                    .setCancelable(false) // sửa code tại đây nèeeeeee
+                    .setCancelable(false)
                     .show()
 
                 // should reset
@@ -216,6 +215,7 @@ class TimeDown : AppCompatActivity() {
         isCounting = true
     }
 
+    // Stop count down
     private fun stopCount(){
         countDownTimer?.cancel()
         countDownTimer = null
@@ -224,6 +224,7 @@ class TimeDown : AppCompatActivity() {
         updateUI()
     }
 
+    // Reset time
     private fun reset(){
         stopCount()
 
@@ -234,6 +235,7 @@ class TimeDown : AppCompatActivity() {
         updateUI()
     }
 
+    // Clear all
     override fun onDestroy() {
         stopCount()
         super.onDestroy()
@@ -247,14 +249,14 @@ class TimeDown : AppCompatActivity() {
             if (totalSecondsLeft > 0) {
                 // Hiển thị hộp thoại cảnh báo nếu còn thời gian
                 AlertDialog.Builder(this)
-                    .setTitle("Exit Timer")
-                    .setMessage("You still have $hours hours, $minutes minutes, and $seconds seconds remaining. Are you sure you want to exit? The timer will be stopped, and you will fail this focus time.")
-                    .setPositiveButton("Yes") { dialog, _ ->
+                    .setTitle("Bạn có muốn thoát không?")
+                    .setMessage("Bạn vẫn còn $hours giờ, $minutes phút, và $seconds giây. Bạn có muốn thoát không? Thời gian còn lại sẽ không được lưu.")
+                    .setPositiveButton("Có") { dialog, _ ->
                         stopCount()
                         dialog.dismiss()
                         super.onBackPressed()
                     }
-                    .setNegativeButton("No") { dialog, _ ->
+                    .setNegativeButton("Không") { dialog, _ ->
                         dialog.dismiss()
                     }
                     .show()
@@ -285,10 +287,10 @@ class TimeDown : AppCompatActivity() {
 
         // Kiểm tra nếu thời gian sử dụng hợp lệ (lớn hơn 0 phút) thì lưu vào UsageTracker
         if (duration > 0) {
-            usageTracker.addUsageTime("FocusMode", duration.toInt())
+            usageTracker.addUsageTime("Hẹn giờ tập trung", duration.toInt())
         }
         else {
-            usageTracker.addUsageTime("FocusMode", 0)
+            usageTracker.addUsageTime("Hẹn giờ tập trung", 0)
         }
     }
 }

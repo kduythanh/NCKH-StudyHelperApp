@@ -2,28 +2,19 @@ package com.example.nlcs
 
 import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
 import android.os.Bundle
-import android.os.CountDownTimer
-import android.os.SystemClock
-import android.text.Editable
 import android.util.Log
 import android.view.KeyEvent
-import android.view.View
-import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.EditText
-import android.widget.FrameLayout
 import android.widget.TextView
 import android.widget.Toast
-import android.widget.Toolbar
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.example.nlcs.databinding.ActivityMainBinding
 import com.example.nlcs.databinding.ActivityFocusBinding
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -140,8 +131,8 @@ class FocusActivity : AppCompatActivity() {
                 intent.putExtra("SECONDS", seconds)
                 startActivity(intent)
             } catch (e: Exception) {
-                Log.e("FocusActivity", "Error starting TimeDown activity", e)
-                Toast.makeText(this, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+                Log.e("Hẹn giờ tập trung", "Lỗi khi chuyển sang giao diện đếm ngụợc thời gian", e)
+                Toast.makeText(this, "Lỗi: ${e.message}", Toast.LENGTH_LONG).show()
             }
         }
 
@@ -187,15 +178,15 @@ class FocusActivity : AppCompatActivity() {
 
         // Validate input ranges
         if (hours !in 0..99) {
-            Toast.makeText(this, "Hours must be between 0 and 99", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Giờ phải nằm trong khoảng từ 0 đến 99", Toast.LENGTH_SHORT).show()
             hours = 0
         }
         if (minutes !in 0..59) {
-            Toast.makeText(this, "Minutes must be between 0 and 59", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Phút phải nằm trong khoảng từ 0 đến 59", Toast.LENGTH_SHORT).show()
             minutes = 0
         }
         if (seconds !in 0..59) {
-            Toast.makeText(this, "Seconds must be between 0 and 59", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Giây phải nằm trong khoảng từ 0 đến 59", Toast.LENGTH_SHORT).show()
             seconds = 0
         }
 
@@ -339,10 +330,10 @@ class FocusActivity : AppCompatActivity() {
 
         // Kiểm tra nếu thời gian sử dụng hợp lệ (lớn hơn 0 phút) thì lưu vào UsageTracker
         if (durationInMinutes > 0) {
-            usageTracker.addUsageTime("FocusMode", durationInMinutes)
+            usageTracker.addUsageTime("Thời gian tập trung", durationInMinutes)
         }
         else {
-            usageTracker.addUsageTime("FocusMode", 0)
+            usageTracker.addUsageTime("Thời gian tập trung", 0)
         }
     }
 // End saving time to statistic

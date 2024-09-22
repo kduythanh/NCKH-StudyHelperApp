@@ -14,7 +14,7 @@
         android:id="@+id/toolbarTimeDown"
         android:layout_width="0dp"
         android:layout_height="?android:attr/actionBarSize"
-        android:background="@color/lightBlue"
+        android:background="@color/light_green"
         android:theme="@style/ToolBarTheme"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -29,7 +29,7 @@
         android:layout_height="210dp"
         android:foregroundGravity="center"
         android:contentDescription="motivationImage"
-        android:src="@drawable/dongluc"
+        android:src="@drawable/cau_dong_luc"
         android:textColor="?android:attr/colorActivatedHighlight"
         app:layout_constraintStart_toStartOf="@+id/toolbarTimeDown"
         app:layout_constraintTop_toBottomOf="@+id/toolbarTimeDown"
@@ -52,23 +52,20 @@
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-
             android:gravity="center"
-            android:orientation="vertical"
-            >
+            android:orientation="vertical">
 
 
             <TextView
 
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginHorizontal="45dp"
                 android:layout_marginVertical="4dp"
-                android:layout_marginHorizontal="20dp"
                 android:maxLines="1"
-                android:text="Hours"
+                android:text="Giờ"
                 android:textColor="@color/black"
-                android:textSize="11pt"
-                />
+                android:textSize="12pt" />
 
 
         </LinearLayout>
@@ -105,11 +102,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginVertical="4dp"
-                android:layout_marginHorizontal="10dp"
+                android:layout_marginHorizontal="16dp"
                 android:maxLines="1"
-                android:text="Minutes"
+                android:text="Phút"
                 android:textColor="@color/black"
-                android:textSize="11pt"
+                android:textSize="12pt"
                 />
         </LinearLayout>
 
@@ -144,11 +141,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginVertical="4dp"
-                android:layout_marginHorizontal="10dp"
+                android:layout_marginHorizontal="40dp"
                 android:maxLines="1"
-                android:text="Seconds"
+                android:text="Giây"
                 android:textColor="@color/black"
-                android:textSize="11pt"
+                android:textSize="12pt"
                 />
 
         </LinearLayout>
@@ -302,10 +299,10 @@
             android:layout_height="150dp"
             android:layout_gravity="center"
             android:backgroundTint="@color/white"
-            android:text="RESUME"
+            android:text="TIẾP TỤC"
             android:textAllCaps="false"
             android:textColor="@color/black"
-            android:textSize="10pt"
+            android:textSize="8pt"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.498"
