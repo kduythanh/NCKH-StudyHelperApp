@@ -107,7 +107,6 @@ class MindMapMenuActivity : AppCompatActivity() {
                 Toast.makeText(this, "Mind Map Created" , Toast.LENGTH_SHORT).show()
                 // Create a Master Node upon creating a new Mind Map item
                 val userId = firebaseAuth.currentUser?.uid
-
                 if(userId != null){
                     val neo4jService = Neo4jService(neo4jUri, neo4jUser, neo4jPassword)
                     neo4jService.createNode("Main Node", userId, mindMapId, 0f, 0f)
@@ -125,7 +124,8 @@ class MindMapMenuActivity : AppCompatActivity() {
     @SuppressLint("NotifyDataSetChanged")
     private fun fetchMindMaps(){
         val db = FirebaseFirestore.getInstance()
-        val docRef = db.collection("mindMapTemp")
+        val currentUserID = firebaseAuth.currentUser?.uid
+        val docRef = db.collection("mindMapTemp").whereEqualTo("userID", currentUserID)
 
         docRef.addSnapshotListener { snapshots, e ->
             if (e != null){

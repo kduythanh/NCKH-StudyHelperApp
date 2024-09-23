@@ -1,6 +1,7 @@
 package com.example.nlcs
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.DragEvent
@@ -8,6 +9,7 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
+import android.view.WindowManager
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -28,6 +30,7 @@ class MindMapActivity : AppCompatActivity() {
     private val neo4jUri = "bolt+s://f4454805.databases.neo4j.io"
     private val neo4jUser = "neo4j"
     private val neo4jPassword = "T79xAI8tRj6QzvCfiqDMBAlxb4pabJ1UBh_H7qIqlaQ"
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -78,6 +81,9 @@ class MindMapActivity : AppCompatActivity() {
         }.start()
     }
 
+
+//  nodeView.x = 625f
+//  nodeView.y = 218f
     // Fetches and displays all nodes for a given mind map ID
     @SuppressLint("ClickableViewAccessibility")
     private fun fetchAndDisplayAllNodes(mindMapID: String) {
@@ -85,8 +91,6 @@ class MindMapActivity : AppCompatActivity() {
             val nodes = neo4jService.fetchNodesByMindMapID(mindMapID)
             runOnUiThread {
                 val parentLayout = binding.zoomableView.findViewById<RelativeLayout>(R.id.mindMapContent)
-
-                val nodeViews = mutableMapOf<String?, View>()
 
                 for (node in nodes) {
                     val nodeView = layoutInflater.inflate(R.layout.mind_map_node, parentLayout, false)
@@ -100,12 +104,11 @@ class MindMapActivity : AppCompatActivity() {
                     // Fetch and set node position (x and y coordinates)
                     val x = (node["x"] as? Float) ?: 0f
                     val y = (node["y"] as? Float) ?: 0f
+                    Log.d("NodeView size", "Node ID: $parentNodeID, X: ${nodeView.x}, Y: ${nodeView.y}")
+
                     nodeView.x = x
                     nodeView.y = y
-
-                    nodeViews[parentNodeID] = nodeView
-                    Log.d("fetchAndDisplayAllNodes", "Attempting to draw line between nodes")
-
+                    Log.d("Applied Node position", "Node ID: $parentNodeID, X: $x, Y: $y")
 
                     // Disable default long-click behavior of EditText to ensure custom long-click listener works
                     // Ensure custom long-click listener works by overriding default behavior
@@ -155,7 +158,6 @@ class MindMapActivity : AppCompatActivity() {
 
                                 // Update position in the database
                                 val nodeID = draggedView.getTag(R.id.node_id_tag) as? String
-                                Log.d("Drop position", "dropX: $dropX, dropY: $dropY")
                                 updateNodePosition(nodeID, dropX, dropY)
                                 true
                             }
@@ -178,7 +180,10 @@ class MindMapActivity : AppCompatActivity() {
         if (nodeID == null) return
         // Update node position in Neo4j on a background thread
         Thread {
-            neo4jService.updateNodePositionDB(nodeID, x, y)
+            val convertedX =  (x - binding.zoomableView.width / 2) + 110
+            val convertedY =  (y - binding.zoomableView.height / 2) + 53
+            Log.d("Updated Node position", ", X: $convertedX, Y: $convertedY")
+            neo4jService.updateNodePositionDB(nodeID, convertedX, convertedY)
         }.start()
     }
 
@@ -198,7 +203,7 @@ class MindMapActivity : AppCompatActivity() {
             val mindMapID = intent.getStringExtra("mindMapID") ?: return@setOnClickListener
 
             Thread {
-                val newChildNode = neo4jService.addChildNode(parentNodeID, childTitle, userID, mindMapID, 123f, 123f)
+                val newChildNode = neo4jService.addChildNode(parentNodeID, childTitle, userID, mindMapID, 0f, 0f)
                 if (newChildNode != null){
                     runOnUiThread{
                         // Display the new child node in the UI
@@ -284,7 +289,7 @@ class MindMapActivity : AppCompatActivity() {
         val y = (node["y"] as? Float)?.toFloat() ?: 0f
         nodeView.x = x
         nodeView.y = y
-
+        Log.d("Applied Child Node position", "Node ID: $nodeID, X: $x, Y: $y")
 
         nodeTitleEditText.setOnLongClickListener {
             // Pass the event to the parent node view
@@ -325,8 +330,8 @@ class MindMapActivity : AppCompatActivity() {
                     draggedView.visibility = View.VISIBLE
 
                     // Update position in the database
-//                    val nodeID = draggedView.getTag(R.id.node_id_tag) as? String
-//                    updateNodePosition(nodeID, dropX, dropY)
+                    val childID = draggedView.getTag(R.id.node_id_tag) as? String
+                    updateNodePosition(childID, dropX, dropY)
                     true
                 }
 
@@ -372,6 +377,3 @@ class MindMapActivity : AppCompatActivity() {
         fetchAndDisplayAllNodes(mindMapID) // Fetch and display updated nodes
     }
 }
-
-
-
