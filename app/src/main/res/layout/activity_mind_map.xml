@@ -45,6 +45,7 @@
         android:layout_height="match_parent"
         android:layout_below="@id/toolbar"
         android:background="@color/white">
+
         <RelativeLayout
             android:id="@+id/mindMapContent"
             android:layout_width="match_parent"
@@ -53,7 +54,13 @@
             android:layout_centerVertical="true"
             android:layout_centerHorizontal="true"
             android:gravity="center">
+
+            <com.example.nlcs.LineDrawingView
+                android:id="@+id/lineDrawingView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
         </RelativeLayout>
+
     </com.example.nlcs.ZoomableView>
 </RelativeLayout>
 

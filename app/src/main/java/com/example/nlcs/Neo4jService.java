@@ -7,10 +7,9 @@ import org.neo4j.driver.Result;
 import org.neo4j.driver.Session;
 import org.neo4j.driver.TransactionWork;
 import org.neo4j.driver.Record;
+import org.neo4j.driver.Value;
 
 import static org.neo4j.driver.Values.parameters;
-
-import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -169,4 +168,30 @@ public class Neo4jService {
             });
         }
     }
+
+    public Map<String, List<String>> fetchParentChildRelationships(final String mindMapID) {
+        Map<String, List<String>> parentChildMap = new HashMap<>();
+
+        try (Session session = driver.session()) {
+            session.readTransaction(tx -> {
+                Result result = tx.run(
+                        "MATCH (parentNode)-[:CHILD_OF]->(childNode) " +
+                                "WHERE parentNode.mindMapID = $mindMapID " +
+                                "RETURN parentNode.nodeID AS parentID, collect(childNode.nodeID) AS childIDs",
+                        parameters("mindMapID", mindMapID)
+                );
+
+                while (result.hasNext()) {
+                    Record record = result.next();
+                    String parentID = record.get("parentID").asString();
+                    List<String> childIDs = record.get("childIDs").asList(Value::asString);
+                    parentChildMap.put(parentID, childIDs);
+                }
+                return parentChildMap;
+            });
+        }
+
+        return parentChildMap;
+    }
+
 }

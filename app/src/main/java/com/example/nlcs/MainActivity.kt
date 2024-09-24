@@ -2,6 +2,7 @@ package com.example.nlcs
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.ActionBarDrawerToggle
@@ -43,6 +44,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        updateNavHeader()
 
         binding.card2.setOnClickListener{
             val intent = Intent(this, MindMapMenuActivity::class.java)
@@ -97,6 +99,16 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
+    }
+
+    private fun updateNavHeader() {
+        val headerView = binding.navigationView.getHeaderView(0)
+        val emailTextView: TextView = headerView.findViewById(R.id.nav_header_email)
+
+        val currentUser = firebaseAuth.currentUser
+        if (currentUser != null) {
+            emailTextView.text = currentUser.email // Set the email in the TextView
+        }
     }
 
     private fun isCurrentActivity(activityClass: Class<*>): Boolean {

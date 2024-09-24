@@ -1,7 +1,6 @@
 package com.example.nlcs
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.DragEvent
@@ -9,7 +8,6 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
-import android.view.WindowManager
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -20,8 +18,6 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.example.nlcs.databinding.ActivityMindMapBinding
 import com.google.firebase.auth.FirebaseAuth
-
-//            parentNodeX: 597, parentNodeY: 139
 
 class MindMapActivity : AppCompatActivity() {
 
@@ -40,7 +36,10 @@ class MindMapActivity : AppCompatActivity() {
         // Enable the back arrow
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        binding.toolbar.setNavigationOnClickListener { finish() }
+        binding.toolbar.setNavigationOnClickListener {
+            updateAllNodesTitles()
+            finish()
+        }
 
         // Get the title from intent and set it as the support action bar title
         val mindMapTitle = intent.getStringExtra("mindMapTitle")
@@ -67,16 +66,26 @@ class MindMapActivity : AppCompatActivity() {
         for (i in 0 until parentLayout.childCount) {
             val nodeView = parentLayout.getChildAt(i) // Get the child view at the current index.
             val nodeTitleEditText = nodeView.findViewById<EditText>(R.id.MindMapNode)
-            val newTitle = nodeTitleEditText.text.toString()
-            val nodeID = nodeView.getTag(R.id.node_id_tag) as? String
-            nodeUpdates.add(mapOf("nodeID" to nodeID!!, "newTitle" to newTitle))
+
+//            val newTitle = nodeTitleEditText.text.toString()
+//            val nodeID = nodeView.getTag(R.id.node_id_tag) as? String
+//            nodeUpdates.add(mapOf("nodeID" to nodeID!!, "newTitle" to newTitle))
+            if (nodeTitleEditText != null) { // Add a null check here
+                val newTitle = nodeTitleEditText.text.toString()
+                val nodeID = nodeView.getTag(R.id.node_id_tag) as? String
+                if (nodeID != null) {
+                    nodeUpdates.add(mapOf("nodeID" to nodeID, "newTitle" to newTitle))
+                }
+            } else {
+                Log.e("MindMapActivity", "EditText for node title is null!")
+            }
         }
 
         // Update node titles in a background thread
         Thread {
             neo4jService.updateNodeTitles(nodeUpdates)
             runOnUiThread {
-                Toast.makeText(this, "All changes saved successfully!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "All changes saved!", Toast.LENGTH_SHORT).show()
             }
         }.start()
     }
@@ -88,10 +97,17 @@ class MindMapActivity : AppCompatActivity() {
     @SuppressLint("ClickableViewAccessibility")
     private fun fetchAndDisplayAllNodes(mindMapID: String) {
         Thread {
+            // Fetch nodes from Neo4j
             val nodes = neo4jService.fetchNodesByMindMapID(mindMapID)
+
+            // Fetch parent-child relationships from Neo4j
+            val parentChildMap = neo4jService.fetchParentChildRelationships(mindMapID)
+
             runOnUiThread {
                 val parentLayout = binding.zoomableView.findViewById<RelativeLayout>(R.id.mindMapContent)
+                val lineDrawingView = parentLayout.findViewById<LineDrawingView>(R.id.lineDrawingView)
 
+                // Display each node in the mind map
                 for (node in nodes) {
                     val nodeView = layoutInflater.inflate(R.layout.mind_map_node, parentLayout, false)
                     val nodeTitleEditText = nodeView.findViewById<EditText>(R.id.MindMapNode)
@@ -104,16 +120,13 @@ class MindMapActivity : AppCompatActivity() {
                     // Fetch and set node position (x and y coordinates)
                     val x = (node["x"] as? Float) ?: 0f
                     val y = (node["y"] as? Float) ?: 0f
-                    Log.d("NodeView size", "Node ID: $parentNodeID, X: ${nodeView.x}, Y: ${nodeView.y}")
-
                     nodeView.x = x
                     nodeView.y = y
-                    Log.d("Applied Node position", "Node ID: $parentNodeID, X: $x, Y: $y")
+//                    Log.d("Node position", "Node ID: $parentNodeID, X: $x, Y: $y")
 
                     // Disable default long-click behavior of EditText to ensure custom long-click listener works
                     // Ensure custom long-click listener works by overriding default behavior
                     nodeTitleEditText.setOnLongClickListener {
-                        // Pass the event to the parent node view
                         nodeView.performLongClick()
                         true
                     }
@@ -159,6 +172,10 @@ class MindMapActivity : AppCompatActivity() {
                                 // Update position in the database
                                 val nodeID = draggedView.getTag(R.id.node_id_tag) as? String
                                 updateNodePosition(nodeID, dropX, dropY)
+
+                                // Redraw lines on LineDrawingView after the node has moved
+                                lineDrawingView.invalidate()
+
                                 true
                             }
 
@@ -172,6 +189,8 @@ class MindMapActivity : AppCompatActivity() {
                     }
                 }
 
+                // Pass parent-child relationships and node data to LineDrawingView for drawing lines
+                lineDrawingView.setParentChildMap(parentChildMap, nodes)
             }
         }.start()
     }
@@ -180,10 +199,13 @@ class MindMapActivity : AppCompatActivity() {
         if (nodeID == null) return
         // Update node position in Neo4j on a background thread
         Thread {
-            val convertedX =  (x - binding.zoomableView.width / 2) + 110
-            val convertedY =  (y - binding.zoomableView.height / 2) + 53
-            Log.d("Updated Node position", ", X: $convertedX, Y: $convertedY")
-            neo4jService.updateNodePositionDB(nodeID, convertedX, convertedY)
+//            val convertedX =  (x - binding.zoomableView.width / 2) + 110
+//            val convertedY =  (y - binding.zoomableView.height / 2) + 53
+//            val convertedX = (x - binding.zoomableView.height / 2)
+//            val convertedY = (binding.zoomableView.width/ 2 - y)
+//            Log.d("Updated Node position", ", X: $convertedX, Y: $convertedY")
+//            neo4jService.updateNodePositionDB(nodeID, convertedX, convertedY)
+            neo4jService.updateNodePositionDB(nodeID, x, y)
         }.start()
     }
 
