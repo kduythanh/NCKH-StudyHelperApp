@@ -4,6 +4,10 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import com.google.firebase.firestore.FirebaseFirestore
 import java.text.SimpleDateFormat
 import java.util.*
@@ -13,41 +17,6 @@ class UsageTracker(context: Context) {
     private val db = FirebaseFirestore.getInstance() // Firestore instance
 
     // Lưu thời gian sử dụng một chức năng vào SharedPreferences và Firestore
-
-//    fun addUsageTime(feature: String, seconds: Int) {
-//        val currentUser = FirebaseAuth.getInstance().currentUser
-//        val userId = currentUser?.uid  // Lấy userId từ Firebase Authentication
-//
-//        if (userId != null) {
-//            val currentUsage = sharedPreferences.getInt(feature, 0)
-//            val newUsage = currentUsage + seconds
-//            sharedPreferences.edit().putInt(feature, newUsage).apply()
-//
-//            Log.d("UsageTracker", "Feature: $feature, Added Time: $seconds giây, New Total: $newUsage giây")
-//
-//            // Lưu thời gian sử dụng vào Firestore (dưới dạng giây)
-//            val usageData = hashMapOf(
-//                "userId" to userId,  // Lưu userId
-//                "feature" to feature,
-//                "total_usage_seconds" to newUsage,  // Lưu tổng thời gian sử dụng bằng giây
-//                "date" to SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(Date()),  // Ngày hiện tại
-//            )
-//
-//            db.collection("usage_times")
-//                .add(usageData)
-//                .addOnSuccessListener { documentReference ->
-//                    Log.d("UsageTracker", "Usage data saved with ID: ${documentReference.id}")
-//                }
-//                .addOnFailureListener { e ->
-//                    Log.w("UsageTracker", "Error saving usage data", e)
-//                }
-//
-//            // Lưu dữ liệu đã sắp xếp vào Firestore
-//            saveSortedUsageDataToFirestore()  // Gọi hàm này sau khi thêm thời gian sử dụng
-//        } else {
-//            Log.w("UsageTracker", "User not logged in, cannot save usage data.")
-//        }
-//    }
 
     fun addUsageTime(feature: String, seconds: Int) {
         val currentUser = FirebaseAuth.getInstance().currentUser
@@ -74,6 +43,7 @@ class UsageTracker(context: Context) {
                 "date" to SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(Date())  // Ngày hiện tại
             )
 
+            // Lưu dữ liệu vào Firestore ở collection usage_times
             db.collection("usage_times")
                 .add(usageData)
                 .addOnSuccessListener { documentReference ->
@@ -154,13 +124,6 @@ class UsageTracker(context: Context) {
         return data
     }
 
-    // Trả về dữ liệu sử dụng theo thứ tự giảm dần
-//    fun getSortedUsageData(): List<Pair<String, Int>> {
-//        return sharedPreferences.all.filterKeys { it in listOf("Hẹn giờ tập trung", "Ghi chú", "Sơ đồ tư duy", "Thẻ ghi nhớ", "Nhắc nhở") }
-//            .mapValues { (_, value) -> value as Int }
-//            .toList()
-//            .sortedByDescending { (_, value) -> value }  // Sắp xếp theo giá trị giảm dần
-//    }
 
     // Trả về dữ liệu sử dụng theo thứ tự giảm dần (dữ liệu là giây)
     fun getSortedUsageData(): List<Pair<String, Int>> {
@@ -233,48 +196,39 @@ class UsageTracker(context: Context) {
     }
 
     //  tìm kiếm dữ liệu dựa trên khoảng ngày
-    fun getUsageData(startDate: String, endDate: String, callback: (Map<String, Int>) -> Unit) {
-        val data = mutableMapOf<String, Int>()
+    fun getUsageDataBetweenDates(startDate: Date, endDate: Date, callback: (Map<String, Int>) -> Unit) {
+        val usageData = mutableMapOf<String, Int>()
 
-        // Chuyển đổi chuỗi ngày thành đối tượng Date
-        val sdf = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
-        val startDateParsed = sdf.parse(startDate) ?: return callback(data)
-        val endDateParsed = sdf.parse(endDate) ?: return callback(data)
+        // Format the dates to match the format stored in Firestore
+        val dateFormat = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
+        val start = dateFormat.format(startDate)
+        val end = dateFormat.format(endDate)
 
-        // Chuyển đổi đối tượng Date về dạng chuỗi để so sánh
-        val startDateStr = sdf.format(startDateParsed)
-        val endDateStr = sdf.format(endDateParsed)
-
+        // Query Firestore for data between start and end dates
         db.collection("usage_times")
+            .whereGreaterThanOrEqualTo("date", start)
+            .whereLessThanOrEqualTo("date", end)
             .get()
-            .addOnSuccessListener { documents ->
-                for (document in documents) {
-                    val feature = document.getString("feature") ?: continue
-                    val totalUsage = document.getLong("total_usage_minutes")?.toInt() ?: 0
+            .addOnSuccessListener { querySnapshot ->
+                for (document in querySnapshot.documents) {
+                    val featureName = document.getString("feature") ?: continue
+                    val usageTime = document.getLong("total_usage_seconds")?.toInt() ?: 0
 
-                    // Lấy ngày từ tài liệu
-                    val date = document.getDate("date")?.let { sdf.format(it) } ?: continue
-
-                    // Kiểm tra điều kiện ngày
-                    if (startDateStr == endDateStr) {
-                        // Nếu ngày start và end giống nhau, kiểm tra xem ngày đó có phải là ngày hiện tại không
-                        if (date == startDateStr) {
-                            data[feature] = data.getOrDefault(feature, 0) + totalUsage
-                        }
-                    } else {
-                        // Nếu ngày start và end khác nhau, kiểm tra xem ngày có nằm trong khoảng không
-                        if (date >= startDateStr && date <= endDateStr) {
-                            data[feature] = data.getOrDefault(feature, 0) + totalUsage
-                        }
-                    }
+                    // Add or accumulate the usage time for each feature
+                    usageData[featureName] = usageData.getOrDefault(featureName, 0) + usageTime
                 }
-                callback(data)
+
+                // Log the retrieved data
+                Log.d("FirestoreData", "Retrieved data: $usageData")
+                callback(usageData)
             }
             .addOnFailureListener { e ->
-                Log.w("UsageTracker", "Error getting usage data", e)
-                callback(data)
+                Log.e("FirestoreError", "Error retrieving data: ${e.message}")
+                callback(usageData) // Return empty data if error occurs
             }
     }
+
+
 
 
 

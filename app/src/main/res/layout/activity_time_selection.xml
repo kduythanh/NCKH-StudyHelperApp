@@ -4,10 +4,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    tools:context=".TimeSelectionActivity">
 
     <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbarStatistics"
+        android:id="@+id/toolbarTimeSelection"
         android:layout_width="0dp"
         android:layout_height="?android:attr/actionBarSize"
         android:background="@color/light_green"
@@ -23,30 +23,48 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:gravity="center"
-        android:padding="8dp"
         android:lineSpacingExtra="8dp"
-        android:text="THỐNG KÊ\nthời gian sử dụng các chức năng"
+        android:padding="8dp"
+        android:text="THỐNG KÊ\ntheo mốc thời gian"
         android:textColor="@color/background_1"
-        android:textStyle="bold"
         android:textSize="18sp"
+        android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/toolbarStatistics" />
+        app:layout_constraintTop_toBottomOf="@id/toolbarTimeSelection" />
 
     <TextView
-        android:id="@+id/currentDateTimeTextView"
-        android:layout_width="wrap_content"
+        android:id="@+id/startDateTextView"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:gravity="end"
-        android:textColor="@color/black"
-        android:textSize="16sp"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:hint="Chọn ngày bắt đầu"
+        android:padding="16dp"
+        android:textAlignment="center"
+        android:textColor="@android:color/black"
+        app:layout_constraintEnd_toStartOf="@+id/endDateTextView"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/timeFrameTextView" />
+        app:layout_constraintTop_toBottomOf="@id/timeFrameTextView" /> <!-- Default text -->
+
+    <TextView
+        android:id="@+id/endDateTextView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:hint="Chọn ngày kết thúc"
+        android:padding="16dp"
+        android:textAlignment="center"
+        android:textColor="@android:color/black"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/startDateTextView"
+        app:layout_constraintTop_toBottomOf="@id/timeFrameTextView" /> <!-- Default text -->
 
     <com.github.mikephil.charting.charts.BarChart
-        android:id="@+id/barChart"
+        android:id="@+id/barChartTimeSelection"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginTop="16dp"
@@ -54,7 +72,7 @@
         app:layout_constraintBottom_toTopOf="@id/featureListRecyclerView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/currentDateTimeTextView" />
+        app:layout_constraintTop_toBottomOf="@id/endDateTextView" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/featureListRecyclerView"
@@ -62,19 +80,29 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
         android:padding="8dp"
-        app:layout_constraintBottom_toTopOf="@id/searchButton"
+        app:layout_constraintBottom_toTopOf="@id/viewStatisticsButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/barChart" />
+        app:layout_constraintTop_toBottomOf="@id/barChartTimeSelection" />
 
     <Button
-        android:id="@+id/searchButton"
+        android:id="@+id/viewStatisticsButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
-        android:text="Tìm kiếm theo thời gian"
+        android:text="Xem thống kê"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
+    <!-- Thêm ProgressBar ở đây -->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -55,7 +55,6 @@ dependencies {
     implementation("com.github.PhilJay:MPAndroidChart:3.1.0")
     implementation ("com.google.code.gson:gson:2.10.1")
     implementation ("androidx.recyclerview:recyclerview:1.2.1")
-//    implementation ("com.google.firebase:firebase-database:20.0.4")
     implementation ("com.google.firebase:firebase-database-ktx")
 
 }
