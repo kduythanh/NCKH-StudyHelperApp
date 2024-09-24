@@ -7,7 +7,7 @@ data class Message(
     var messId: String? = null, // Use String? for Firestore document ID
     var messTitle: String = "",
     var messContent: String = "",
-    var imageUrl: String? = null  // Add this line for storing image URL
+    var userId: String = "" // User ID for associating notes with users
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.readString(),

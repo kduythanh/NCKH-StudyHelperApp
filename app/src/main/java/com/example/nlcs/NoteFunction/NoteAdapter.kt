@@ -17,7 +17,7 @@ class MyAdapter(var context: Context, var array: ArrayList<Message>) : RecyclerV
     class ItemHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         var tvMessTitle: TextView = itemView.findViewById(R.id.tvMessTitle)
         var tvMessContent: TextView = itemView.findViewById(R.id.tvMessContent)
-        var ivTrashCan: ImageView = itemView.findViewById(R.id.ivTrashCan)  // Add this line
+        var ivTrashCan: ImageView = itemView.findViewById(R.id.ivTrashCan)  // Trash can icon
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemHolder {
@@ -32,10 +32,12 @@ class MyAdapter(var context: Context, var array: ArrayList<Message>) : RecyclerV
         holder.tvMessTitle.text = item.messTitle.trim()
         holder.tvMessContent.text = item.messContent.trim()
 
+        // Handle item click
         holder.itemView.setOnClickListener {
             onItemClick?.invoke(item, position)
         }
 
+        // Handle delete click
         holder.ivTrashCan.setOnClickListener {
             removeItem(position)
         }
@@ -56,20 +58,19 @@ class MyAdapter(var context: Context, var array: ArrayList<Message>) : RecyclerV
                 .delete()
                 .addOnSuccessListener {
                     Log.d("Firestore", "DocumentSnapshot successfully deleted!")
+                    // Remove from the local array and update UI
+                    array.removeAt(position)
+                    notifyItemRemoved(position)
+                    notifyItemRangeChanged(position, array.size)
                 }
                 .addOnFailureListener { e ->
                     Log.w("Firestore", "Error deleting document", e)
                 }
+        } ?: run {
+            // Handle case where messId is null
+            Log.w("Firestore", "Attempted to delete a note with a null messId.")
         }
-
-        // Remove from the local array and update UI
-        array.removeAt(position)
-        notifyItemRemoved(position)
-        notifyItemRangeChanged(position, array.size)
     }
 
-
-
     var onItemClick: ((Message, Int) -> Unit)? = null
-    var onItemClick2: ((Message) -> Unit)? = null
 }
