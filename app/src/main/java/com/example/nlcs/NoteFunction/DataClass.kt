@@ -4,19 +4,19 @@ import android.os.Parcel
 import android.os.Parcelable
 
 data class Message(
-    var messId : Long,
-    var messTitle: String,
-    var messContent: String
-): Parcelable {
+    var messId: String? = null, // Use String? for Firestore document ID
+    var messTitle: String = "",
+    var messContent: String = "",
+    var imageUrl: String? = null  // Add this line for storing image URL
+) : Parcelable {
     constructor(parcel: Parcel) : this(
-        parcel.readLong(),
+        parcel.readString(),
         parcel.readString().toString(),
         parcel.readString().toString()
-    ) {
-    }
+    )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeLong(messId)
+        parcel.writeString(messId)
         parcel.writeString(messTitle)
         parcel.writeString(messContent)
     }
@@ -35,4 +35,6 @@ data class Message(
         }
     }
 }
+
+
 

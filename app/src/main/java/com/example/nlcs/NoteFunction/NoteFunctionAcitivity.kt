@@ -3,6 +3,9 @@ package com.example.nlcs.NoteFunction
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
+import android.util.Log
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -14,19 +17,21 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.nlcs.R
 import com.example.nlcs.databinding.ActivityNoteFunctionAcitivityBinding
+import com.google.firebase.firestore.FirebaseFirestore
 
 class NoteFunctionAcitivity : AppCompatActivity() {
     private lateinit var binding: ActivityNoteFunctionAcitivityBinding
-    private var arrayItem: ArrayList<Message>  = ArrayList()
+    private var arrayItem: ArrayList<Message> = ArrayList() // Full list of messages
+    private var filteredList: ArrayList<Message> = ArrayList() // List to store filtered messages
     private var MyAdapter: MyAdapter? = null
+
     companion object {
         const val KEY = "KEY"
         const val TYPE_EDIT = "TYPE_EDIT"
         const val TYPE_ADD = "TYPE_ADD"
     }
 
-
-    //Check which activity return data for handle
+    // Check which activity returns data for handling
     private var startCheckType =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
             if (result.resultCode == Activity.RESULT_OK) {
@@ -35,8 +40,8 @@ class NoteFunctionAcitivity : AppCompatActivity() {
                     val message = result.data?.extras?.get("Message") as? Message
                     if (message != null) {
                         arrayItem.add(0, message)
+                        filterMessages("") // Update the displayed list (unfiltered)
                     }
-                    MyAdapter?.notifyDataSetChanged()
                 }
                 if (type == TYPE_EDIT) {
                     val message = result.data?.extras?.get("Message") as? Message
@@ -48,8 +53,8 @@ class NoteFunctionAcitivity : AppCompatActivity() {
                                 break
                             }
                         }
+                        filterMessages("") // Update the displayed list (unfiltered)
                     }
-                    MyAdapter?.notifyDataSetChanged()
                 }
             }
         }
@@ -67,38 +72,75 @@ class NoteFunctionAcitivity : AppCompatActivity() {
         binding = ActivityNoteFunctionAcitivityBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        //Set toolbar
+        // Set toolbar
         setSupportActionBar(binding.toolbar.root)
-        binding.toolbar.title.text = "Quản lý tin nhắn"  // Set the title
+        binding.toolbar.title.text = "Quản lý ghi chú"
 
-
-        //Set what type of layout is the recycle view
+        // Set up RecyclerView layout and adapter
         binding.RecycleView.layoutManager = LinearLayoutManager(this)
         binding.RecycleView.addItemDecoration(DividerItemDecoration(this, DividerItemDecoration.VERTICAL))
 
-        //Add item for test
-//        arrayItem.add(Message(1,"Tổng hợp tin tức thời sự1", "tổng hợp tin tức thời sự nóng hổi nhất của tất cả các miền trên dất nước1"))
-//        arrayItem.add(Message(2,"Tổng hợp tin tức thời sự2", "tổng hợp tin tức thời sự nóng hổi nhất của tất cả các miền trên dất nước2"))
-//        arrayItem.add(Message(3,"Tổng hợp tin tức thời sự3", "tổng hợp tin tức thời sự nóng hổi nhất của tất cả các miền trên dất nước3"))
-//        arrayItem.add(Message(4,"Tổng hợp tin tức thời sự4", "tổng hợp tin tức thời sự nóng hổi nhất của tất cả các miền trên dất nước4"))
-//        arrayItem.add(Message(5,"Tổng hợp tin tức thời sự5", "tổng hợp tin tức thời sự nóng hổi nhất của tất cả các miền trên dất nước5"))
-//        arrayItem.add(Message(6,"Tổng hợp tin tức thời sự6", "tổng hợp tin tức thời sự nóng hổi nhất của tất cả các miền trên dất nước6"))
-//        arrayItem.add(Message(7,"Tổng hợp tin tức thời sự7", "tổng hợp tin tức thời sự nóng hổi nhất của tất cả các miền trên dất nước7"))
-
-        //Set the content to the itemHolder in adapter
-        MyAdapter = MyAdapter(this,arrayItem)
+        MyAdapter = MyAdapter(this, filteredList) // Bind the adapter to the filtered list
         binding.RecycleView.adapter = MyAdapter
 
-        MyAdapter?.onItemClick = {message, position ->
-            val intent = Intent(this,NoteFunctionAdjustActivity::class.java)
-            intent.putExtra("Message",message)
+// Firebase Firestore retrieval
+        val db = FirebaseFirestore.getInstance()
+        db.collection("notes")
+            .get()
+            .addOnSuccessListener { result ->
+                for (document in result) {
+                    val message = document.toObject(Message::class.java)
+                    arrayItem.add(message) // Add all messages from Firestore to arrayItem
+                }
+                filterMessages("") // Display all messages initially
+            }
+            .addOnFailureListener { exception ->
+                Log.w("FirestoreError", "Error getting documents.", exception)
+            }
+
+        // Handle item clicks
+        MyAdapter?.onItemClick = { message, position ->
+            val intent = Intent(this, NoteFunctionAdjustActivity::class.java)
+            intent.putExtra("Message", message)
             startCheckType.launch(intent)
         }
 
+        // Handle AddMessage button click
         binding.toolbar.AddMessage.setOnClickListener {
-            // Handle add message click
-            val intent = Intent(this,NoteFunctionAddActivity::class.java)
+            val intent = Intent(this, NoteFunctionAddActivity::class.java)
             startCheckType.launch(intent)
         }
+
+        // Add search functionality to the EditText field
+        binding.edtFind.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                filterMessages(s.toString()) // Filter messages when the user types
+            }
+
+            override fun afterTextChanged(s: Editable?) {}
+        })
+    }
+
+    // Filter messages based on the search query
+    private fun filterMessages(query: String) {
+        val searchQuery = query.lowercase()
+        filteredList.clear()
+
+        if (searchQuery.isEmpty()) {
+            // If the search query is empty, display all notes
+            filteredList.addAll(arrayItem)
+        } else {
+            // Filter messages by title
+            for (message in arrayItem) {
+                if (message.messTitle.lowercase().contains(searchQuery)) {
+                    filteredList.add(message)
+                }
+            }
+        }
+
+        // Notify the adapter that the dataset has changed
+        MyAdapter?.notifyDataSetChanged()
     }
 }

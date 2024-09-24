@@ -59,6 +59,13 @@
             android:layout_marginTop="-15dp"
             android:background="@drawable/mess_trashcan" />
 
+        <ImageView
+            android:id="@+id/ivMessageImage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:visibility="visible" /> <!-- Set default visibility -->
+
     </LinearLayout>
 
 </RelativeLayout>

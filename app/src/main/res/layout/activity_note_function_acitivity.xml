@@ -19,6 +19,16 @@
         android:layout_gravity="bottom"
         android:background="@color/black" />
 
+    <EditText
+        android:id="@+id/edtFind"
+        android:background="@drawable/border"
+        android:hint="Nhập tiêu đề cần tìm"
+        android:padding="8px"
+        android:layout_margin="6dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+
     <androidx.recyclerview.widget.RecyclerView
         android:padding="10dp"
         android:id="@+id/RecycleView"
