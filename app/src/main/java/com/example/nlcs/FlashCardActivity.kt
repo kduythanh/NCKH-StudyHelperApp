@@ -52,22 +52,39 @@ class FlashCardActivity : AppCompatActivity() {
 
     }
 
+//    override fun onPause() {
+//        super.onPause()
+//
+//        // Tính toán thời gian sử dụng Flash
+//        val endTime = System.currentTimeMillis()
+//        val durationInMillis = endTime - startTime
+//        val durationInMinutes = (durationInMillis / 1000 / 60).toInt() // Chuyển đổi thời gian từ milliseconds sang phút
+//
+//        // Kiểm tra nếu thời gian sử dụng hợp lệ (lớn hơn 0 phút) thì lưu vào UsageTracker
+//        if (durationInMinutes > 0) {
+//            usageTracker.addUsageTime("Thẻ ghi nhớ", durationInMinutes)
+//        }
+//        else {
+//            usageTracker.addUsageTime("Thẻ ghi nhớ", 0)
+//        }
+//    }
+
     override fun onPause() {
         super.onPause()
 
-        // Tính toán thời gian sử dụng Flash
+        // Tính toán thời gian sử dụng thẻ ghi nhớ
         val endTime = System.currentTimeMillis()
         val durationInMillis = endTime - startTime
-        val durationInMinutes = (durationInMillis / 1000 / 60).toInt() // Chuyển đổi thời gian từ milliseconds sang phút
+        val durationInSeconds = (durationInMillis / 1000).toInt() // Chuyển đổi thời gian từ milliseconds sang giây
 
-        // Kiểm tra nếu thời gian sử dụng hợp lệ (lớn hơn 0 phút) thì lưu vào UsageTracker
-        if (durationInMinutes > 0) {
-            usageTracker.addUsageTime("FlashCard", durationInMinutes)
-        }
-        else {
-            usageTracker.addUsageTime("FlashCard", 0)
+        // Kiểm tra nếu thời gian sử dụng hợp lệ (lớn hơn 0 giây) thì lưu vào UsageTracker
+        if (durationInSeconds > 0) {
+            usageTracker.addUsageTime("Thẻ ghi nhớ", durationInSeconds)
+        } else {
+            usageTracker.addUsageTime("Thẻ ghi nhớ", 0)
         }
     }
+
 
     override fun onDestroy() {
         super.onDestroy()

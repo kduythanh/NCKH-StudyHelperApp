@@ -2,9 +2,6 @@ package com.example.nlcs
 
 import android.graphics.Color
 import android.os.Bundle
-import android.view.View
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -21,37 +18,31 @@ import com.github.mikephil.charting.formatter.ValueFormatter
 class StatisticsActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityStatisticsBinding
-
-    //Import usageTracker class to get using time
     private lateinit var usageTracker: UsageTracker
 
-    // Add list of function
+    // List of features and usage times
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: FeatureListAdapter
-    //End
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityStatisticsBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        usageTracker = UsageTracker(this)  // Ensure UsageTracker is properly implemented
+        // Initialize UsageTracker
+        usageTracker = UsageTracker(this)
 
-        // Add list of function
+        // Setup RecyclerView for displaying list of feature usage
         recyclerView = findViewById(R.id.featureListRecyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
-        //End
 
-
-        // Load data - sort - Count using time except statistic
-        val sortedFeatureList = usageTracker.getSortedUsageData()
+        // Load sorted usage data and set it to the adapter
+        val sortedFeatureList = usageTracker.getSortedUsageData()  // Time stored in seconds
         adapter = FeatureListAdapter(sortedFeatureList)
         recyclerView.adapter = adapter
-        //end
 
-        //Set up toolbar
+        // Set up toolbar
         setSupportActionBar(binding.toolbarStatistics)
-
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.title = "Về trang chủ"
 
@@ -59,31 +50,11 @@ class StatisticsActivity : AppCompatActivity() {
             onBackPressed()
         }
 
-        // end
-
-        setupSpinner()
+        // Setup Bar Chart
         setupBarChart()
-        setupSeeAllActivityButton()
     }
 
-    private fun setupSpinner() {
-        val timeFrames = arrayOf("Day", "Week", "Month", "Year")
-        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, timeFrames)
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.timeFrameSpinner.adapter = adapter
-
-        // Handling spinner selection
-        binding.timeFrameSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                updateChartData(timeFrames[position])
-            }
-
-            override fun onNothingSelected(parent: AdapterView<*>?) {
-                // Do nothing if no selection
-            }
-        }
-    }
-
+    // Function to setup the Bar Chart
     private fun setupBarChart() {
         val barChart: BarChart = binding.barChart
         barChart.description.isEnabled = false
@@ -104,51 +75,74 @@ class StatisticsActivity : AppCompatActivity() {
         leftAxis.axisMinimum = 0f
         leftAxis.valueFormatter = object : ValueFormatter() {
             override fun getFormattedValue(value: Float): String {
-                return "${value.toInt()} min"
+                return formatTime(value.toInt())
             }
         }
 
         barChart.axisRight.isEnabled = false
 
         // Load initial data for "Week"
-        updateChartData("Week")
+        updateChartData("Tuần")
     }
 
+    // Helper function to format time into hours, minutes, and seconds
+    private fun formatTime(seconds: Int): String {
+        return when {
+            seconds >= 3600 -> {
+                val hours = seconds / 3600
+                val remainingMinutes = (seconds % 3600) / 60
+                val remainingSeconds = seconds % 60
+                if (remainingMinutes == 0 && remainingSeconds == 0) {
+                    "$hours giờ"
+                } else if (remainingMinutes > 0 && remainingSeconds == 0) {
+                    "$hours giờ $remainingMinutes phút"
+                } else {
+                    "${hours}g ${remainingMinutes}p $remainingSeconds giây"
+                }
+            }
+            seconds >= 60 -> {
+                val minutes = seconds / 60
+                val remainingSeconds = seconds % 60
+                if (remainingSeconds == 0) {
+                    "$minutes phút"
+                } else {
+                    "${minutes}p $remainingSeconds giây"
+                }
+            }
+            else -> {
+                "$seconds giây"
+            }
+        }
+    }
+
+    // Function to update chart data based on selected time frame
     private fun updateChartData(timeFrame: String) {
         val usageData = when (timeFrame) {
-            "Day" -> usageTracker.getDailyUsageData()
-            "Week" -> usageTracker.getWeeklyUsageData()
-            "Month" -> usageTracker.getMonthlyUsageData()
-            "Year" -> usageTracker.getYearlyUsageData()
+            "Ngày" -> usageTracker.getDailyUsageData()
+            "Tuần" -> usageTracker.getWeeklyUsageData()
+            "Tháng" -> usageTracker.getMonthlyUsageData()
+            "Năm" -> usageTracker.getYearlyUsageData()
             else -> usageTracker.getWeeklyUsageData()
         }
 
         if (usageData.isEmpty()) {
-            // Xử lý khi không có dữ liệu
+            // Handle when there is no data
             binding.barChart.clear()
             return
         }
 
-        // Fix: Sử dụng `map` để tạo các mục BarEntry
         val entries = usageData.entries.map { (key, value) ->
             BarEntry(usageData.keys.indexOf(key).toFloat(), value.toFloat())
         }
 
-        val dataSet = BarDataSet(entries, "Feature Usage (minutes)")
+        val dataSet = BarDataSet(entries, "Feature Usage (giây)")  // Updated label to show time in seconds
         dataSet.color = Color.GREEN
         dataSet.setDrawValues(false)
 
         val barData = BarData(dataSet)
         binding.barChart.data = barData
 
-        // Đảm bảo nhãn xAxis khớp với thứ tự dữ liệu
         binding.barChart.xAxis.valueFormatter = IndexAxisValueFormatter(usageData.keys.toList())
         binding.barChart.invalidate()
-    }
-
-    private fun setupSeeAllActivityButton() {
-        binding.seeAllActivityButton.setOnClickListener {
-            // Implement the action to see all activity
-        }
     }
 }

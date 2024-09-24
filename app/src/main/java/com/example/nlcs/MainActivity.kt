@@ -2,6 +2,7 @@ package com.example.nlcs
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.ActionBarDrawerToggle
@@ -20,11 +21,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var drawerLayout: DrawerLayout
 
 
-    // sửa code tại đây
-    private lateinit var usageTracker: UsageTracker
-    private var startTime: Long = 0
-
-    // end here
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -47,6 +43,8 @@ class MainActivity : AppCompatActivity() {
                 drawerLayout.openDrawer(binding.navigationView)
             }
         }
+
+        updateNavHeader()
 
         // Set click listener for the Flash card
         binding.card1.setOnClickListener {
@@ -78,6 +76,12 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
+        // Set click listener for the Reminder
+        binding.card6.setOnClickListener {
+            val intent = Intent(this, ReminderActivity::class.java)
+            startActivity(intent)
+        }
+
 
         binding.navigationView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
@@ -103,6 +107,16 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         })
+    }
+
+    private fun updateNavHeader() {
+        val headerView = binding.navigationView.getHeaderView(0)
+        val emailTextView: TextView = headerView.findViewById(R.id.nav_header_email)
+
+        val currentUser = firebaseAuth.currentUser
+        if (currentUser != null) {
+            emailTextView.text = currentUser.email
+        }
     }
 }
 

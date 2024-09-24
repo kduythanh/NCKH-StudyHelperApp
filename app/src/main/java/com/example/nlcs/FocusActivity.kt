@@ -323,17 +323,16 @@ class FocusActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
 
-        // Tính toán thời gian sử dụng Focus Mode
+        // Tính toán thời gian sử dụng Hẹn giờ tập trung
         val endTime = System.currentTimeMillis()
         val durationInMillis = endTime - startTime
-        val durationInMinutes = (durationInMillis / 1000 / 60).toInt() // Chuyển đổi thời gian từ milliseconds sang phút
+        val durationInSeconds = (durationInMillis / 1000).toInt() // Chuyển đổi thời gian từ milliseconds sang giây
 
-        // Kiểm tra nếu thời gian sử dụng hợp lệ (lớn hơn 0 phút) thì lưu vào UsageTracker
-        if (durationInMinutes > 0) {
-            usageTracker.addUsageTime("Thời gian tập trung", durationInMinutes)
-        }
-        else {
-            usageTracker.addUsageTime("Thời gian tập trung", 0)
+        // Kiểm tra nếu thời gian sử dụng hợp lệ (lớn hơn 0 giây) thì lưu vào UsageTracker
+        if (durationInSeconds > 0) {
+            usageTracker.addUsageTime("Hẹn giờ tập trung", durationInSeconds)
+        } else {
+            usageTracker.addUsageTime("Hẹn giờ tập trung", 0)
         }
     }
 // End saving time to statistic

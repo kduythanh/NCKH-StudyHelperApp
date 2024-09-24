@@ -5,11 +5,11 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.example.nlcs.databinding.ActivityNoteBinding
+import com.example.nlcs.databinding.ActivityReminderBinding
 
-class NoteActivity : AppCompatActivity() {
 
-    private var binding: ActivityNoteBinding? = null
+class ReminderActivity: AppCompatActivity() {
+    private var binding: ActivityReminderBinding? = null
     // Declare usageTracker to use UsageTracker class
     private lateinit var usageTracker: UsageTracker
     // Setting saving time start at 0
@@ -23,7 +23,7 @@ class NoteActivity : AppCompatActivity() {
 
         enableEdgeToEdge()
 
-        binding = ActivityNoteBinding.inflate(layoutInflater)
+        binding = ActivityReminderBinding.inflate(layoutInflater)
         setContentView(binding?.root)
 
         // Set up Toolbar
@@ -63,9 +63,9 @@ class NoteActivity : AppCompatActivity() {
 
         // Kiểm tra nếu thời gian sử dụng hợp lệ (lớn hơn 0 giây) thì lưu vào UsageTracker
         if (durationInSeconds > 0) {
-            usageTracker.addUsageTime("Ghi chú", durationInSeconds)
+            usageTracker.addUsageTime("Nhắc nhở", durationInSeconds)
         } else {
-            usageTracker.addUsageTime("Ghi chú", 0)
+            usageTracker.addUsageTime("Nhắc nhở", 0)
         }
     }
 
@@ -73,5 +73,4 @@ class NoteActivity : AppCompatActivity() {
         super.onDestroy()
         binding = null
     }
-
 }

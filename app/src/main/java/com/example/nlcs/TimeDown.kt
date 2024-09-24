@@ -276,20 +276,19 @@ class TimeDown : AppCompatActivity() {
         startTime = System.currentTimeMillis()
     }
 
+
     override fun onPause() {
         super.onPause()
 
-        // dừng thời gian sử dụng function và lưu vào ussageTracker
+        // Tính toán thời gian sử dụng Hẹn giờ tập trung
         val endTime = System.currentTimeMillis()
-        val duration = (endTime - startTime) / 1000 / 60 // Convert to minutes
+        val durationInMillis = endTime - startTime
+        val durationInSeconds = (durationInMillis / 1000).toInt() // Chuyển đổi thời gian từ milliseconds sang giây
 
-//        usageTracker.addUsageTime("FocusMode", duration.toInt())
-
-        // Kiểm tra nếu thời gian sử dụng hợp lệ (lớn hơn 0 phút) thì lưu vào UsageTracker
-        if (duration > 0) {
-            usageTracker.addUsageTime("Hẹn giờ tập trung", duration.toInt())
-        }
-        else {
+        // Kiểm tra nếu thời gian sử dụng hợp lệ (lớn hơn 0 giây) thì lưu vào UsageTracker
+        if (durationInSeconds > 0) {
+            usageTracker.addUsageTime("Hẹn giờ tập trung", durationInSeconds)
+        } else {
             usageTracker.addUsageTime("Hẹn giờ tập trung", 0)
         }
     }

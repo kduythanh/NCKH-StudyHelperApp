@@ -5,18 +5,27 @@
     android:orientation="horizontal"
     android:padding="8dp">
 
+    <!-- Thêm ImageView cho icon của feature -->
+    <ImageView
+        android:id="@+id/featureIcon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:layout_marginEnd="8dp"
+         />
+
     <TextView
         android:id="@+id/featureName"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:textSize="16sp"
-        android:textColor="@color/black"/>
+        android:textColor="@color/black"
+        android:textSize="16sp" />
 
     <TextView
         android:id="@+id/featureTime"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="16sp"
-        android:textColor="@color/black"/>
+        android:textColor="@color/black"
+        android:textSize="16sp" />
 </LinearLayout>

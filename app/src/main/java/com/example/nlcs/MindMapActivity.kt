@@ -55,17 +55,16 @@ class MindMapActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
 
-        // Tính toán thời gian sử dụng MindMap
+        // Tính toán thời gian sử dụng Sơ đồ tư duy
         val endTime = System.currentTimeMillis()
         val durationInMillis = endTime - startTime
-        val durationInMinutes = (durationInMillis / 1000 / 60).toInt() // Chuyển đổi thời gian từ milliseconds sang phút
+        val durationInSeconds = (durationInMillis / 1000).toInt() // Chuyển đổi thời gian từ milliseconds sang giây
 
-        // Kiểm tra nếu thời gian sử dụng hợp lệ (lớn hơn 0 phút) thì lưu vào UsageTracker
-        if (durationInMinutes > 0) {
-            usageTracker.addUsageTime("MindMap", durationInMinutes)
-        }
-        else {
-            usageTracker.addUsageTime("MindMap", 0)
+        // Kiểm tra nếu thời gian sử dụng hợp lệ (lớn hơn 0 giây) thì lưu vào UsageTracker
+        if (durationInSeconds > 0) {
+            usageTracker.addUsageTime("Sơ đồ tư duy", durationInSeconds)
+        } else {
+            usageTracker.addUsageTime("Sơ đồ tư duy", 0)
         }
     }
 

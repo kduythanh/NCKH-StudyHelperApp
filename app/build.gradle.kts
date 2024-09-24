@@ -34,11 +34,11 @@ android {
 
     buildFeatures {
         viewBinding = true
+        dataBinding = true
     }
 }
 
 dependencies {
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
@@ -46,7 +46,8 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.firebase.auth)
     implementation(libs.androidx.recyclerview)
-    implementation(libs.firebase.database)
+    implementation(libs.firebase.database.ktx)
+    implementation(libs.firebase.firestore.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -54,5 +55,7 @@ dependencies {
     implementation("com.github.PhilJay:MPAndroidChart:3.1.0")
     implementation ("com.google.code.gson:gson:2.10.1")
     implementation ("androidx.recyclerview:recyclerview:1.2.1")
+//    implementation ("com.google.firebase:firebase-database:20.0.4")
+    implementation ("com.google.firebase:firebase-database-ktx")
 
 }
