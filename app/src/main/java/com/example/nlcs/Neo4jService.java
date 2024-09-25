@@ -40,7 +40,7 @@ public class Neo4jService {
         }
     }
 
-    public void updateNodePositionDB(final String nodeID, final float x, final float y) { // ---------------------------------------------------------------------------------------
+    public void updateNodePositionDB(final String nodeID, final float x, final float y) {
         try (Session session = driver.session()) {
             session.writeTransaction(tx -> {
                 String query = "MATCH (n:MindMap {nodeID: $nodeID}) " +
@@ -175,7 +175,7 @@ public class Neo4jService {
         try (Session session = driver.session()) {
             session.readTransaction(tx -> {
                 Result result = tx.run(
-                        "MATCH (parentNode)-[:CHILD_OF]->(childNode) " +
+                        "MATCH (parentNode)-[:HAS_CHILD]->(childNode) " +
                                 "WHERE parentNode.mindMapID = $mindMapID " +
                                 "RETURN parentNode.nodeID AS parentID, collect(childNode.nodeID) AS childIDs",
                         parameters("mindMapID", mindMapID)

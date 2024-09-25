@@ -67,9 +67,6 @@ class MindMapActivity : AppCompatActivity() {
             val nodeView = parentLayout.getChildAt(i) // Get the child view at the current index.
             val nodeTitleEditText = nodeView.findViewById<EditText>(R.id.MindMapNode)
 
-//            val newTitle = nodeTitleEditText.text.toString()
-//            val nodeID = nodeView.getTag(R.id.node_id_tag) as? String
-//            nodeUpdates.add(mapOf("nodeID" to nodeID!!, "newTitle" to newTitle))
             if (nodeTitleEditText != null) { // Add a null check here
                 val newTitle = nodeTitleEditText.text.toString()
                 val nodeID = nodeView.getTag(R.id.node_id_tag) as? String
@@ -90,9 +87,6 @@ class MindMapActivity : AppCompatActivity() {
         }.start()
     }
 
-
-//  nodeView.x = 625f
-//  nodeView.y = 218f
     // Fetches and displays all nodes for a given mind map ID
     @SuppressLint("ClickableViewAccessibility")
     private fun fetchAndDisplayAllNodes(mindMapID: String) {
@@ -105,7 +99,8 @@ class MindMapActivity : AppCompatActivity() {
 
             runOnUiThread {
                 val parentLayout = binding.zoomableView.findViewById<RelativeLayout>(R.id.mindMapContent)
-                val lineDrawingView = parentLayout.findViewById<LineDrawingView>(R.id.lineDrawingView)
+                val lineDrawingView = binding.zoomableView.findViewById<LineDrawingView>(R.id.lineDrawingView)
+                lineDrawingView.setParentChildMap(parentChildMap, nodes)
 
                 // Display each node in the mind map
                 for (node in nodes) {
@@ -122,7 +117,6 @@ class MindMapActivity : AppCompatActivity() {
                     val y = (node["y"] as? Float) ?: 0f
                     nodeView.x = x
                     nodeView.y = y
-//                    Log.d("Node position", "Node ID: $parentNodeID, X: $x, Y: $y")
 
                     // Disable default long-click behavior of EditText to ensure custom long-click listener works
                     // Ensure custom long-click listener works by overriding default behavior
@@ -188,23 +182,13 @@ class MindMapActivity : AppCompatActivity() {
                         }
                     }
                 }
-
-                // Pass parent-child relationships and node data to LineDrawingView for drawing lines
-                lineDrawingView.setParentChildMap(parentChildMap, nodes)
             }
         }.start()
     }
 
     private fun updateNodePosition(nodeID: String?, x: Float, y: Float) {
         if (nodeID == null) return
-        // Update node position in Neo4j on a background thread
         Thread {
-//            val convertedX =  (x - binding.zoomableView.width / 2) + 110
-//            val convertedY =  (y - binding.zoomableView.height / 2) + 53
-//            val convertedX = (x - binding.zoomableView.height / 2)
-//            val convertedY = (binding.zoomableView.width/ 2 - y)
-//            Log.d("Updated Node position", ", X: $convertedX, Y: $convertedY")
-//            neo4jService.updateNodePositionDB(nodeID, convertedX, convertedY)
             neo4jService.updateNodePositionDB(nodeID, x, y)
         }.start()
     }
@@ -229,7 +213,7 @@ class MindMapActivity : AppCompatActivity() {
                 if (newChildNode != null){
                     runOnUiThread{
                         // Display the new child node in the UI
-                        addNodeToView(newChildNode)
+                        addChildNodeToView(newChildNode)
                         Toast.makeText(this, "Child Node Added", Toast.LENGTH_SHORT).show()
                     }
                 }else{
@@ -296,7 +280,7 @@ class MindMapActivity : AppCompatActivity() {
 
     // Add a newly added child node to view
     @SuppressLint("ClickableViewAccessibility")
-    private fun addNodeToView(node: Map<String, Any>) {
+    private fun addChildNodeToView(node: Map<String, Any>) {
         val parentLayout = binding.zoomableView.findViewById<RelativeLayout>(R.id.mindMapContent)
         val nodeView = layoutInflater.inflate(R.layout.mind_map_node, parentLayout, false)
         val nodeTitleEditText = nodeView.findViewById<EditText>(R.id.MindMapNode)
@@ -395,6 +379,7 @@ class MindMapActivity : AppCompatActivity() {
     private fun refreshMindMap() {
         val parentLayout = binding.zoomableView.findViewById<RelativeLayout>(R.id.mindMapContent)
         parentLayout.removeAllViews() // Clear the current nodes
+
         val mindMapID = intent.getStringExtra("mindMapID") ?: return
         fetchAndDisplayAllNodes(mindMapID) // Fetch and display updated nodes
     }

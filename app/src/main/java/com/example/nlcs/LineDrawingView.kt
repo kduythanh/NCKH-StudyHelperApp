@@ -6,7 +6,8 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
 import android.util.AttributeSet
-import android.view.View
+import android.util.Log
+import android.widget.RelativeLayout
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
@@ -15,7 +16,7 @@ class LineDrawingView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
-) : View(context, attrs, defStyleAttr) {
+) : RelativeLayout(context, attrs, defStyleAttr) {
 
     // Data structure to store parent-child relationships and node positions
     private val parentChildMap: MutableMap<String, List<String>> = mutableMapOf()
@@ -37,8 +38,7 @@ class LineDrawingView @JvmOverloads constructor(
     }
 
     // Buffer space between arrow and node
-    private val bufferSpace = 20f
-
+    private val bufferSpace = 0f
     // Arrowhead size
     private val arrowSize = 20f
 
@@ -54,6 +54,7 @@ class LineDrawingView @JvmOverloads constructor(
             val x = (node["x"] as? Float) ?: 0f
             val y = (node["y"] as? Float) ?: 0f
             nodePositions[nodeID] = Pair(x, y)
+            Log.d("LineDrawingView", "Node $nodeID: x=$x, y=$y")
         }
 
         // Trigger a redraw of the view
@@ -70,11 +71,17 @@ class LineDrawingView @JvmOverloads constructor(
             for (childID in childrenIDs) {
                 val childPosition = nodePositions[childID] ?: continue
 
+                // Log the child node position
+                Log.d("LineDrawingView", "Child ID: $childID, Position: $childPosition")
+
                 // Calculate the start and end points with buffer space
                 val startX = parentPosition.first + bufferSpace
                 val startY = parentPosition.second + bufferSpace
                 val endX = childPosition.first - bufferSpace
                 val endY = childPosition.second - bufferSpace
+
+                // Log the line drawing start and end coordinates
+                Log.d("LineDrawingView", "Drawing line from ($startX, $startY) to ($endX, $endY)")
 
                 // Draw a line from parent to child
                 canvas.drawLine(startX, startY, endX, endY, linePaint)
