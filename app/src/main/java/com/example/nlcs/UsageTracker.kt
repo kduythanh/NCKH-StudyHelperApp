@@ -228,8 +228,33 @@ class UsageTracker(context: Context) {
             }
     }
 
+    fun getDailyUsageTotal(callback: (Map<String, Int>) -> Unit) {
+        val usageData = mutableMapOf<String, Int>()
 
+        // Lấy ngày hiện tại
+        val currentDate = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(Date())
 
+        // Query Firestore để lấy dữ liệu cho ngày hiện tại
+        db.collection("usage_times")
+            .whereEqualTo("date", currentDate)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                for (document in querySnapshot.documents) {
+                    val featureName = document.getString("feature") ?: continue
+                    val usageTime = document.getLong("total_usage_seconds")?.toInt() ?: 0
 
+                    // Cộng dồn thời gian sử dụng cho mỗi chức năng
+                    usageData[featureName] = usageData.getOrDefault(featureName, 0) + usageTime
+                }
+
+                // Log dữ liệu đã lấy
+                Log.d("DailyUsageData", "Retrieved daily usage data: $usageData")
+                callback(usageData)
+            }
+            .addOnFailureListener { e ->
+                Log.e("FirestoreError", "Error retrieving daily usage data: ${e.message}")
+                callback(usageData) // Trả về dữ liệu rỗng nếu có lỗi
+            }
+    }
 
 }

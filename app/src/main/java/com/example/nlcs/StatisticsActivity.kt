@@ -3,7 +3,9 @@ package com.example.nlcs
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
+import android.view.View
 import android.widget.Button
+import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -42,11 +44,6 @@ class StatisticsActivity : AppCompatActivity() {
         recyclerView = findViewById(R.id.featureListRecyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
 
-        // Load sorted usage data and set it to the adapter
-        val sortedFeatureList = usageTracker.getSortedUsageData()  // Time stored in seconds
-        adapter = FeatureListAdapter(sortedFeatureList)
-        recyclerView.adapter = adapter
-
         // Set up toolbar
         setSupportActionBar(binding.toolbarStatistics)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
@@ -55,6 +52,9 @@ class StatisticsActivity : AppCompatActivity() {
         binding.toolbarStatistics.setNavigationOnClickListener {
             onBackPressed()
         }
+
+        // Setup ProgressBar
+        val progressBar: ProgressBar = findViewById(R.id.progressBar)
 
         // Setup Bar Chart
         setupBarChart()
@@ -69,6 +69,9 @@ class StatisticsActivity : AppCompatActivity() {
             val intent = Intent(this, TimeSelectionActivity::class.java)
             startActivity(intent)
         }
+
+        // Get daily usage data and update UI
+        getDailyUsageData(progressBar)
     }
 
     // Function to setup the Bar Chart
@@ -97,9 +100,24 @@ class StatisticsActivity : AppCompatActivity() {
         }
 
         barChart.axisRight.isEnabled = false
+    }
 
-        // Load initial data for "Week"
-        updateChartData("Tuần")
+    // Function to get daily usage data and update UI
+    // Function to get daily usage data and update UI
+    private fun getDailyUsageData(progressBar: ProgressBar) {
+        progressBar.visibility = View.VISIBLE // Hiển thị ProgressBar
+        usageTracker.getDailyUsageTotal { usageData ->
+            // Cập nhật RecyclerView
+            val sortedFeatureList = usageData.toList().sortedByDescending { it.second }
+            adapter = FeatureListAdapter(sortedFeatureList)
+            recyclerView.adapter = adapter
+
+            // Cập nhật biểu đồ với dữ liệu hôm nay
+            updateChartData(usageData)
+
+            // Ẩn ProgressBar sau khi dữ liệu đã tải xong
+            progressBar.visibility = View.GONE
+        }
     }
 
     // Helper function to format time into hours, minutes, and seconds
@@ -132,28 +150,19 @@ class StatisticsActivity : AppCompatActivity() {
         }
     }
 
-    // Function to update chart data based on selected time frame
-    private fun updateChartData(timeFrame: String) {
-        val usageData = when (timeFrame) {
-            "Ngày" -> usageTracker.getDailyUsageData()
-            "Tuần" -> usageTracker.getWeeklyUsageData()
-            "Tháng" -> usageTracker.getMonthlyUsageData()
-            "Năm" -> usageTracker.getYearlyUsageData()
-            else -> usageTracker.getWeeklyUsageData()
-        }
-
+    // Function to update chart data based on daily usage data
+    private fun updateChartData(usageData: Map<String, Int>) {
         if (usageData.isEmpty()) {
             // Handle when there is no data
             binding.barChart.clear()
             return
         }
 
-        val entries = usageData.entries.map { (key, value) ->
-            BarEntry(usageData.keys.indexOf(key).toFloat(), value.toFloat())
+        val entries = usageData.entries.mapIndexed { index, (key, value) ->
+            BarEntry(index.toFloat(), value.toFloat())
         }
 
         val dataSet = BarDataSet(entries, "Feature Usage (giây)")  // Updated label to show time in seconds
-        // Set custom colors for the bars
         dataSet.color = Color.parseColor("#FF5733") // Màu cam
         dataSet.setDrawValues(false)
 
@@ -168,14 +177,44 @@ class StatisticsActivity : AppCompatActivity() {
     }
 
     // Function to display current date and time
+//    private fun displayCurrentDateTime() {
+//        val currentDate = Calendar.getInstance().time
+//        // Định dạng ngày tháng theo định dạng "dd/MM/yyyy"
+//        val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+//        val formattedDate = dateFormat.format(currentDate)
+//
+//        val timeFormat = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
+//        val formattedTime = timeFormat.format(currentDate)
+//
+//        val currentDateTextView: TextView = findViewById(R.id.currentDateTextView)
+//        currentDateTextView.text = "Ngày thống kê: " + formattedDate
+//        val currentTimeTextView: TextView = findViewById(R.id.currentTimeTextView)
+//        currentTimeTextView.text = "Thời điểm thống kê: " + formattedTime
+//    }
+
+    // Function to display current date and time
     private fun displayCurrentDateTime() {
         val currentDate = Calendar.getInstance().time
-        val dateFormat = SimpleDateFormat("HH:mm:ss, dd/MM/yyyy", Locale.getDefault())
+
+        // Định dạng ngày tháng theo định dạng "dd/MM/yyyy"
+        val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
         val formattedDate = dateFormat.format(currentDate)
 
-        val currentDateTimeTextView: TextView = findViewById(R.id.currentDateTimeTextView)
-        currentDateTimeTextView.text = "Vào lúc: " + formattedDate
-    }
+        // Lấy giờ, phút và giây
+        val calendar = Calendar.getInstance()
+        calendar.time = currentDate
+        val hours = calendar.get(Calendar.HOUR_OF_DAY)
+        val minutes = calendar.get(Calendar.MINUTE)
+        val seconds = calendar.get(Calendar.SECOND)
 
+        // Định dạng thời gian
+        val formattedTime = "$hours giờ $minutes phút $seconds giây"
+
+        val currentDateTextView: TextView = findViewById(R.id.currentDateTextView)
+        currentDateTextView.text = "Ngày thống kê: " + formattedDate
+
+        val currentTimeTextView: TextView = findViewById(R.id.currentTimeTextView)
+        currentTimeTextView.text = "Thời điểm thống kê: " + formattedTime
+    }
 
 }
