@@ -1,45 +1,60 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
+    android:fitsSystemWindows="true"
     tools:context=".NoteFunction.NoteFunctionAddActivity">
 
-    <include
-        android:id="@+id/toolbar"
-        layout="@layout/functionmess_toolbar" />
+    <!-- ImageView to display the logo centered in the background with reduced opacity -->
+    <ImageView
+        android:id="@+id/backgroundImage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:alpha="0.1"
+        android:scaleType="centerInside"
+        android:src="@drawable/ic_ctu_logo" /> <!-- 10% opacity -->
 
-    <View
-        android:id="@+id/Divider"
+    <!-- Your content stacked above the image -->
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="2dp"
-        android:background="@color/black" />
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-    <EditText
-        android:id="@+id/edtTitle"
-        android:layout_width="370dp"
-        android:layout_height="40dp"
-        android:layout_gravity="center"
-        android:layout_marginTop="20dp"
-        android:background="@drawable/nodefunction_backgroundedt"
-        android:hint="Nhập tiêu đề"
-        android:padding="8dp"
-        android:textSize="20sp" />
+        <include
+            android:id="@+id/toolbar"
+            layout="@layout/functionmess_toolbar" />
 
-    <EditText
-        android:id="@+id/edtContent"
-        android:layout_width="370dp"
-        android:layout_height="139dp"
-        android:layout_gravity="center"
-        android:layout_marginTop="20dp"
-        android:background="@drawable/nodefunction_backgroundedt"
-        android:gravity="start"
-        android:hint="Nhập nội dung"
-        android:padding="8dp"
-        android:textSize="20sp" />
+        <View
+            android:id="@+id/Divider"
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:background="@color/black" />
 
+        <EditText
+            android:id="@+id/edtTitle"
+            android:layout_width="370dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/nodefunction_backgroundedt"
+            android:hint="Nhập tiêu đề"
+            android:padding="8dp"
+            android:textSize="20sp" />
 
-</LinearLayout>
+        <EditText
+            android:id="@+id/edtContent"
+            android:layout_width="370dp"
+            android:layout_height="139dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/nodefunction_backgroundedt"
+            android:gravity="start"
+            android:hint="Nhập nội dung"
+            android:padding="8dp"
+            android:textSize="20sp" />
+    </LinearLayout>
+</FrameLayout>

@@ -6,10 +6,12 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
+import android.widget.ImageView
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.DividerItemDecoration
@@ -63,6 +65,8 @@ class NoteFunctionAcitivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        //Prevent dark mode
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         setContentView(R.layout.activity_note_function_acitivity)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -84,6 +88,7 @@ class NoteFunctionAcitivity : AppCompatActivity() {
         MyAdapter = MyAdapter(this, filteredList) // Bind the adapter to the filtered list
         binding.RecycleView.adapter = MyAdapter
 
+
         // Firebase Firestore retrieval
         val db = FirebaseFirestore.getInstance()
         val currentUserId = FirebaseAuth.getInstance().currentUser?.uid // Get current user ID
@@ -100,6 +105,13 @@ class NoteFunctionAcitivity : AppCompatActivity() {
             .addOnFailureListener { exception ->
                 Log.w("FirestoreError", "Error getting documents.", exception)
             }
+
+
+        // **Back Arrow Handling**
+        // Find the back arrow ImageView and set a click listener
+        binding.toolbar.root.findViewById<ImageView>(R.id.BackArrow).setOnClickListener {
+            onBackPressed() // Go back to the previous activity when clicked
+        }
 
         // Handle item clicks
         MyAdapter?.onItemClick = { message, position ->
