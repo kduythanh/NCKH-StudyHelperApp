@@ -19,7 +19,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.nlcs.R
 import com.example.nlcs.databinding.ActivityNoteFunctionAcitivityBinding
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
 class NoteFunctionAcitivity : AppCompatActivity() {
@@ -89,11 +88,9 @@ class NoteFunctionAcitivity : AppCompatActivity() {
         binding.RecycleView.adapter = MyAdapter
 
 
-        // Firebase Firestore retrieval
+// Firebase Firestore retrieval
         val db = FirebaseFirestore.getInstance()
-        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid // Get current user ID
         db.collection("notes")
-            .whereEqualTo("userId", currentUserId) // Filter by user ID
             .get()
             .addOnSuccessListener { result ->
                 for (document in result) {

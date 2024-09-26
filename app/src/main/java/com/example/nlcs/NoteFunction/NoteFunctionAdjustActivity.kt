@@ -11,7 +11,6 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.nlcs.R
 import com.example.nlcs.databinding.ActivityNoteFunctionAdjustBinding
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
 class NoteFunctionAdjustActivity : AppCompatActivity() {
@@ -28,7 +27,6 @@ class NoteFunctionAdjustActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-
         binding = ActivityNoteFunctionAdjustBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setSupportActionBar(binding.toolbar.root)
@@ -47,11 +45,10 @@ class NoteFunctionAdjustActivity : AppCompatActivity() {
         }
 
         binding.toolbar.AddMessage.setOnClickListener {
-            if (message != null) {
-                message.messTitle = binding.edtTitle.text.toString()
-                message.messContent = binding.edtContent.text.toString()
-                message.userId = FirebaseAuth.getInstance().currentUser?.uid ?: "" // Update user ID
+            message?.messTitle = binding.edtTitle.text.toString()
+            message?.messContent = binding.edtContent.text.toString()
 
+            if (message != null && message.messId != null) {
                 val db = FirebaseFirestore.getInstance()
 
                 // Update the note using its document ID (messId)
@@ -64,16 +61,17 @@ class NoteFunctionAdjustActivity : AppCompatActivity() {
                     .addOnFailureListener { e ->
                         Log.w("Firestore", "Error updating note", e)
                     }
-
-                val intent = Intent().apply {
-                    putExtra("Message", message)
-                    putExtra(NoteFunctionAcitivity.KEY, NoteFunctionAcitivity.TYPE_EDIT)
-                }
-                setResult(Activity.RESULT_OK, intent)
-                finish()
             }
+
+            val intent = Intent().apply {
+                putExtra("Message", message)
+                putExtra(NoteFunctionAcitivity.KEY, NoteFunctionAcitivity.TYPE_EDIT)
+            }
+            setResult(Activity.RESULT_OK, intent)
+            finish()
         }
+
+
     }
 }
-
 
