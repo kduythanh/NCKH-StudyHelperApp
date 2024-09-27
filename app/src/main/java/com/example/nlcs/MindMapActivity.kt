@@ -16,6 +16,7 @@ import android.widget.RelativeLayout
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import com.example.nlcs.databinding.ActivityMindMapBinding
 import com.google.firebase.auth.FirebaseAuth
 
@@ -32,6 +33,8 @@ class MindMapActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMindMapBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
 
         // Enable the back arrow
         setSupportActionBar(binding.toolbar)
@@ -100,7 +103,15 @@ class MindMapActivity : AppCompatActivity() {
             runOnUiThread {
                 val parentLayout = binding.zoomableView.findViewById<RelativeLayout>(R.id.mindMapContent)
                 val lineDrawingView = binding.zoomableView.findViewById<LineDrawingView>(R.id.lineDrawingView)
-                lineDrawingView.setParentChildMap(parentChildMap, nodes)
+
+                if (lineDrawingView == null) {
+                    Log.e("MindMapActivity", "LineDrawingView is null!")
+                    return@runOnUiThread // Early exit to prevent crash
+                }
+
+                // Maps to hold node widths and heights
+                val nodeWidths = mutableMapOf<String, Int>()
+                val nodeHeights = mutableMapOf<String, Int>()
 
                 // Display each node in the mind map
                 for (node in nodes) {
@@ -119,23 +130,37 @@ class MindMapActivity : AppCompatActivity() {
                     nodeView.y = y
 
                     // Disable default long-click behavior of EditText to ensure custom long-click listener works
-                    // Ensure custom long-click listener works by overriding default behavior
                     nodeTitleEditText.setOnLongClickListener {
                         nodeView.performLongClick()
                         true
                     }
 
                     // Disable default drag and drop behavior of EditText
-                    // To ensure custom drag and drop listener works
                     nodeTitleEditText.setOnDragListener { _, _ -> true }
 
-                    // Set up long press listener for context menu --- change it to view is an option
+                    // Set up long press listener for context menu
                     nodeView.setOnLongClickListener {
                         showContextMenu(it)
                         true
                     }
 
                     parentLayout.addView(nodeView)
+                    nodeView.post {
+                        val width = nodeView.width
+                        val height = nodeView.height
+                        val id = nodeView.getTag(R.id.node_id_tag) as? String
+
+                        // Store widths and heights in maps
+                        if (id != null) {
+                            nodeWidths[id] = width
+                            nodeHeights[id] = height
+                        }
+
+                        // After adding all nodes, pass the updated dimensions to LineDrawingView
+                        if (node == nodes.last()) {
+                            lineDrawingView.setParentChildMap(parentChildMap, nodes, nodeWidths, nodeHeights)
+                        }
+                    }
 
                     // Set up drag and drop listener
                     val dragHandle = nodeView.findViewById<ImageView>(R.id.dragHandle)
@@ -186,6 +211,7 @@ class MindMapActivity : AppCompatActivity() {
         }.start()
     }
 
+
     private fun updateNodePosition(nodeID: String?, x: Float, y: Float) {
         if (nodeID == null) return
         Thread {
@@ -202,7 +228,7 @@ class MindMapActivity : AppCompatActivity() {
 
         // Set up click listeners for each icon in the context menu
         contextMenuView.findViewById<ImageView>(R.id.addChildIcon).setOnClickListener {
-            // Get parentNodeID, childTitle, userID and mindMapID
+            // Get parentNodeID, childTitle, userID, and mindMapID
             val parentNodeID = view.getTag(R.id.node_id_tag) as? String
             val childTitle = "New Child Node"
             val userID = FirebaseAuth.getInstance().currentUser?.uid
@@ -210,14 +236,14 @@ class MindMapActivity : AppCompatActivity() {
 
             Thread {
                 val newChildNode = neo4jService.addChildNode(parentNodeID, childTitle, userID, mindMapID, 0f, 0f)
-                if (newChildNode != null){
-                    runOnUiThread{
+                if (newChildNode != null) {
+                    runOnUiThread {
                         // Display the new child node in the UI
                         addChildNodeToView(newChildNode)
                         Toast.makeText(this, "Child Node Added", Toast.LENGTH_SHORT).show()
                     }
-                }else{
-                    runOnUiThread{
+                } else {
+                    runOnUiThread {
                         Toast.makeText(this, "Failed to add child node", Toast.LENGTH_SHORT).show()
                     }
                 }
@@ -285,6 +311,11 @@ class MindMapActivity : AppCompatActivity() {
         val nodeView = layoutInflater.inflate(R.layout.mind_map_node, parentLayout, false)
         val nodeTitleEditText = nodeView.findViewById<EditText>(R.id.MindMapNode)
         nodeTitleEditText.setText(node["title"] as String)
+
+//        if (lineDrawingView == null) {
+//            Log.e("MindMapActivity", "LineDrawingView is null!")
+//            return@runOnUiThread // Early exit to prevent crash
+//        }
 
         // Retrieve and set the node ID as a tag to identify the node uniquely
         val nodeID = node["nodeID"] as String?
