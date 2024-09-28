@@ -76,8 +76,6 @@ class TrackingProgressActivity : AppCompatActivity() {
 
         // Lấy dữ liệu biểu đồ so sánh và thiết lập listener cho BarChart
         setupComparisonBarChart()
-
-
     }
 
     // Hàm tính toán ngày thứ 2 đến Chủ nhật của tuần này
@@ -461,10 +459,6 @@ class TrackingProgressActivity : AppCompatActivity() {
         }
     }
 
-
-
-    // Hàm cập nhật dữ liệu lên biểu đồ so sánh tuần
-    // Hàm cập nhật dữ liệu lên biểu đồ so sánh tuần
     // Hàm cập nhật dữ liệu lên biểu đồ so sánh tuần
     private fun updateComparisonBarChartWithData(entries: List<BarEntry>, weekLabels: List<String>, averageHours: Float) {
         comparisonBarChart.description.isEnabled = false
@@ -552,9 +546,18 @@ class TrackingProgressActivity : AppCompatActivity() {
 
                 // Lấy dữ liệu của tuần từ biểu đồ thay vì gọi lại usageTracker
                 val totalWeekUsage = comparisonBarChart.data.getDataSetByIndex(0).getEntryForIndex(weekIndex).y
+                val totalWeekUsageInSeconds = (totalWeekUsage * 3600).toInt() // Chuyển đổi từ giờ sang giây
 
-                // Hiển thị thông tin tổng thời gian sử dụng của tuần trong dialog
-                showWeekUsageDetailsDialog(weekIndex, (totalWeekUsage * 3600).toInt()) // Chuyển đổi từ giờ sang giây
+                // Lấy dữ liệu của tuần trước đó (nếu có)
+                val previousWeekUsageInSeconds = if (weekIndex > 0) {
+                    val previousWeekUsage = comparisonBarChart.data.getDataSetByIndex(0).getEntryForIndex(weekIndex - 1).y
+                    (previousWeekUsage * 3600).toInt()
+                } else {
+                    null  // Nếu là tuần đầu tiên (3 tuần trước), không có tuần trước để so sánh
+                }
+
+                // Hiển thị thông tin tổng thời gian sử dụng của tuần và phần trăm thay đổi
+                showWeekUsageDetailsDialog(weekIndex, totalWeekUsageInSeconds, previousWeekUsageInSeconds)
             }
 
             override fun onNothingSelected() {
@@ -566,7 +569,10 @@ class TrackingProgressActivity : AppCompatActivity() {
 
 
     // Hàm hiển thị thông tin tổng thời gian sử dụng của tuần
-    private fun showWeekUsageDetailsDialog(weekIndex: Int, totalSeconds: Int) {
+    // Hàm hiển thị thông tin tổng thời gian sử dụng của tuần và so sánh với tuần trước
+    // Hàm hiển thị thông tin tổng thời gian sử dụng của tuần và so sánh với tuần trước
+    // Hàm hiển thị thông tin tổng thời gian sử dụng của tuần và so sánh với tuần trước
+    private fun showWeekUsageDetailsDialog(weekIndex: Int, totalSeconds: Int, previousWeekSeconds: Int?) {
         val builder = AlertDialog.Builder(this)
         val weekLabel = when (weekIndex) {
             0 -> "3 tuần trước"
@@ -593,6 +599,52 @@ class TrackingProgressActivity : AppCompatActivity() {
 
         // Thêm TextView vào layout
         layout.addView(totalTimeTextView)
+
+        // Nếu có dữ liệu tuần trước đó, tính toán phần trăm thay đổi và chênh lệch thời gian
+        previousWeekSeconds?.let {
+            if (it > 0) {
+                val changePercentage = ((totalSeconds - it) / it.toFloat()) * 100
+                val timeDifference = totalSeconds - it // Chênh lệch thời gian (có thể âm hoặc dương)
+
+                // Tạo TextView hiển thị phần trăm thay đổi
+                val changeTextView = TextView(this)
+                changeTextView.text = if (changePercentage >= 0) {
+                    "Tăng ${String.format("%.2f", changePercentage)}% so với tuần trước"
+                } else {
+                    "Giảm ${String.format("%.2f", -changePercentage)}% so với tuần trước"
+                }
+                changeTextView.setTextColor(resources.getColor(if (changePercentage >= 0) R.color.total_usage_time else R.color.brightRed))
+                changeTextView.gravity = Gravity.CENTER // Căn giữa văn bản
+
+                // Thêm TextView vào layout
+                layout.addView(changeTextView)
+
+                // Tạo TextView hiển thị số giờ, phút, giây tăng hoặc giảm
+                val timeDifferenceTextView = TextView(this)
+                timeDifferenceTextView.text = if (timeDifference >= 0) {
+                    "Nhiều hơn ${formatTime(timeDifference)} so với tuần trước"
+                } else {
+                    "Ít hơn ${formatTime(-timeDifference)} so với tuần trước"
+                }
+                timeDifferenceTextView.setTextColor(resources.getColor(if (timeDifference >= 0) R.color.total_usage_time else R.color.brightRed))
+                timeDifferenceTextView.gravity = Gravity.CENTER
+
+                // Thêm TextView hiển thị chênh lệch thời gian vào layout
+                layout.addView(timeDifferenceTextView)
+            } else {
+                // Trường hợp tuần trước đó có dữ liệu nhưng là 0 giây
+                val noPreviousDataTextView = TextView(this)
+                noPreviousDataTextView.text = "Không có dữ liệu sử dụng tuần trước để so sánh."
+                noPreviousDataTextView.gravity = Gravity.CENTER
+                layout.addView(noPreviousDataTextView)
+            }
+        } ?: run {
+            // Nếu không có dữ liệu của tuần trước (null)
+            val noDataTextView = TextView(this)
+            noDataTextView.text = "Không có dữ liệu của tuần trước để so sánh"
+            noDataTextView.gravity = Gravity.CENTER
+            layout.addView(noDataTextView)
+        }
 
         builder.setView(layout)
         builder.setPositiveButton("OK", null)
