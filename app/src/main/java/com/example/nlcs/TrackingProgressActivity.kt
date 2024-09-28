@@ -35,9 +35,15 @@ class TrackingProgressActivity : AppCompatActivity() {
 
     val usageTracker = UsageTracker(this)
     lateinit var barChart: BarChart
+    private lateinit var comparisonBarChart: BarChart
 
     // Khai báo ProgressBar và RecyclerView
     private lateinit var progressBar: ProgressBar
+
+
+    // Biến để theo dõi trạng thái tải dữ liệu
+    private var isWeeklyDataLoaded = false
+    private var isComparisonDataLoaded = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,6 +52,7 @@ class TrackingProgressActivity : AppCompatActivity() {
 
 
         barChart = findViewById(R.id.weeklyBarChart)
+        comparisonBarChart = findViewById(R.id.comparisonBarChart)
 
         // Set up toolbar
         setSupportActionBar(binding.toolbarStatistics)
@@ -61,7 +68,16 @@ class TrackingProgressActivity : AppCompatActivity() {
 
         // Lấy dữ liệu biểu đồ và thiết lập listener cho BarChart
         getWeeklyUsageData()
+
         setupBarChartListener()
+
+        // Thiết lập listener cho biểu đồ thứ 2 sau khi dữ liệu đã được cập nhật
+        setupComparisonBarChartListener()
+
+        // Lấy dữ liệu biểu đồ so sánh và thiết lập listener cho BarChart
+        setupComparisonBarChart()
+
+
     }
 
     // Hàm tính toán ngày thứ 2 đến Chủ nhật của tuần này
@@ -100,51 +116,34 @@ class TrackingProgressActivity : AppCompatActivity() {
         return days
     }
 
-
-
     private fun getWeeklyUsageData() {
-        val weekDays = getWeekDays() // Lấy danh sách các ngày từ thứ 2 đến CN (định dạng dd-MM-yyyy)
-        val weekDaysForDisplay = weekDays.map { day -> // Định dạng hiển thị thành dd/MM
+        val weekDays = getWeekDays()
+        val weekDaysForDisplay = weekDays.map { day ->
             val dateFormat = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
             val parsedDate = dateFormat.parse(day)
             SimpleDateFormat("dd/MM", Locale.getDefault()).format(parsedDate!!)
         }
         val entries = mutableListOf<BarEntry>()
 
-        // Sử dụng usageTracker để lấy dữ liệu từ Firestore
         usageTracker.getWeeklyUsage { weeklyData ->
-            var totalWeekSeconds = 0 // Biến để lưu tổng thời gian của cả tuần
+            var totalWeekSeconds = 0
 
             weekDays.forEachIndexed { index, day ->
-                val totalSeconds = weeklyData[day] ?: 0 // Nếu không có dữ liệu, mặc định là 0
-                Log.d("TrackingProgress", "Ngày: $day, Thời gian: $totalSeconds giây")
-
-                // Cộng dồn thời gian cho cả tuần
+                val totalSeconds = weeklyData[day] ?: 0
                 totalWeekSeconds += totalSeconds
-
-                // Chuyển từ giây sang giờ cho biểu đồ
                 val totalHours = totalSeconds / 3600f
-                entries.add(BarEntry(index.toFloat(), totalHours)) // Thêm vào danh sách BarEntry
+                entries.add(BarEntry(index.toFloat(), totalHours))
             }
 
-            // Ẩn ProgressBar và loading overlay khi dữ liệu đã tải xong
-            showLoading(false)
-
-
-            // Tính trung bình cộng thời gian sử dụng trong tuần
             val averageTime = totalWeekSeconds / 7
-
-            // Hiển thị tổng thời gian sử dụng và trung bình cộng, cũng như ngày đã định dạng
             displayWeeklySummary(totalWeekSeconds, averageTime)
+            updateBarChartWithData(entries, weekDaysForDisplay, averageTime / 3600f)
 
-            // Cập nhật biểu đồ với dữ liệu và hiển thị đường trung bình
-            updateBarChartWithData(entries, weekDaysForDisplay, averageTime / 3600f) // Chuyển đổi giây thành giờ cho đường trung bình
-
-            // Gọi hàm để thêm listener cho BarChart
-            setupBarChartListener()
+            // Đánh dấu rằng biểu đồ tuần đã tải xong
+            isWeeklyDataLoaded = true // Đánh dấu là dữ liệu của biểu đồ tuần đã được tải xong
+            checkIfDataLoaded() // Kiểm tra xem cả hai dữ liệu đã tải xong chưa
         }
     }
-
 
     // Hàm hiển thị tổng thời gian sử dụng của tuần và trung bình cộng
     // Hàm hiển thị tổng thời gian sử dụng của tuần và định dạng ngày tháng
@@ -193,7 +192,6 @@ class TrackingProgressActivity : AppCompatActivity() {
     }
 
     // Hàm cập nhật dữ liệu lên biểu đồ
-
     private fun updateBarChartWithData(entries: List<BarEntry>, days: List<String>, averageHours: Float) {
         barChart.description.isEnabled = false
         barChart.setDrawValueAboveBar(false) // Không hiển thị dữ liệu trên cột
@@ -262,7 +260,7 @@ class TrackingProgressActivity : AppCompatActivity() {
 
     // Hàm thêm đường trung bình vào biểu đồ
     private fun addAverageLine(averageHours: Float) {
-        val limitLine = LimitLine(averageHours, "Trung bình")
+        val limitLine = LimitLine(averageHours, "")
         limitLine.lineWidth = 2f
         limitLine.lineColor = resources.getColor(R.color.brightRed)  // Đặt màu đỏ cho đường trung bình
         limitLine.enableDashedLine(10f, 10f, 0f)  // Đặt kiểu nét đứt
@@ -413,5 +411,209 @@ class TrackingProgressActivity : AppCompatActivity() {
             binding.progressContainer.visibility = View.GONE
         }
     }
+
+    // Hàm để thiết lập biểu đồ so sánh
+    // Hàm để thiết lập biểu đồ so sánh tuần
+    private fun setupComparisonBarChart() {
+        // Lấy dữ liệu sử dụng của các tuần trước và tuần hiện tại
+        usageTracker.getPreviousWeeksUsage(4) { weeksUsageData ->
+            if (weeksUsageData.isNotEmpty()) {
+                // Khởi tạo danh sách để lưu trữ các BarEntry
+                val entries = mutableListOf<BarEntry>()
+
+                // Nhãn cho trục X tương ứng với 4 tuần (3 tuần trước và tuần hiện tại)
+                val weekLabels = listOf("3 tuần trước", "2 tuần trước", "1 tuần trước", "Tuần hiện tại")
+
+                // Biến lưu tổng thời gian sử dụng và số tuần có dữ liệu
+                var totalUsageAllWeeks = 0f
+                var numberOfWeeksWithData = 0
+
+                // Duyệt qua dữ liệu và tạo các mục BarEntry cho biểu đồ
+                weeksUsageData.forEachIndexed { index, totalWeekUsage ->
+                    val weekUsageInHours = totalWeekUsage / 3600f  // Chuyển đổi từ giây sang giờ
+
+                    // Tính tổng thời gian sử dụng nếu có dữ liệu
+                    if (weekUsageInHours > 0) {
+                        totalUsageAllWeeks += weekUsageInHours
+                        numberOfWeeksWithData++
+                    }
+
+                    // Thêm mục BarEntry vào danh sách (X là index của tuần, Y là giờ sử dụng)
+                    entries.add(BarEntry(index.toFloat(), weekUsageInHours))
+                }
+
+                // Tính giá trị trung bình thời gian sử dụng giữa các tuần
+                val averageUsage = if (numberOfWeeksWithData > 0) {
+                    totalUsageAllWeeks / numberOfWeeksWithData
+                } else {
+                    0f  // Nếu không có dữ liệu, trung bình là 0
+                }
+
+                // Gọi hàm để cập nhật dữ liệu và hiển thị biểu đồ
+                updateComparisonBarChartWithData(entries, weekLabels, averageUsage)
+
+                // Đánh dấu rằng biểu đồ so sánh đã tải xong
+                isComparisonDataLoaded = true
+                checkIfDataLoaded()  // Kiểm tra xem cả hai biểu đồ đã tải xong chưa
+            } else {
+                Log.e("ComparisonBarChart", "Không có đủ dữ liệu để hiển thị biểu đồ.")
+            }
+        }
+    }
+
+
+
+    // Hàm cập nhật dữ liệu lên biểu đồ so sánh tuần
+    // Hàm cập nhật dữ liệu lên biểu đồ so sánh tuần
+    // Hàm cập nhật dữ liệu lên biểu đồ so sánh tuần
+    private fun updateComparisonBarChartWithData(entries: List<BarEntry>, weekLabels: List<String>, averageHours: Float) {
+        comparisonBarChart.description.isEnabled = false
+        comparisonBarChart.setDrawValueAboveBar(false) // Không hiển thị dữ liệu trên cột
+        comparisonBarChart.setDrawGridBackground(false)
+        comparisonBarChart.setPinchZoom(false)
+        comparisonBarChart.setScaleEnabled(false)
+        comparisonBarChart.legend.isEnabled = false
+        comparisonBarChart.setDrawValueAboveBar(false) // ẩn giá trị trên thanh
+
+        // Tạo BarDataSet cho biểu đồ với dữ liệu tuần
+        val barDataSet = BarDataSet(entries, "So sánh thời gian sử dụng theo tuần")
+        barDataSet.color = resources.getColor(R.color.blue_bei)
+
+        // Điều chỉnh kích thước của nhãn để hiển thị tốt hơn khi nằm ngoài cột
+        barDataSet.valueTextSize = 12f
+
+        barDataSet.valueFormatter = object : ValueFormatter() {
+            override fun getBarLabel(barEntry: BarEntry?): String {
+                val value = barEntry?.y ?: 0f
+                return if (value == 0f) "" else formatTime((value * 3600).toInt())
+            }
+        }
+        barDataSet.setDrawValues(false)
+
+        val data = BarData(barDataSet)
+        data.barWidth = 0.6f
+        comparisonBarChart.data = data
+
+        // Thêm đường trung bình (average line) vào biểu đồ tuần
+        addAverageLineToComparisonChart(averageHours)
+
+        val xAxis = comparisonBarChart.xAxis
+        xAxis.valueFormatter = IndexAxisValueFormatter(weekLabels)  // Sử dụng nhãn tuần
+        xAxis.position = XAxis.XAxisPosition.BOTTOM
+        xAxis.granularity = 1f
+        xAxis.labelRotationAngle = 0f
+        xAxis.setDrawGridLines(false)
+        xAxis.axisLineWidth = 1.1f // Đặt độ dày cho đường kẻ của trục X
+        xAxis.axisLineColor = resources.getColor(R.color.black) // Đặt màu cho đường kẻ
+
+        val yAxisLeft = comparisonBarChart.axisLeft
+        yAxisLeft.axisMinimum = 0f
+        yAxisLeft.setDrawGridLines(true)
+        yAxisLeft.setDrawLabels(true)
+        yAxisLeft.axisLineWidth = 1f // Đặt độ dày cho đường kẻ của trục Y
+        yAxisLeft.axisLineColor = resources.getColor(R.color.black) // Đặt màu cho đường kẻ
+
+        // Định dạng trục Y để hiển thị thời gian dạng giờ/phút
+        val yAxisFormatter = object : ValueFormatter() {
+            override fun getFormattedValue(value: Float): String {
+                val totalSeconds = (value * 3600).toInt()
+                val hours = totalSeconds / 3600
+                val minutes = (totalSeconds % 3600) / 60
+                val seconds = totalSeconds % 60
+
+                return when {
+                    hours > 0 -> String.format("%d giờ", hours)
+                    minutes > 0 -> String.format("%02d phút", minutes)
+                    else -> String.format("%02d giây", seconds)
+                }
+            }
+        }
+        yAxisLeft.valueFormatter = yAxisFormatter
+        comparisonBarChart.axisRight.isEnabled = false
+
+        comparisonBarChart.invalidate() // Vẽ lại biểu đồ
+    }
+
+
+
+
+    // Hàm để kiểm tra trạng thái tải dữ liệu
+    private fun checkIfDataLoaded() {
+        if (isWeeklyDataLoaded && isComparisonDataLoaded) {
+            showLoading(false) // Ẩn ProgressBar khi cả hai dữ liệu đã tải xong
+        }
+    }
+
+    // Hàm thêm listener cho biểu đồ so sánh
+    private fun setupComparisonBarChartListener() {
+        comparisonBarChart.setOnChartValueSelectedListener(object : OnChartValueSelectedListener {
+            override fun onValueSelected(e: Entry, h: Highlight) {
+                val weekIndex = e.x.toInt() // Lấy chỉ số của cột được chọn
+
+                // Lấy dữ liệu của tuần từ biểu đồ thay vì gọi lại usageTracker
+                val totalWeekUsage = comparisonBarChart.data.getDataSetByIndex(0).getEntryForIndex(weekIndex).y
+
+                // Hiển thị thông tin tổng thời gian sử dụng của tuần trong dialog
+                showWeekUsageDetailsDialog(weekIndex, (totalWeekUsage * 3600).toInt()) // Chuyển đổi từ giờ sang giây
+            }
+
+            override fun onNothingSelected() {
+                // Không làm gì khi không có cột nào được chọn
+            }
+        })
+    }
+
+
+
+    // Hàm hiển thị thông tin tổng thời gian sử dụng của tuần
+    private fun showWeekUsageDetailsDialog(weekIndex: Int, totalSeconds: Int) {
+        val builder = AlertDialog.Builder(this)
+        val weekLabel = when (weekIndex) {
+            0 -> "3 tuần trước"
+            1 -> "2 tuần trước"
+            2 -> "1 tuần trước"
+            3 -> "Tuần hiện tại"
+            else -> "Không xác định"
+        }
+
+        builder.setTitle("Tổng thời gian sử dụng của $weekLabel")
+
+        // Tạo LinearLayout để chứa TextView
+        val layout = LinearLayout(this)
+        layout.orientation = LinearLayout.VERTICAL
+        layout.gravity = Gravity.CENTER // Căn giữa toàn bộ bảng
+        layout.setPadding(60, 16, 60, 16) // Tăng khoảng cách lề trái và phải so với bảng
+
+        // Tạo TextView hiển thị tổng thời gian sử dụng
+        val totalTimeTextView = TextView(this)
+        totalTimeTextView.text = "Tổng thời gian sử dụng: ${formatTime(totalSeconds)}"
+        totalTimeTextView.setTypeface(null, android.graphics.Typeface.BOLD) // Tô đậm
+        totalTimeTextView.setTextColor(resources.getColor(R.color.brightRed)) // Đổi màu chữ thành đỏ
+        totalTimeTextView.gravity = Gravity.CENTER // Căn giữa văn bản
+
+        // Thêm TextView vào layout
+        layout.addView(totalTimeTextView)
+
+        builder.setView(layout)
+        builder.setPositiveButton("OK", null)
+        builder.show()
+    }
+
+    // Hàm thêm đường trung bình vào biểu đồ so sánh
+    private fun addAverageLineToComparisonChart(averageHours: Float) {
+        val limitLine = LimitLine(averageHours, "")
+        limitLine.lineWidth = 2f
+        limitLine.lineColor = resources.getColor(R.color.brightRed)  // Đặt màu đỏ cho đường trung bình
+        limitLine.enableDashedLine(10f, 10f, 0f)  // Đặt kiểu nét đứt
+        limitLine.labelPosition = LimitLine.LimitLabelPosition.RIGHT_TOP
+        limitLine.textSize = 12f
+
+        // Thêm đường giới hạn vào trục Y của biểu đồ so sánh
+        val yAxisLeft = comparisonBarChart.axisLeft
+        yAxisLeft.addLimitLine(limitLine)
+    }
+
+
+
 
 }

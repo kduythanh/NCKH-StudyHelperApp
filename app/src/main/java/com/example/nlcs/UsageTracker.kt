@@ -266,7 +266,7 @@ class UsageTracker(context: Context) {
     }
 
 
-    // Hàm lấy dữ liệu từ Firestore (UsageTracker class)
+    // Hàm lấy tổng thời gian sử dụng trong tuần hiện tại
     fun getWeeklyUsage(callback: (Map<String, Int>) -> Unit) {
         val currentUser = FirebaseAuth.getInstance().currentUser
         val userId = currentUser?.uid
@@ -316,8 +316,6 @@ class UsageTracker(context: Context) {
             callback(emptyMap())  // Trả về Map rỗng nếu người dùng chưa đăng nhập
         }
     }
-
-
 
 
     // Hàm thống kê thời gian sử dụng theo tháng (12 tháng trong năm)
@@ -390,6 +388,104 @@ class UsageTracker(context: Context) {
         }
     }
 
+
+    fun getTotalUsageBetweenDates(
+        startDate: Date,
+        endDate: Date,
+        callback: (Int) -> Unit
+    ) {
+        getUsageDataBetweenDates(startDate, endDate) { usageData ->
+            val totalSeconds = usageData.values.sum()  // Tính tổng thời gian sử dụng (giây)
+            callback(totalSeconds)
+        }
+    }
+
+
+    fun getPreviousWeeksUsage(weeks: Int, callback: (List<Int>) -> Unit) {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        val userId = currentUser?.uid
+
+        if (userId != null) {
+            val weeksData = MutableList(weeks) { 0 }
+            var callbacksReceived = 0
+
+            val calendar = Calendar.getInstance()
+
+            for (week in 0 until weeks) {
+                val weekStart = calendar.clone() as Calendar
+                weekStart.firstDayOfWeek = Calendar.MONDAY
+                weekStart.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY)
+                weekStart.add(Calendar.WEEK_OF_YEAR, -week)
+
+                val weekEnd = weekStart.clone() as Calendar
+                weekEnd.add(Calendar.DAY_OF_WEEK, 6)
+
+                val weekIndex = weeks - week - 1  // Correct index mapping
+
+                getTotalUsageBetweenDates(weekStart.time, weekEnd.time) { totalUsage ->
+                    weeksData[weekIndex] = totalUsage
+                    callbacksReceived += 1
+
+                    if (callbacksReceived == weeks) {
+                        callback(weeksData)
+                    }
+                }
+            }
+        } else {
+            Log.w("UsageTracker", "Người dùng chưa đăng nhập.")
+            callback(emptyList())
+        }
+    }
+
+    // Hàm lấy dữ liệu chi tiết cho từng tính năng trong một tuần
+    fun getDetailedUsageForWeek(startDate: String, endDate: String, callback: (Map<String, Int>) -> Unit) {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        val userId = currentUser?.uid
+
+        if (userId != null) {
+            // Lấy danh sách các ngày từ startDate đến endDate
+            val dateFormat = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
+            val calendar = Calendar.getInstance()
+
+            val start = dateFormat.parse(startDate)
+            val end = dateFormat.parse(endDate)
+
+            if (start != null && end != null) {
+                calendar.time = start
+                val datesInWeek = mutableListOf<String>()
+                while (!calendar.after(end)) {
+                    datesInWeek.add(dateFormat.format(calendar.time)) // Thêm ngày vào danh sách
+                    calendar.add(Calendar.DATE, 1) // Chuyển sang ngày tiếp theo
+                }
+
+                db.collection("usage_times")
+                    .whereEqualTo("userId", userId)
+                    .whereIn("date", datesInWeek) // Lọc theo các ngày trong tuần
+                    .get()
+                    .addOnSuccessListener { querySnapshot ->
+                        val featureData = mutableMapOf<String, Int>()
+                        for (document in querySnapshot.documents) {
+                            val feature = document.getString("feature") ?: continue
+                            val usageSeconds = document.getLong("total_usage_seconds")?.toInt() ?: 0
+
+                            // Cộng dồn thời gian sử dụng cho từng tính năng
+                            featureData[feature] = featureData.getOrDefault(feature, 0) + usageSeconds
+                        }
+                        callback(featureData)
+                    }
+                    .addOnFailureListener { e ->
+                        Log.e("UsageTracker", "Lỗi khi lấy dữ liệu chi tiết cho tuần từ $startDate đến $endDate: ${e.message}")
+                        callback(emptyMap())
+                    }
+            } else {
+                Log.e("UsageTracker", "Lỗi định dạng ngày startDate hoặc endDate.")
+                callback(emptyMap())
+            }
+        } else {
+            Log.w("UsageTracker", "Người dùng chưa đăng nhập, không thể lấy dữ liệu chi tiết.")
+            callback(emptyMap())
+        }
+    }
 
 
 
