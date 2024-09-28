@@ -243,6 +243,7 @@ class TimeDown : AppCompatActivity() {
 
     // Show the remain time when counting down
     override fun onBackPressed() {
+        // Kiểm tra nếu đếm ngược đang chạy
         if (isCounting) {
             // Kiểm tra nếu thời gian vẫn còn khi người dùng cố gắng thoát
             val totalSecondsLeft = hours * 3600 + minutes * 60 + seconds
@@ -264,11 +265,29 @@ class TimeDown : AppCompatActivity() {
                 super.onBackPressed() // Thực hiện hành động thoát nếu không còn thời gian
             }
         } else {
-            super.onBackPressed() // Thực hiện hành động thoát nếu không đếm ngược
+            val totalSecondsLeft = hours * 3600 + minutes * 60 + seconds
+            if (totalSecondsLeft > 0) {
+                // Hiển thị hộp thoại cảnh báo nếu còn thời gian
+                AlertDialog.Builder(this)
+                    .setTitle("Bạn có muốn thoát không?")
+                    .setMessage("Bạn vẫn còn $hours giờ, $minutes phút, và $seconds giây. Bạn có muốn thoát không? Thời gian còn lại sẽ không được lưu.")
+                    .setPositiveButton("Có") { dialog, _ ->
+                        stopCount()
+                        dialog.dismiss()
+                        super.onBackPressed()
+                    }
+                    .setNegativeButton("Không") { dialog, _ ->
+                        dialog.dismiss()
+                    }
+                    .show()
+            } else {
+                super.onBackPressed() // Thực hiện hành động thoát nếu không đếm ngược
+            }
+
         }
     }
 
-// Counting down time and save data into usageTracker
+    // Counting down time and save data into usageTracker
     override fun onResume() {
         super.onResume()
 

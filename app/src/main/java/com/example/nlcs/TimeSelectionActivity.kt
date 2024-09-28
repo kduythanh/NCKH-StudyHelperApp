@@ -2,12 +2,14 @@ package com.example.nlcs
 
 import android.app.DatePickerDialog
 import android.graphics.Color
+import android.graphics.Typeface
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.nlcs.databinding.ActivityTimeSelectionBinding
@@ -58,6 +60,7 @@ class TimeSelectionActivity : AppCompatActivity() {
         // Set up Bar Chart
         setupBarChart()
 
+
         // Khởi tạo ProgressBar
         progressBar = binding.progressBar
 
@@ -74,11 +77,15 @@ class TimeSelectionActivity : AppCompatActivity() {
             val startDateText = binding.startDateTextView.text.toString().trim()
             val endDateText = binding.endDateTextView.text.toString().trim()
 
+            // Khai báo định dạng cho ngày
+            val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
             when {
+                // Kiểm tra ngày bắt đầu và ngày kết thúc
                 startDateText.isEmpty() && endDateText.isEmpty() -> {
                     showError("Vui lòng chọn cả ngày bắt đầu và ngày kết thúc.")
                     return@setOnClickListener
                 }
+
                 startDateText.isEmpty() -> {
                     showError("Vui lòng chọn ngày bắt đầu.")
                     return@setOnClickListener
@@ -88,11 +95,12 @@ class TimeSelectionActivity : AppCompatActivity() {
                     return@setOnClickListener
                 }
                 startDate.after(endDate) -> {
-                    showError("Ngày bắt đầu không được lớn hơn ngày kết thúc.")
+                    showError("Ngày bắt đầu không được sau ngày kết thúc.")
                     return@setOnClickListener
                 }
                 endDate.after(currentDate) -> {
-                    showError("Ngày kết thúc không được lớn hơn ngày hiện tại.")
+                    val currentDateFormatted = dateFormat.format(currentDate.time) // Định dạng ngày hiện tại
+                    showError("Ngày kết thúc không được sau ngày hiện tại: $currentDateFormatted")
                     return@setOnClickListener
                 }
             }
@@ -116,7 +124,7 @@ class TimeSelectionActivity : AppCompatActivity() {
                 this,
                 { _, year, month, dayOfMonth ->
                     startDate.set(year, month, dayOfMonth)
-                    binding.startDateTextView.text = dateFormat.format(startDate.time)
+                    binding.startDateTextView.text = "Từ: " + dateFormat.format(startDate.time)
                 },
                 startDate.get(Calendar.YEAR),
                 startDate.get(Calendar.MONTH),
@@ -131,7 +139,7 @@ class TimeSelectionActivity : AppCompatActivity() {
                 this,
                 { _, year, month, dayOfMonth ->
                     endDate.set(year, month, dayOfMonth)
-                    binding.endDateTextView.text = dateFormat.format(endDate.time)
+                    binding.endDateTextView.text = "Đến: " + dateFormat.format(endDate.time)
                 },
                 endDate.get(Calendar.YEAR),
                 endDate.get(Calendar.MONTH),
@@ -143,7 +151,11 @@ class TimeSelectionActivity : AppCompatActivity() {
 
     // Setup the Bar Chart
     private fun setupBarChart() {
+        // Tạo bo góc cho biểu đồ
         val barChart: BarChart = binding.barChartTimeSelection
+        barChart.renderer = CylinderBarChartRenderer(barChart, barChart.animator, barChart.viewPortHandler)
+
+        // Các thiết lập khác cho biểu đồ, ví dụ như màu sắc, nhãn trục, ...
         barChart.description.isEnabled = false // Disable description
         barChart.setDrawValueAboveBar(false) // Hide values on top of bars
         barChart.setDrawGridBackground(false) // Remove background grid
@@ -155,12 +167,16 @@ class TimeSelectionActivity : AppCompatActivity() {
         xAxis.position = XAxis.XAxisPosition.BOTTOM
         xAxis.setDrawGridLines(false) // Hide grid lines on X axis
         xAxis.granularity = 1f
+        xAxis.axisLineWidth = 1f // Đặt độ dày cho đường kẻ của trục X
+        xAxis.axisLineColor = resources.getColor(R.color.black) // Đặt màu cho đường kẻ
 
-        val leftAxis = barChart.axisLeft
-        leftAxis.setPosition(YAxis.YAxisLabelPosition.OUTSIDE_CHART)
-        leftAxis.spaceTop = 15f
-        leftAxis.axisMinimum = 0f
-        leftAxis.valueFormatter = object : ValueFormatter() {
+        val yAxisLeft = barChart.axisLeft
+        yAxisLeft.setPosition(YAxis.YAxisLabelPosition.OUTSIDE_CHART)
+        yAxisLeft.spaceTop = 15f
+        yAxisLeft.axisMinimum = 0f
+        yAxisLeft.axisLineWidth = 1f // Đặt độ dày cho đường kẻ của trục Y
+        yAxisLeft.axisLineColor = resources.getColor(R.color.black) // Đặt màu cho đường kẻ
+        yAxisLeft.valueFormatter = object : ValueFormatter() {
             override fun getFormattedValue(value: Float): String {
                 return formatTime(value.toInt())
             }
@@ -207,12 +223,22 @@ class TimeSelectionActivity : AppCompatActivity() {
         val startDateInDate = startDate.time
         val endDateInDate = endDate.time
 
+        // Hiển thị lớp mờ và tiến trình
+        val loadingOverlay = findViewById<View>(R.id.loadingOverlay)
+        val progressContainer = findViewById<ConstraintLayout>(R.id.progressContainer)
+
+        // Hiển thị khi tải dữ liệu
+        loadingOverlay.visibility = View.VISIBLE
+        progressContainer.visibility = View.VISIBLE
+
+
         // Gọi hàm getUsageDataBetweenDates với callback
         usageTracker.getUsageDataBetweenDates(startDateInDate, endDateInDate) { usageData ->
             Log.d("UsageData", "Usage Data: $usageData") // Kiểm tra dữ liệu trả về
 
-            // Ẩn ProgressBar khi dữ liệu đã được tải về
-            progressBar.visibility = View.GONE
+            // Sau khi tải dữ liệu hoàn tất, ẩn chúng
+            loadingOverlay.visibility = View.GONE
+            progressContainer.visibility = View.GONE
 
             if (usageData.isEmpty()) {
                 // Handle no data case
@@ -236,7 +262,7 @@ class TimeSelectionActivity : AppCompatActivity() {
             }
 
             val dataSet = BarDataSet(entries, "Feature Usage (giây)")
-            dataSet.color = Color.parseColor("#FF5733")
+            dataSet.color = Color.parseColor("#F7BEBE")
             dataSet.setDrawValues(false)
 
             val barData = BarData(dataSet)
@@ -260,6 +286,41 @@ class TimeSelectionActivity : AppCompatActivity() {
     private fun showError(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
+
+//    private fun setupCylinderBarChart() {
+//        val barChart = binding.barChartTimeSelection // Đúng tên biến biểu đồ trong layout
+//        barChart.renderer = CylinderBarChartRenderer(barChart, barChart.animator, barChart.viewPortHandler)
+//
+//        // Các thiết lập khác cho barChart, ví dụ như cấu hình dữ liệu, màu sắc...
+//        barChart.description.isEnabled = false
+//        barChart.setDrawValueAboveBar(false)
+//        barChart.setDrawGridBackground(false)
+//        barChart.setPinchZoom(false)
+//        barChart.setScaleEnabled(false)
+//        barChart.legend.isEnabled = false
+//
+//        val xAxis = barChart.xAxis
+//        xAxis.position = XAxis.XAxisPosition.BOTTOM
+//        xAxis.setDrawGridLines(false)
+//        xAxis.granularity = 1f
+//
+//        val leftAxis = barChart.axisLeft
+//        leftAxis.setPosition(YAxis.YAxisLabelPosition.OUTSIDE_CHART)
+//        leftAxis.spaceTop = 15f
+//        leftAxis.axisMinimum = 0f
+//        leftAxis.valueFormatter = object : ValueFormatter() {
+//            override fun getFormattedValue(value: Float): String {
+//                return formatTime(value.toInt())
+//            }
+//        }
+//
+//        barChart.axisRight.isEnabled = false
+//
+//        // Cập nhật dữ liệu cho biểu đồ
+//        updateChartData()
+//    }
+
+
 
 
 }

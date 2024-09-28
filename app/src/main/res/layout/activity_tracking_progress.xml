@@ -5,7 +5,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".StatisticsActivity">
+    tools:context=".TrackingProgressActivity"
+    >
 
     <!-- Toolbar cho phần tiêu đề -->
     <androidx.appcompat.widget.Toolbar
@@ -19,119 +20,71 @@
         app:layout_constraintTop_toTopOf="parent"
         app:titleTextColor="@color/colorPrimary" />
 
-    <!-- TextView cho phần tiêu đề của thống kê -->
+    <!-- TextView để hiển thị tiêu đề -->
     <TextView
-        android:id="@+id/timeFrameTextView"
+        android:id="@+id/titleTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:gravity="center"
-        android:lineSpacingExtra="8dp"
-        android:padding="8dp"
-        android:text="THỐNG KÊ\nthời gian sử dụng các chức năng"
-        android:textColor="@color/purple_200"
+        android:layout_marginTop="16dp"
+        android:text="Thống kê theo tuần hiện tại"
+        android:textColor="@color/pink"
         android:textSize="18sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/toolbarStatistics" />
+        app:layout_constraintTop_toBottomOf="@+id/toolbarStatistics" />
 
-    <!-- Hiển thị ngày hiện tại -->
+    <!-- TextView hiển thị tuần hiện tại -->
     <TextView
-        android:id="@+id/currentDateTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
-        android:gravity="end"
-        android:textColor="@color/black"
-        android:textSize="16sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/timeFrameTextView" />
-
-    <!-- Hiển thị thời gian hiện tại -->
-    <TextView
-        android:id="@+id/currentTimeTextView"
+        android:id="@+id/weekSummaryTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:gravity="end"
+        android:text="Từ ... Đến ..."
         android:textColor="@color/black"
         android:textSize="16sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/currentDateTextView" />
+        app:layout_constraintTop_toBottomOf="@+id/titleTextView" />
 
-    <!-- Biểu đồ thống kê -->
+    <!-- Biểu đồ dưới TextView -->
     <com.github.mikephil.charting.charts.BarChart
-        android:id="@+id/barChart"
+        android:id="@+id/weeklyBarChart"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="12dp"
-        android:layout_marginBottom="12dp"
-        app:layout_constraintBottom_toTopOf="@id/totalTimeTextView"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/currentTimeTextView" />
-
-    <!-- Hiển thị tổng thời gian sử dụng -->
-    <TextView
-        android:id="@+id/totalTimeTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:paddingEnd="16dp"
-        android:text="Tổng thời gian sử dụng: 0 phút"
-        android:textColor="@color/total_usage_time"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/barChart" />
-
-    <!-- RecyclerView cho danh sách tính năng -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/featureListRecyclerView"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:padding="8dp"
-        app:layout_constraintBottom_toTopOf="@id/groupButton"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/totalTimeTextView" />
-
-    <!-- Nhóm các nút dưới cùng -->
-    <LinearLayout
-        android:id="@+id/groupButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginBottom="16dp"
-        android:orientation="horizontal"
+        android:layout_marginBottom="200dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/weekSummaryTextView" />
 
-        <!-- Nút Tìm kiếm theo thời gian -->
-        <Button
-            android:id="@+id/searchButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:backgroundTint="@color/blue_bei"
-            android:text="Tìm kiếm"
-            android:textColor="@color/black" />
+    <!-- TextView để hiển thị tổng thời gian sử dụng -->
+    <TextView
+        android:id="@+id/totalWeekTimeTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
+        android:text=""
+        android:textColor="@color/black"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/weeklyBarChart" />
 
-        <!-- Nút Theo dõi tiến trình học -->
-        <Button
-            android:id="@+id/trackProgressButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:backgroundTint="@color/blue_bei"
-            android:text="Theo dõi tiến trình học"
-            android:textColor="@color/black" />
-    </LinearLayout>
+    <!-- TextView để hiển thị trung bình thời gian sử dụng -->
+    <TextView
+        android:id="@+id/averageWeekTimeTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text=""
+        android:textColor="@color/black"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/totalWeekTimeTextView" />
 
     <!-- View overlay khi đang tải dữ liệu -->
     <View
@@ -168,7 +121,7 @@
 
         <!-- TextView hiển thị thông báo đang tải dữ liệu -->
         <TextView
-            android:id="@+id/progressText"
+            android:id="@+id/loadingText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Đang tải dữ liệu..."

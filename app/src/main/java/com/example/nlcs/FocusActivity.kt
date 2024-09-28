@@ -177,10 +177,10 @@ class FocusActivity : AppCompatActivity() {
         seconds = editTextSecond.text.toString().toIntOrNull() ?: 0
 
         // Validate input ranges
-        if (hours !in 0..99) {
-            Toast.makeText(this, "Giờ phải nằm trong khoảng từ 0 đến 99", Toast.LENGTH_SHORT).show()
-            hours = 0
-        }
+//        if (hours !in 0..99) {
+//            Toast.makeText(this, "Giờ phải nằm trong khoảng từ 0 đến 99", Toast.LENGTH_SHORT).show()
+//            hours = 0
+//        }
         if (minutes !in 0..59) {
             Toast.makeText(this, "Phút phải nằm trong khoảng từ 0 đến 59", Toast.LENGTH_SHORT).show()
             minutes = 0
@@ -312,7 +312,7 @@ class FocusActivity : AppCompatActivity() {
     }
 
 
-// Save using time into statistic
+    // Save using time into statistic
     override fun onResume() {
         super.onResume()
 

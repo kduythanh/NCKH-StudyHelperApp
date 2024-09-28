@@ -3,11 +3,15 @@ package com.example.nlcs
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
+import android.text.SpannableString
+import android.text.Spanned
+import android.text.style.ForegroundColorSpan
 import android.view.View
 import android.widget.Button
-import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.nlcs.databinding.ActivityStatisticsBinding
@@ -44,6 +48,12 @@ class StatisticsActivity : AppCompatActivity() {
         recyclerView = findViewById(R.id.featureListRecyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
 
+        // Load sorted usage data and set it to the adapter
+        usageTracker.getSortedUsageData { sortedFeatureList ->
+            adapter = FeatureListAdapter(sortedFeatureList)  // Time stored in seconds
+            recyclerView.adapter = adapter
+        }
+
         // Set up toolbar
         setSupportActionBar(binding.toolbarStatistics)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
@@ -52,9 +62,6 @@ class StatisticsActivity : AppCompatActivity() {
         binding.toolbarStatistics.setNavigationOnClickListener {
             onBackPressed()
         }
-
-        // Setup ProgressBar
-        val progressBar: ProgressBar = findViewById(R.id.progressBar)
 
         // Setup Bar Chart
         setupBarChart()
@@ -69,9 +76,38 @@ class StatisticsActivity : AppCompatActivity() {
             val intent = Intent(this, TimeSelectionActivity::class.java)
             startActivity(intent)
         }
+        // Setup Track Progress Button
+        val trackProgressButton = findViewById<Button>(R.id.trackProgressButton)
+        trackProgressButton.setOnClickListener {
+            val intent = Intent(this, TrackingProgressActivity::class.java)
+            startActivity(intent)
+        }
 
-        // Get daily usage data and update UI
-        getDailyUsageData(progressBar)
+        // Setup Total Usage Current Time
+        val totalTimeTextView = findViewById<TextView>(R.id.totalTimeTextView)
+        usageTracker.getTotalUsageForToday { totalTime ->
+            val prefixText = "Tổng thời gian sử dụng: "
+            val totalText = "$totalTime"  // Ví dụ: "11 giờ 20 phút 8 giây"
+
+            // Kết hợp chuỗi tổng
+            val fullText = "$prefixText$totalText"
+
+            // Tạo SpannableString từ fullText
+            val spannableString = SpannableString(fullText)
+
+            // Đổi màu cho phần "11 giờ 20 phút 8 giây" (totalText)
+            val colorSpan = ForegroundColorSpan(ContextCompat.getColor(this, R.color.another_color)) // Màu khác
+            spannableString.setSpan(
+                colorSpan,
+                prefixText.length,  // Bắt đầu từ sau phần "Tổng thời gian sử dụng: "
+                fullText.length,    // Đến hết chuỗi
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+
+            // Hiển thị SpannableString trong TextView
+            totalTimeTextView.text = spannableString
+        }
+
     }
 
     // Function to setup the Bar Chart
@@ -88,36 +124,26 @@ class StatisticsActivity : AppCompatActivity() {
         xAxis.position = XAxis.XAxisPosition.BOTTOM
         xAxis.setDrawGridLines(false) // ẩn lưới theo trục x
         xAxis.granularity = 1f
+        xAxis.axisLineWidth = 1f // Đặt độ dày cho đường kẻ của trục X
+        xAxis.axisLineColor = resources.getColor(R.color.black) // Đặt màu cho đường kẻ
 
-        val leftAxis = barChart.axisLeft
-        leftAxis.setPosition(YAxis.YAxisLabelPosition.OUTSIDE_CHART)
-        leftAxis.spaceTop = 15f
-        leftAxis.axisMinimum = 0f
-        leftAxis.valueFormatter = object : ValueFormatter() {
+        val yAxisLeft = barChart.axisLeft
+        yAxisLeft.setPosition(YAxis.YAxisLabelPosition.OUTSIDE_CHART)
+        yAxisLeft.spaceTop = 15f
+        yAxisLeft.axisMinimum = 0f
+        yAxisLeft.axisLineWidth = 1f // Đặt độ dày cho đường kẻ của trục Y
+        yAxisLeft.axisLineColor = resources.getColor(R.color.black) // Đặt màu cho đường kẻ
+        yAxisLeft.valueFormatter = object : ValueFormatter() {
             override fun getFormattedValue(value: Float): String {
                 return formatTime(value.toInt())
             }
         }
 
         barChart.axisRight.isEnabled = false
-    }
 
-    // Function to get daily usage data and update UI
-    // Function to get daily usage data and update UI
-    private fun getDailyUsageData(progressBar: ProgressBar) {
-        progressBar.visibility = View.VISIBLE // Hiển thị ProgressBar
-        usageTracker.getDailyUsageTotal { usageData ->
-            // Cập nhật RecyclerView
-            val sortedFeatureList = usageData.toList().sortedByDescending { it.second }
-            adapter = FeatureListAdapter(sortedFeatureList)
-            recyclerView.adapter = adapter
+        // Load initial data
+        updateChartData()
 
-            // Cập nhật biểu đồ với dữ liệu hôm nay
-            updateChartData(usageData)
-
-            // Ẩn ProgressBar sau khi dữ liệu đã tải xong
-            progressBar.visibility = View.GONE
-        }
     }
 
     // Helper function to format time into hours, minutes, and seconds
@@ -135,6 +161,7 @@ class StatisticsActivity : AppCompatActivity() {
                     "${hours}g ${remainingMinutes}p $remainingSeconds giây"
                 }
             }
+
             seconds >= 60 -> {
                 val minutes = seconds / 60
                 val remainingSeconds = seconds % 60
@@ -144,53 +171,79 @@ class StatisticsActivity : AppCompatActivity() {
                     "${minutes}p $remainingSeconds giây"
                 }
             }
+
             else -> {
                 "$seconds giây"
             }
         }
     }
 
-    // Function to update chart data based on daily usage data
-    private fun updateChartData(usageData: Map<String, Int>) {
-        if (usageData.isEmpty()) {
-            // Handle when there is no data
-            binding.barChart.clear()
-            return
+    // Function to update chart data based on selected time frame
+    private fun updateChartData() {
+        // Hiển thị lớp mờ và tiến trình
+        val loadingOverlay = findViewById<View>(R.id.loadingOverlay)
+        val progressContainer = findViewById<ConstraintLayout>(R.id.progressContainer)
+
+        // Hiển thị khi tải dữ liệu
+        loadingOverlay.visibility = View.VISIBLE
+        progressContainer.visibility = View.VISIBLE
+
+
+
+        // Tạo bo góc cho biểu đồ
+        val barChart: BarChart = binding.barChart
+        barChart.renderer =
+            CylinderBarChartRenderer(barChart, barChart.animator, barChart.viewPortHandler)
+
+        // Lấy dữ liệu sử dụng từ UsageTracker
+        usageTracker.getUsageData { usageData ->
+            // Sau khi tải dữ liệu hoàn tất, ẩn chúng
+            loadingOverlay.visibility = View.GONE
+            progressContainer.visibility = View.GONE
+
+            // Danh sách chức năng theo thứ tự ưu tiên
+            val orderedKeys = listOf(
+                "Hẹn giờ tập trung",
+                "Ghi chú",
+                "Sơ đồ tư duy",
+                "Thẻ ghi nhớ",
+                "Nhắc nhở"
+            )
+
+            // Đảm bảo rằng mỗi mục trong orderedKeys đều có trong filteredUsageData, kể cả khi thời gian sử dụng là 0
+            val filteredUsageData = orderedKeys.associateWith { key ->
+                usageData[key] ?: 0
+            }
+
+            // Kiểm tra nếu không có dữ liệu
+            if (filteredUsageData.values.all { it == 0 }) {
+                binding.barChart.clear()
+            } else {
+                // Chuyển đổi dữ liệu thành danh sách các BarEntry
+                val entries = filteredUsageData.entries.mapIndexed { index, (key, value) ->
+                    BarEntry(index.toFloat(), value.toFloat())
+                }
+
+                // Tạo BarDataSet với danh sách entries và đặt nhãn
+                val dataSet = BarDataSet(entries, "Feature Usage (giây)")
+                dataSet.color = Color.parseColor("#F7BEBE")
+                dataSet.setDrawValues(false)
+
+                // Tạo BarData và thiết lập dữ liệu cho biểu đồ
+                val barData = BarData(dataSet)
+                binding.barChart.data = barData
+                barData.barWidth = 0.6f
+
+                // Cài đặt trình định dạng trục X để hiển thị tên các tính năng
+                binding.barChart.xAxis.valueFormatter =
+                    IndexAxisValueFormatter(filteredUsageData.keys.toList())
+
+                // Làm mới biểu đồ
+                binding.barChart.invalidate()
+            }
         }
-
-        val entries = usageData.entries.mapIndexed { index, (key, value) ->
-            BarEntry(index.toFloat(), value.toFloat())
-        }
-
-        val dataSet = BarDataSet(entries, "Feature Usage (giây)")  // Updated label to show time in seconds
-        dataSet.color = Color.parseColor("#FF5733") // Màu cam
-        dataSet.setDrawValues(false)
-
-        val barData = BarData(dataSet)
-        binding.barChart.data = barData
-
-        // Thiết lập độ rộng cột bằng phương thức setBarWidth()
-        barData.barWidth = 0.6f // Đặt độ rộng cột (giá trị từ 0.0 đến 1.0)
-
-        binding.barChart.xAxis.valueFormatter = IndexAxisValueFormatter(usageData.keys.toList())
-        binding.barChart.invalidate()
     }
 
-    // Function to display current date and time
-//    private fun displayCurrentDateTime() {
-//        val currentDate = Calendar.getInstance().time
-//        // Định dạng ngày tháng theo định dạng "dd/MM/yyyy"
-//        val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-//        val formattedDate = dateFormat.format(currentDate)
-//
-//        val timeFormat = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
-//        val formattedTime = timeFormat.format(currentDate)
-//
-//        val currentDateTextView: TextView = findViewById(R.id.currentDateTextView)
-//        currentDateTextView.text = "Ngày thống kê: " + formattedDate
-//        val currentTimeTextView: TextView = findViewById(R.id.currentTimeTextView)
-//        currentTimeTextView.text = "Thời điểm thống kê: " + formattedTime
-//    }
 
     // Function to display current date and time
     private fun displayCurrentDateTime() {
@@ -211,10 +264,9 @@ class StatisticsActivity : AppCompatActivity() {
         val formattedTime = "$hours giờ $minutes phút $seconds giây"
 
         val currentDateTextView: TextView = findViewById(R.id.currentDateTextView)
-        currentDateTextView.text = "Ngày thống kê: " + formattedDate
+        currentDateTextView.text = "Thống kê ngày : " + formattedDate
 
         val currentTimeTextView: TextView = findViewById(R.id.currentTimeTextView)
-        currentTimeTextView.text = "Thời điểm thống kê: " + formattedTime
+        currentTimeTextView.text = "Cập nhật lúc: " + formattedTime
     }
-
 }

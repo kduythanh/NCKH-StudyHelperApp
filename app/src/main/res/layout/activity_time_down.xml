@@ -23,17 +23,21 @@
 
 
 
-    <ImageView
+    <TextView
         android:id="@+id/imageText"
         android:layout_width="wrap_content"
-        android:layout_height="210dp"
-        android:foregroundGravity="center"
-        android:contentDescription="motivationImage"
-        android:src="@drawable/cau_dong_luc"
-        android:textColor="?android:attr/colorActivatedHighlight"
-        app:layout_constraintStart_toStartOf="@+id/toolbarTimeDown"
+        android:layout_height="200dp"
+        android:text="Mỗi phút tập trung là một bước\n gần hơn đến ước mơ của bạn"
+        android:gravity="center"
+        android:textSize="25dp"
+        android:textColor="@color/pink"
+        android:fontFamily="@font/roboto_light"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/toolbarTimeDown"
+        android:lineSpacingExtra="15dp"
         />
+
 
 
 

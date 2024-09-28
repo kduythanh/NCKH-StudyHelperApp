@@ -58,6 +58,9 @@
             android:name=".TimeSelectionActivity"
             android:exported="false" />
         <activity
+            android:name=".TrackingProgressActivity"
+            android:exported="false" />
+        <activity
             android:name=".SplashActivity"
             android:exported="true">
             <intent-filter>

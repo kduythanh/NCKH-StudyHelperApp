@@ -1,260 +1,396 @@
 package com.example.nlcs
 
 import android.content.Context
-import android.content.SharedPreferences
 import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions // Thêm import cho SetOptions
 import java.text.SimpleDateFormat
 import java.util.*
 
+// UsageTracker class: lớp theo dõi thời gian sử dụng
 class UsageTracker(context: Context) {
-    private val sharedPreferences: SharedPreferences = context.getSharedPreferences("UsageData", Context.MODE_PRIVATE)
     private val db = FirebaseFirestore.getInstance() // Firestore instance
 
-    // Lưu thời gian sử dụng một chức năng vào SharedPreferences và Firestore
-
+    // Lưu thời gian sử dụng một chức năng vào Firestore
     fun addUsageTime(feature: String, seconds: Int) {
         val currentUser = FirebaseAuth.getInstance().currentUser
         val userId = currentUser?.uid  // Lấy userId từ Firebase Authentication
 
         if (userId != null) {
-            val currentUsage = sharedPreferences.getInt(feature, 0)
-            val newUsage = currentUsage + seconds
-            sharedPreferences.edit().putInt(feature, newUsage).apply()
+            val date = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(Date())
+            val usageDocRef = db.collection("usage_times").document("$userId-$feature-$date")
 
-            Log.d("UsageTracker", "Feature: $feature, Added Time: $seconds giây, New Total: $newUsage giây")
-
-            // Tính toán tổng số phút và tổng số giờ
-            val totalMinutes = newUsage / 60
-            val totalHours = newUsage / 3600
-
-            // Lưu thời gian sử dụng vào Firestore
-            val usageData = hashMapOf(
-                "userId" to userId,  // Lưu userId
+            val updates = hashMapOf<String, Any>(
+                "userId" to userId,
                 "feature" to feature,
-                "total_usage_seconds" to newUsage,  // Lưu tổng thời gian sử dụng bằng giây
-                "total_usage_minutes" to totalMinutes,  // Lưu tổng thời gian sử dụng bằng phút
-                "total_usage_hours" to totalHours,  // Lưu tổng thời gian sử dụng bằng giờ
-                "date" to SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(Date())  // Ngày hiện tại
+                "date" to date,
+                "total_usage_seconds" to FieldValue.increment(seconds.toLong()),
+                "total_usage_minutes" to FieldValue.increment(seconds.toLong() / 60),
+                "total_usage_hours" to FieldValue.increment(seconds.toLong() / 3600)
             )
 
-            // Lưu dữ liệu vào Firestore ở collection usage_times
-            db.collection("usage_times")
-                .add(usageData)
-                .addOnSuccessListener { documentReference ->
-                    Log.d("UsageTracker", "Usage data saved with ID: ${documentReference.id}")
+            // Sử dụng SetOptions.merge() để hợp nhất các trường thay vì ghi đè
+            usageDocRef.set(updates, SetOptions.merge())
+                .addOnSuccessListener {
+                    Log.d("UsageTracker", "Cập nhật dữ liệu sử dụng thành công cho $feature")
                 }
                 .addOnFailureListener { e ->
-                    Log.w("UsageTracker", "Error saving usage data", e)
+                    Log.w("UsageTracker", "Lỗi khi cập nhật dữ liệu sử dụng", e)
                 }
-
-            // Lưu dữ liệu đã sắp xếp vào Firestore
-            saveSortedUsageDataToFirestore()  // Gọi hàm này sau khi thêm thời gian sử dụng
         } else {
-            Log.w("UsageTracker", "User not logged in, cannot save usage data.")
+            Log.w("UsageTracker", "Người dùng chưa đăng nhập, không thể lưu dữ liệu sử dụng.")
         }
     }
 
-
-    // Lưu dữ liệu đã sắp xếp vào Firestore
+    // Lưu dữ liệu đã sắp xếp lên Firestore
     fun saveSortedUsageDataToFirestore() {
         val currentUser = FirebaseAuth.getInstance().currentUser
-        val userId = currentUser?.uid  // Lấy userId từ Firebase Authentication
+        val userId = currentUser?.uid
 
         if (userId != null) {
-            // Lấy ngày hiện tại
-            val currentDate = System.currentTimeMillis()
-            val sharedPrefs = sharedPreferences.getLong("last_usage_date", 0)
-
-            // Kiểm tra xem có phải ngày mới không
-            val calendar = Calendar.getInstance()
-            calendar.timeInMillis = sharedPrefs
-            val lastDate = calendar.get(Calendar.DAY_OF_YEAR)
-
-            calendar.timeInMillis = currentDate
-            val today = calendar.get(Calendar.DAY_OF_YEAR)
-
-            // Nếu ngày đã thay đổi, reset dữ liệu
-            if (lastDate != today) {
-                sharedPreferences.edit().clear().apply() // Reset dữ liệu
-                sharedPreferences.edit().putLong("last_usage_date", currentDate).apply() // Cập nhật ngày mới
+            val date = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(Date())
+            getSortedUsageData { sortedUsageData ->
+                sortedUsageData.forEach { (feature, time) ->
+                    val usageData = hashMapOf(
+                        "userId" to userId,
+                        "feature" to feature,
+                        "total_usage_seconds" to time,
+                        "date" to date
+                    )
+                    db.collection("sorted_usage_times").add(usageData)
+                        .addOnSuccessListener { documentReference ->
+                            Log.d(
+                                "UsageTracker",
+                                "Lưu dữ liệu sử dụng đã sắp xếp với ID: ${documentReference.id}"
+                            )
+                        }
+                        .addOnFailureListener { e ->
+                            Log.w("UsageTracker", "Lỗi khi lưu dữ liệu sử dụng đã sắp xếp", e)
+                        }
+                }
             }
-
-            val sortedUsageData = getSortedUsageData()
-
-            val dataToSave = sortedUsageData.map { (feature, time) ->
-                hashMapOf(
-                    "userId" to userId,  // Lưu userId
-                    "feature" to feature,
-                    "total_usage_seconds" to time,
-                    "date" to SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(Date()),  // Ngày hiện tại
-//                    "timestamp" to System.currentTimeMillis()  // Thời gian hiện tại từ thiết bị
-                )
-            }
-
-            dataToSave.forEach { usageData ->
-                db.collection("sorted_usage_times")
-                    .add(usageData)
-                    .addOnSuccessListener { documentReference ->
-                        Log.d("UsageTracker", "Sorted usage data saved with ID: ${documentReference.id}")
-                    }
-                    .addOnFailureListener { e ->
-                        Log.w("UsageTracker", "Lỗi khi lưu dữ liệu sử dụng đã sắp xếp", e)
-                    }
-            }
-
-            // Cập nhật ngày cuối cùng đã sử dụng
-            sharedPreferences.edit().putLong("last_usage_date", currentDate).apply()
         } else {
-            Log.w("UsageTracker", "Người dùng chưa đăng nhập, không thể lưu dữ liệu sử dụng đã sắp xếp.")
+            Log.w(
+                "UsageTracker",
+                "Người dùng chưa đăng nhập, không thể lưu dữ liệu sử dụng đã sắp xếp."
+            )
+        }
+    }
+
+    // Lấy dữ liệu sử dụng từ Firestore
+    fun getUsageData(callback: (Map<String, Int>) -> Unit) {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        val userId = currentUser?.uid
+
+        if (userId != null) {
+            val date = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(Date())
+
+            db.collection("usage_times")
+                .whereEqualTo("userId", userId)
+                .whereEqualTo("date", date)
+                .get()
+                .addOnSuccessListener { querySnapshot ->
+                    val usageData = mutableMapOf<String, Int>()
+                    for (document in querySnapshot.documents) {
+                        val feature = document.getString("feature") ?: continue
+                        val usageSeconds = document.getLong("total_usage_seconds")?.toInt() ?: 0
+                        usageData[feature] = usageSeconds
+                    }
+                    callback(usageData)
+                }
+                .addOnFailureListener { e ->
+                    Log.e("UsageTracker", "Lỗi khi lấy dữ liệu sử dụng: ${e.message}")
+                    callback(emptyMap())
+                }
+        } else {
+            Log.w("UsageTracker", "Người dùng chưa đăng nhập, không thể lấy dữ liệu sử dụng.")
+            callback(emptyMap())
+        }
+    }
+
+    // Lấy dữ liệu sử dụng đã sắp xếp từ Firestore
+    fun getSortedUsageData(callback: (List<Pair<String, Int>>) -> Unit) {
+        getUsageData { usageData ->
+            val sortedUsageData = usageData.toList().sortedByDescending { (_, value) -> value }
+            callback(sortedUsageData)
+        }
+    }
+
+    // Lấy dữ liệu sử dụng từ Firestore cho một khoảng thời gian
+    fun getUsageDataBetweenDates(
+        startDate: Date,
+        endDate: Date,
+        callback: (Map<String, Int>) -> Unit
+    ) {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        val userId = currentUser?.uid
+
+        if (userId != null) {
+            val dateFormat = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
+
+            val calendar = Calendar.getInstance()
+            calendar.time = startDate
+
+            val endCalendar = Calendar.getInstance()
+            endCalendar.time = endDate
+
+            val dates = mutableListOf<String>()
+            while (!calendar.after(endCalendar)) {
+                dates.add(dateFormat.format(calendar.time))
+                calendar.add(Calendar.DATE, 1)
+            }
+
+            db.collection("usage_times")
+                .whereEqualTo("userId", userId)
+                .whereIn("date", dates)
+                .get()
+                .addOnSuccessListener { querySnapshot ->
+                    val usageData = mutableMapOf<String, Int>()
+                    for (document in querySnapshot.documents) {
+                        val feature = document.getString("feature") ?: continue
+                        val usageSeconds = document.getLong("total_usage_seconds")?.toInt() ?: 0
+                        usageData[feature] = usageData.getOrDefault(feature, 0) + usageSeconds
+                    }
+                    callback(usageData)
+                }
+                .addOnFailureListener { e ->
+                    Log.e("UsageTracker", "Lỗi khi lấy dữ liệu sử dụng: ${e.message}")
+                    callback(emptyMap())
+                }
+        } else {
+            Log.w("UsageTracker", "Người dùng chưa đăng nhập, không thể lấy dữ liệu sử dụng.")
+            callback(emptyMap())
+        }
+    }
+
+    // Lấy dữ liệu sử dụng từ Firestore cho một ngày cụ thể
+    fun getFirestoreUsageDataForDate(date: String, callback: (Map<String, Int>) -> Unit) {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        val userId = currentUser?.uid
+
+        if (userId != null) {
+            db.collection("usage_times")
+                .whereEqualTo("userId", userId)
+                .whereEqualTo("date", date)
+                .get()
+                .addOnSuccessListener { querySnapshot ->
+                    val usageData = mutableMapOf<String, Int>()
+                    for (document in querySnapshot.documents) {
+                        val feature = document.getString("feature") ?: continue
+                        val usageSeconds = document.getLong("total_usage_seconds")?.toInt() ?: 0
+                        usageData[feature] = usageSeconds
+                    }
+                    callback(usageData)
+                }
+                .addOnFailureListener { e ->
+                    Log.e("UsageTracker", "Lỗi khi lấy dữ liệu cho ngày $date: ${e.message}")
+                    callback(emptyMap())
+                }
+        } else {
+            Log.w("UsageTracker", "Người dùng chưa đăng nhập, không thể lấy dữ liệu sử dụng.")
+            callback(emptyMap())
+        }
+    }
+
+    // Hàm tính tổng thời gian sử dụng của ngày hiện tại và hiển thị dưới dạng giờ, phút, giây
+    fun getTotalUsageForToday(callback: (String) -> Unit) {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        val userId = currentUser?.uid
+
+        if (userId != null) {
+            val date = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(Date())
+
+            db.collection("usage_times")
+                .whereEqualTo("userId", userId)
+                .whereEqualTo("date", date)
+                .get()
+                .addOnSuccessListener { querySnapshot ->
+                    var totalSeconds = 0
+                    for (document in querySnapshot.documents) {
+                        val usageSeconds = document.getLong("total_usage_seconds")?.toInt() ?: 0
+                        totalSeconds += usageSeconds
+                    }
+
+                    // Chuyển đổi tổng giây thành giờ, phút, giây
+                    val hours = totalSeconds / 3600
+                    val minutes = (totalSeconds % 3600) / 60
+                    val seconds = totalSeconds % 60
+
+                    // Tạo chuỗi hiển thị dựa trên giá trị giờ, phút, giây
+                    val totalTimeFormatted = when {
+                        hours > 0 -> "$hours giờ $minutes phút $seconds giây"
+                        minutes > 0 -> "$minutes phút $seconds giây"
+                        else -> "$seconds giây"
+                    }
+
+                    callback(totalTimeFormatted)
+                }
+                .addOnFailureListener { e ->
+                    Log.e("UsageTracker", "Lỗi khi lấy dữ liệu sử dụng: ${e.message}")
+                    callback("0 giây")
+                }
+        } else {
+            Log.w("UsageTracker", "Người dùng chưa đăng nhập, không thể lấy dữ liệu sử dụng.")
+            callback("0 giây")
+        }
+    }
+
+    // Hàm tính tổng thời gian sử dụng của một ngày cụ thể
+    fun getTotalUsageForSpecificDay(date: String, callback: (Int) -> Unit) {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        val userId = currentUser?.uid
+
+        if (userId != null) {
+            db.collection("usage_times")
+                .whereEqualTo("userId", userId)
+                .whereEqualTo("date", date)
+                .get()
+                .addOnSuccessListener { querySnapshot ->
+                    var totalSeconds = 0
+                    for (document in querySnapshot.documents) {
+                        val usageSeconds = document.getLong("total_usage_seconds")?.toInt() ?: 0
+                        totalSeconds += usageSeconds
+                    }
+                    callback(totalSeconds)
+                }
+                .addOnFailureListener { e ->
+                    Log.e("UsageTracker", "Lỗi khi lấy dữ liệu sử dụng cho ngày $date: ${e.message}")
+                    callback(0)
+                }
+        } else {
+            Log.w("UsageTracker", "Người dùng chưa đăng nhập, không thể lấy dữ liệu sử dụng.")
+            callback(0)
         }
     }
 
 
-    // Lấy dữ liệu sử dụng từ SharedPreferences và trả về một Map (vẫn theo giây)
-    fun getUsageData(): Map<String, Int> {
-        val data = sharedPreferences.all.filterKeys { it in listOf("Hẹn giờ tập trung", "Ghi chú", "Sơ đồ tư duy", "Thẻ ghi nhớ", "Nhắc nhở") }
-            .mapValues { (_, value) -> value as Int } // Giá trị lưu là giây
-        Log.d("UsageTracker", "Usage Data: $data")
-        return data
+    // Hàm lấy dữ liệu từ Firestore (UsageTracker class)
+    fun getWeeklyUsage(callback: (Map<String, Int>) -> Unit) {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        val userId = currentUser?.uid
+        val weeklyData = mutableMapOf<String, Int>()  // Dùng để lưu tổng thời gian của mỗi ngày
+
+        if (userId != null) {
+            // Lấy dữ liệu cho từng ngày trong tuần hiện tại
+            val calendar = Calendar.getInstance()
+            calendar.firstDayOfWeek = Calendar.MONDAY
+            calendar.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY)
+
+            for (i in 0..6) {  // Duyệt qua 7 ngày trong tuần
+                val date = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(calendar.time)
+                Log.d("getWeeklyUsage", "Lấy dữ liệu cho ngày: $date") // Log thông tin ngày đang xử lý
+
+                // Truy vấn Firestore để lấy dữ liệu cho từng ngày
+                db.collection("usage_times")
+                    .whereEqualTo("userId", userId)
+                    .whereEqualTo("date", date)
+                    .get()
+                    .addOnSuccessListener { querySnapshot ->
+                        var totalSeconds = 0
+                        for (document in querySnapshot.documents) {
+                            totalSeconds += document.getLong("total_usage_seconds")?.toInt() ?: 0
+                        }
+
+                        // Ghi lại tổng số giây sử dụng của ngày đó
+                        weeklyData[date] = totalSeconds
+                        Log.d("getWeeklyUsage", "Ngày: $date, Tổng giây: $totalSeconds")
+
+                        // Khi hoàn tất 7 ngày, gọi callback với dữ liệu đã tính toán
+                        if (weeklyData.size == 7) {  // Đảm bảo đã tính toán đủ 7 ngày
+                            Log.d("getWeeklyUsage", "Dữ liệu hoàn thành: $weeklyData")
+                            callback(weeklyData)
+                        }
+                    }
+                    .addOnFailureListener { e ->
+                        Log.e("getWeeklyUsage", "Lỗi khi lấy dữ liệu cho ngày $date: ${e.message}")
+                        callback(emptyMap())  // Trả về Map rỗng nếu có lỗi
+                    }
+
+                // Di chuyển đến ngày tiếp theo
+                calendar.add(Calendar.DAY_OF_MONTH, 1)
+            }
+        } else {
+            Log.w("getWeeklyUsage", "Người dùng chưa đăng nhập.")
+            callback(emptyMap())  // Trả về Map rỗng nếu người dùng chưa đăng nhập
+        }
     }
 
 
-    // Trả về dữ liệu sử dụng theo thứ tự giảm dần (dữ liệu là giây)
-    fun getSortedUsageData(): List<Pair<String, Int>> {
-        return sharedPreferences.all.filterKeys { it in listOf("Hẹn giờ tập trung", "Ghi chú", "Sơ đồ tư duy", "Thẻ ghi nhớ", "Nhắc nhở") }
-            .mapValues { (_, value) -> value as Int } // Giá trị lưu là giây
-            .toList()
-            .sortedByDescending { (_, value) -> value }  // Sắp xếp theo giá trị giảm dần
-    }
 
-    // Các hàm hỗ trợ lấy dữ liệu riêng lẻ
-    fun getFocusModeUsageData(): Int {
-        return sharedPreferences.getInt("Hẹn giờ tập trung", 0)
-    }
 
-    fun getNoteUsageData(): Int {
-        return sharedPreferences.getInt("Ghi chú", 0)
-    }
+    // Hàm thống kê thời gian sử dụng theo tháng (12 tháng trong năm)
+    fun getMonthlyUsage(callback: (Map<String, Int>) -> Unit) {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        val userId = currentUser?.uid
 
-    fun getMindMapUsageData(): Int {
-        return sharedPreferences.getInt("Sơ đồ tư duy", 0)
-    }
+        if (userId != null) {
+            val dateFormat = SimpleDateFormat("MM-yyyy", Locale.getDefault())
+            val calendar = Calendar.getInstance()
 
-    fun getFlashCardUsageData(): Int {
-        return sharedPreferences.getInt("Thẻ ghi nhớ", 0)
-    }
+            // Lấy danh sách 12 tháng trong năm
+            val months = mutableListOf<String>()
+            for (i in 0..11) {
+                months.add(dateFormat.format(calendar.time))
+                calendar.add(Calendar.MONTH, -1)  // Lùi về 1 tháng
+            }
 
-    fun getReminderUsageData(): Int {
-        return sharedPreferences.getInt("Nhắc nhở", 0)
-    }
-
-    // Trả về dữ liệu sử dụng theo ngày, tuần, tháng, năm (có thể tùy chỉnh thêm)
-    fun getDailyUsageData(): Map<String, Int> {
-        return mapOf(
-            "Hẹn giờ tập trung" to getFocusModeUsageData(),
-            "Ghi chú" to getNoteUsageData(),
-            "Sơ đồ tư duy" to getMindMapUsageData(),
-            "Thẻ ghi nhớ" to getFlashCardUsageData(),
-            "Nhắc nhở" to getReminderUsageData()
-        )
-    }
-
-    fun getWeeklyUsageData(): Map<String, Int> {
-        return mapOf(
-            "Hẹn giờ tập trung" to getFocusModeUsageData(),
-            "Ghi chú" to getNoteUsageData(),
-            "Sơ đồ tư duy" to getMindMapUsageData(),
-            "Thẻ ghi nhớ" to getFlashCardUsageData(),
-            "Nhắc nhở" to getReminderUsageData()
-        )
-    }
-
-    fun getMonthlyUsageData(): Map<String, Int> {
-        return mapOf(
-            "Hẹn giờ tập trung" to getFocusModeUsageData(),
-            "Ghi chú" to getNoteUsageData(),
-            "Sơ đồ tư duy" to getMindMapUsageData(),
-            "Thẻ ghi nhớ" to getFlashCardUsageData(),
-            "Nhắc nhở" to getReminderUsageData()
-        )
-    }
-
-    fun getYearlyUsageData(): Map<String, Int> {
-        return mapOf(
-            "Hẹn giờ tập trung" to getFocusModeUsageData(),
-            "Ghi chú" to getNoteUsageData(),
-            "Sơ đồ tư duy" to getMindMapUsageData(),
-            "Thẻ ghi nhớ" to getFlashCardUsageData(),
-            "Nhắc nhở" to getReminderUsageData()
-        )
-    }
-
-    //  tìm kiếm dữ liệu dựa trên khoảng ngày
-    fun getUsageDataBetweenDates(startDate: Date, endDate: Date, callback: (Map<String, Int>) -> Unit) {
-        val usageData = mutableMapOf<String, Int>()
-
-        // Format the dates to match the format stored in Firestore
-        val dateFormat = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
-        val start = dateFormat.format(startDate)
-        val end = dateFormat.format(endDate)
-
-        // Query Firestore for data between start and end dates
-        db.collection("usage_times")
-            .whereGreaterThanOrEqualTo("date", start)
-            .whereLessThanOrEqualTo("date", end)
-            .get()
-            .addOnSuccessListener { querySnapshot ->
-                for (document in querySnapshot.documents) {
-                    val featureName = document.getString("feature") ?: continue
-                    val usageTime = document.getLong("total_usage_seconds")?.toInt() ?: 0
-
-                    // Add or accumulate the usage time for each feature
-                    usageData[featureName] = usageData.getOrDefault(featureName, 0) + usageTime
+            db.collection("usage_times")
+                .whereEqualTo("userId", userId)
+                .whereIn("date", months)
+                .get()
+                .addOnSuccessListener { querySnapshot ->
+                    val usageData = mutableMapOf<String, Int>()
+                    for (document in querySnapshot.documents) {
+                        val month = document.getString("date")?.substring(3) ?: continue
+                        val usageSeconds = document.getLong("total_usage_seconds")?.toInt() ?: 0
+                        usageData[month] = usageData.getOrDefault(month, 0) + usageSeconds
+                    }
+                    callback(usageData)
                 }
-
-                // Log the retrieved data
-                Log.d("FirestoreData", "Retrieved data: $usageData")
-                callback(usageData)
-            }
-            .addOnFailureListener { e ->
-                Log.e("FirestoreError", "Error retrieving data: ${e.message}")
-                callback(usageData) // Return empty data if error occurs
-            }
-    }
-
-    fun getDailyUsageTotal(callback: (Map<String, Int>) -> Unit) {
-        val usageData = mutableMapOf<String, Int>()
-
-        // Lấy ngày hiện tại
-        val currentDate = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(Date())
-
-        // Query Firestore để lấy dữ liệu cho ngày hiện tại
-        db.collection("usage_times")
-            .whereEqualTo("date", currentDate)
-            .get()
-            .addOnSuccessListener { querySnapshot ->
-                for (document in querySnapshot.documents) {
-                    val featureName = document.getString("feature") ?: continue
-                    val usageTime = document.getLong("total_usage_seconds")?.toInt() ?: 0
-
-                    // Cộng dồn thời gian sử dụng cho mỗi chức năng
-                    usageData[featureName] = usageData.getOrDefault(featureName, 0) + usageTime
+                .addOnFailureListener { e ->
+                    Log.e("UsageTracker", "Lỗi khi lấy dữ liệu sử dụng cho tháng: ${e.message}")
+                    callback(emptyMap())
                 }
-
-                // Log dữ liệu đã lấy
-                Log.d("DailyUsageData", "Retrieved daily usage data: $usageData")
-                callback(usageData)
-            }
-            .addOnFailureListener { e ->
-                Log.e("FirestoreError", "Error retrieving daily usage data: ${e.message}")
-                callback(usageData) // Trả về dữ liệu rỗng nếu có lỗi
-            }
+        } else {
+            Log.w("UsageTracker", "Người dùng chưa đăng nhập, không thể lấy dữ liệu sử dụng.")
+            callback(emptyMap())
+        }
     }
+
+    // Hàm trong UsageTracker để lấy dữ liệu chi tiết theo ngày
+    fun getDetailedUsageForDay(date: String, callback: (Map<String, Int>) -> Unit) {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        val userId = currentUser?.uid
+
+        if (userId != null) {
+            db.collection("usage_times")
+                .whereEqualTo("userId", userId)
+                .whereEqualTo("date", date)
+                .get()
+                .addOnSuccessListener { querySnapshot ->
+                    val featureData = mutableMapOf<String, Int>()
+                    for (document in querySnapshot.documents) {
+                        val feature = document.getString("feature") ?: continue
+                        val usageSeconds = document.getLong("total_usage_seconds")?.toInt() ?: 0
+
+                        // Kiểm tra nếu tính năng đã có trong map, cộng dồn thời gian
+                        featureData[feature] = featureData.getOrDefault(feature, 0) + usageSeconds
+                    }
+                    callback(featureData)
+                }
+                .addOnFailureListener { e ->
+                    Log.e("UsageTracker", "Lỗi khi lấy dữ liệu chi tiết cho ngày $date: ${e.message}")
+                    callback(emptyMap())
+                }
+        } else {
+            Log.w("UsageTracker", "Người dùng chưa đăng nhập, không thể lấy dữ liệu chi tiết.")
+            callback(emptyMap())
+        }
+    }
+
+
+
 
 }

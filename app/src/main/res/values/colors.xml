@@ -39,5 +39,13 @@
     <color name="light_blue">#C8EBF3</color>
 
     <color name="light_green">#9DFFD6</color>
+    <color name="pink">#F79AAA</color>
+    <color name="blue_bei">#87CEFA</color>
+    <color name="high_blue">#1E90FF</color>
+    <color name="orange_500">#FF5722</color>
+    <color name="total_usage_time">#0BA825</color>
+    <color name="another_color">#FF5722</color>
+
+
 
 </resources>
