@@ -21,7 +21,6 @@ import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.view.Gravity
 import android.view.View
-
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import androidx.appcompat.app.AlertDialog
@@ -164,7 +163,7 @@ class TrackingProgressActivity : AppCompatActivity() {
         )
 
         // Định dạng chuỗi cho trung bình thời gian sử dụng
-        val averagePrefix = "Trung bình Thời gian sử dụng: "
+        val averagePrefix = "Trung bình thời gian sử dụng: "
         val averageSpannable = SpannableString(averagePrefix + averageTimeFormatted)
         averageSpannable.setSpan(
             ForegroundColorSpan(resources.getColor(R.color.total_usage_time)), 0, averagePrefix.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
@@ -450,6 +449,27 @@ class TrackingProgressActivity : AppCompatActivity() {
                 // Gọi hàm để cập nhật dữ liệu và hiển thị biểu đồ
                 updateComparisonBarChartWithData(entries, weekLabels, averageUsage)
 
+                // Hiển thị giá trị trung bình vào TextView
+                val averageUsageTextView = findViewById<TextView>(R.id.averageUsageTextView)
+
+                // Tạo SpannableString để thay đổi màu của từng phần
+                val averageText = "Thời gian trung bình mỗi tuần: "
+                val timeText = formatTime((averageUsage * 3600).toInt())
+
+                val spannable = SpannableString(averageText + timeText)
+
+                // Đặt màu xanh cho "Thời gian trung bình"
+                spannable.setSpan(
+                    ForegroundColorSpan(resources.getColor(R.color.total_usage_time)), 0, averageText.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
+
+                // Đặt màu đỏ cho số thời gian trung bình
+                spannable.setSpan(
+                    ForegroundColorSpan(resources.getColor(R.color.brightRed)), averageText.length, spannable.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
+
+// Cập nhật TextView với chuỗi đã định dạng
+                averageUsageTextView.text = spannable
                 // Đánh dấu rằng biểu đồ so sánh đã tải xong
                 isComparisonDataLoaded = true
                 checkIfDataLoaded()  // Kiểm tra xem cả hai biểu đồ đã tải xong chưa
@@ -471,7 +491,7 @@ class TrackingProgressActivity : AppCompatActivity() {
 
         // Tạo BarDataSet cho biểu đồ với dữ liệu tuần
         val barDataSet = BarDataSet(entries, "So sánh thời gian sử dụng theo tuần")
-        barDataSet.color = resources.getColor(R.color.blue_bei)
+        barDataSet.color = resources.getColor(R.color.light_yellow)
 
         // Điều chỉnh kích thước của nhãn để hiển thị tốt hơn khi nằm ngoài cột
         barDataSet.valueTextSize = 12f

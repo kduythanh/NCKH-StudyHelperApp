@@ -70,9 +70,6 @@
             </intent-filter>
         </activity>
 
-        <!--        Nhan userID tu Firebase thong qua class UserRegistrationReceiver-->
-        <receiver android:name=".UserRegistrationReceiver" />
-
     </application>
 
 </manifest>

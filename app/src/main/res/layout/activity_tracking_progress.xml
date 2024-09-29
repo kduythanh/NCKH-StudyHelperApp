@@ -1,178 +1,204 @@
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".TrackingProgressActivity"
-    android:fillViewport="true">
+    tools:context=".TrackingProgressActivity">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
 
-        <!-- Toolbar cho phần tiêu đề -->
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbarStatistics"
-            android:layout_width="0dp"
-            android:layout_height="?android:attr/actionBarSize"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
             android:background="@color/light_green"
+            app:layout_scrollFlags="scroll|enterAlways"
             android:theme="@style/ToolBarTheme"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:titleTextColor="@color/colorPrimary" />
+            app:titleTextColor="@color/colorPrimary"/>
 
-        <!-- TextView để hiển thị tiêu đề -->
-        <TextView
-            android:id="@+id/titleTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="THỐNG KÊ THEO TUẦN"
-            android:textColor="@color/pink"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/toolbarStatistics" />
+    </com.google.android.material.appbar.AppBarLayout>
 
-        <!-- TextView hiển thị tuần hiện tại -->
-        <TextView
-            android:id="@+id/weekSummaryTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Từ ... Đến ..."
-            android:textColor="@color/black"
-            android:textSize="16sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/titleTextView" />
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:fillViewport="true">
 
-        <!-- Biểu đồ dưới TextView -->
-        <com.github.mikephil.charting.charts.BarChart
-            android:id="@+id/weeklyBarChart"
-            android:layout_width="0dp"
-            android:layout_height="300dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/weekSummaryTextView" />
-
-        <!-- TextView để hiển thị tổng thời gian sử dụng -->
-        <TextView
-            android:id="@+id/totalWeekTimeTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="30dp"
-            android:text=""
-            android:textColor="@color/black"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/weeklyBarChart" />
-
-        <!-- TextView để hiển thị trung bình thời gian sử dụng -->
-        <TextView
-            android:id="@+id/averageWeekTimeTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text=""
-            android:textColor="@color/black"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/totalWeekTimeTextView" />
-
-        <!-- Thêm khoảng cách lớn giữa Trung bình thời gian sử dụng và So sánh các tuần trước -->
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="128dp"
-            android:layout_marginTop="96dp"
-            android:layout_marginBottom="64dp"
-            app:layout_constraintTop_toBottomOf="@id/averageWeekTimeTextView"
-            app:layout_constraintBottom_toTopOf="@id/comparisonTitleTextView"
-            />
-
-        <!-- Tiêu đề cho biểu đồ mới -->
-        <TextView
-            android:id="@+id/comparisonTitleTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="SO SÁNH THỜI GIAN SỬ DỤNG CÁC TUẦN TRƯỚC"
-            android:textColor="@color/pink"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/averageWeekTimeTextView" />
-
-        <!-- Biểu đồ so sánh các tuần trước -->
-        <com.github.mikephil.charting.charts.BarChart
-            android:id="@+id/comparisonBarChart"
-            android:layout_width="0dp"
-            android:layout_height="300dp"
-            android:layout_marginTop="16dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/comparisonTitleTextView" />
-
-        <!-- Thêm khoảng trống dưới biểu đồ để đảm bảo có khoảng cách với đáy màn hình -->
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="30dp"
-            app:layout_constraintTop_toBottomOf="@+id/comparisonBarChart"
-            app:layout_constraintBottom_toBottomOf="parent" />
-
-        <!-- View overlay khi đang tải dữ liệu -->
-        <View
-            android:id="@+id/loadingOverlay"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:background="#88000000"
-            android:visibility="gone"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <!-- Container cho ProgressBar và TextView hiển thị tiến trình -->
         <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/progressContainer"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:visibility="gone"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
 
-            <!-- ProgressBar cho tiến trình -->
-            <ProgressBar
-                android:id="@+id/progressBar"
+            <!-- TextView để hiển thị tiêu đề -->
+            <TextView
+                android:id="@+id/titleTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
+                android:layout_marginTop="16dp"
+                android:text="THỐNG KÊ THEO TUẦN"
+                android:textColor="@color/pink"
+                android:textSize="18sp"
+                android:textStyle="bold"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <!-- TextView hiển thị thông báo đang tải dữ liệu -->
+            <!-- TextView hiển thị tuần hiện tại -->
             <TextView
-                android:id="@+id/loadingText"
+                android:id="@+id/weekSummaryTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Đang tải dữ liệu..."
-                android:textColor="#000000"
+                android:layout_marginTop="8dp"
+                android:text="Từ ... Đến ..."
+                android:textColor="@color/black"
                 android:textSize="16sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/progressBar" />
+                app:layout_constraintTop_toBottomOf="@+id/titleTextView" />
 
+            <!-- Biểu đồ dưới TextView -->
+            <com.github.mikephil.charting.charts.BarChart
+                android:id="@+id/weeklyBarChart"
+                android:layout_width="0dp"
+                android:layout_height="350dp"
+                android:layout_marginTop="20dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/weekSummaryTextView" />
+
+            <!-- TextView để hiển thị tổng thời gian sử dụng -->
+            <TextView
+                android:id="@+id/totalWeekTimeTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="30dp"
+                android:text=""
+                android:textColor="@color/black"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/weeklyBarChart" />
+
+            <!-- TextView để hiển thị trung bình thời gian sử dụng -->
+            <TextView
+                android:id="@+id/averageWeekTimeTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:paddingBottom="30dp"
+                android:text=""
+                android:textColor="@color/black"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/totalWeekTimeTextView" />
+
+
+            <!-- Tiêu đề cho biểu đồ mới -->
+            <TextView
+                android:id="@+id/comparisonTitleTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="SO SÁNH THỜI GIAN SỬ DỤNG\n 4 TUẦN GẦN NHẤT"
+                android:textAlignment="center"
+                android:lineSpacingExtra="10sp"
+                android:textColor="@color/pink"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/averageWeekTimeTextView" />
+
+            <!-- Biểu đồ so sánh các tuần trước -->
+
+            <com.github.mikephil.charting.charts.BarChart
+                android:id="@+id/comparisonBarChart"
+                android:layout_width="0dp"
+                android:layout_height="350dp"
+                android:layout_marginTop="36dp"
+                app:layout_constraintBottom_toTopOf="@+id/bottomSpace"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/comparisonTitleTextView"
+                app:layout_constraintVertical_bias="1.0" />
+
+            <TextView
+                android:id="@+id/averageUsageTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:layout_marginTop="20dp"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/comparisonBarChart"
+                android:textSize="16sp"
+                android:padding="16dp"
+                android:textColor="@color/black"
+                android:layout_gravity="center_horizontal" />
+
+            <Space
+                android:id="@+id/bottomSpace"
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                app:layout_constraintBottom_toBottomOf="parent" />
+
+
+            <!-- View overlay khi đang tải dữ liệu -->
+            <View
+                android:id="@+id/loadingOverlay"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:background="#88000000"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <!-- Container cho ProgressBar và TextView hiển thị tiến trình -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/progressContainer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <!-- ProgressBar cho tiến trình -->
+                <ProgressBar
+                    android:id="@+id/progressBar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <!-- TextView hiển thị thông báo đang tải dữ liệu -->
+                <TextView
+                    android:id="@+id/loadingText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Đang tải dữ liệu..."
+                    android:textColor="#000000"
+                    android:textSize="16sp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/progressBar"
+                    android:layout_marginTop="16dp"/>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.constraintlayout.widget.ConstraintLayout>
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-</ScrollView>
+    </androidx.core.widget.NestedScrollView>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
