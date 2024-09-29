@@ -194,4 +194,16 @@ public class Neo4jService {
         return parentChildMap;
     }
 
+    public String getTitleByNodeID(final String nodeID) {
+        try (Session session = driver.session()) {
+            return session.readTransaction(tx -> {
+                Result result = tx.run("MATCH (n:MindMap {nodeID: $nodeID}) RETURN n.title AS title",
+                        parameters("nodeID", nodeID));
+                if (result.hasNext()) {
+                    return result.single().get("title").asString();
+                }
+                return null;
+            });
+        }
+    }
 }

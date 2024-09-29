@@ -1,23 +1,35 @@
 package com.example.nlcs
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
 import android.util.AttributeSet
+import android.view.MotionEvent
 import android.widget.RelativeLayout
+import androidx.appcompat.app.AlertDialog
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
-
 
 class LineDrawingView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
 ) : RelativeLayout(context, attrs, defStyleAttr) {
+
+    // Neo4j service and database connection
+    private var neo4jService: Neo4jService
+    private val neo4jUri = "bolt+s://f4454805.databases.neo4j.io"
+    private val neo4jUser = "neo4j"
+    private val neo4jPassword = "T79xAI8tRj6QzvCfiqDMBAlxb4pabJ1UBh_H7qIqlaQ"
+
+    init {
+        neo4jService = Neo4jService(neo4jUri, neo4jUser, neo4jPassword)
+    }
 
     // Data structure to store parent-child relationships, node positions, and dimensions
     private val parentChildMap: MutableMap<String, List<String>> = mutableMapOf()
@@ -28,7 +40,7 @@ class LineDrawingView @JvmOverloads constructor(
     // Paint objects for drawing the lines and arrowheads
     private val linePaint = Paint().apply {
         color = Color.BLACK
-        strokeWidth = 5f
+        strokeWidth = 6f
         style = Paint.Style.STROKE
         isAntiAlias = true
     }
@@ -124,6 +136,11 @@ class LineDrawingView @JvmOverloads constructor(
 
                 // Draw arrowhead at the end of the line
                 drawArrowHead(canvas, parentCenterX, parentCenterY, childEdgeX, childEdgeY)
+
+                // Draw the black ball at the midpoint of the line
+                val midX = (parentCenterX + childEdgeX) / 2
+                val midY = (parentCenterY + childEdgeY) / 2
+                canvas.drawCircle(midX, midY, 18f, ballPaint)
             }
         }
     }
@@ -151,5 +168,112 @@ class LineDrawingView @JvmOverloads constructor(
         arrowPath.close()
 
         canvas.drawPath(arrowPath, arrowPaint)
+    }
+
+    private val ballPaint = Paint().apply {
+        color = Color.BLACK
+        style = Paint.Style.FILL
+    }
+
+    // Update arrow after moving a node
+    fun updateNodePosition(nodeID: String, newX: Float, newY: Float) {
+        nodePositions[nodeID] = Pair(newX, newY)
+        invalidate()
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        when (event.action) {
+            MotionEvent.ACTION_DOWN -> {
+                val touchX = event.x
+                val touchY = event.y
+
+                // Loop through the connections to check if the touch is near any of them
+                for ((parentID, childrenIDs) in parentChildMap) {
+                    val parentPosition = nodePositions[parentID] ?: continue
+                    val parentWidth = nodeWidths[parentID] ?: continue
+                    val parentHeight = nodeHeights[parentID] ?: continue
+
+                    val parentCenterX = parentPosition.first + (parentWidth / 2)
+                    val parentCenterY = parentPosition.second + (parentHeight / 2)
+
+                    for (childID in childrenIDs) {
+                        val childPosition = nodePositions[childID] ?: continue
+                        val childWidth = nodeWidths[childID] ?: continue
+                        val childHeight = nodeHeights[childID] ?: continue
+
+                        val childCenterX = childPosition.first + (childWidth / 2)
+                        val childCenterY = childPosition.second + (childHeight / 2)
+
+                        val childEdgeX: Float
+                        val childEdgeY: Float
+
+                        // Calculate which edge to point to based on the parent's relative position
+                        if (abs(parentCenterX - childCenterX) > abs(parentCenterY - childCenterY)) {
+                            // Parent is more to the left or right -> point to left or right edge
+                            if (parentCenterX < childCenterX) {
+                                // Point to left edge (middle of the left edge)
+                                childEdgeX = childPosition.first - 2f // Left edge
+                                childEdgeY = childCenterY  // Midpoint of the left edge
+                            } else {
+                                // Point to right edge (middle of the right edge)
+                                childEdgeX = childPosition.first + childWidth + 2f // Right edge
+                                childEdgeY = childCenterY  // Midpoint of the right edge
+                            }
+                        } else {
+                            // Parent is more above or below -> point to top or bottom edge
+                            if (parentCenterY < childCenterY) {
+                                // Point to top edge (middle of the top edge)
+                                childEdgeX = childCenterX  // Midpoint of the top edge
+                                childEdgeY = childPosition.second - 2f // Top edge
+                            } else {
+                                // Point to bottom edge (middle of the bottom edge)
+                                childEdgeX = childCenterX  // Midpoint of the bottom edge
+                                childEdgeY = childPosition.second + childHeight + 2f // Bottom edge
+                            }
+                        }
+
+                        // Check if the touch is near the ball (midpoint)
+                        val midX = (parentCenterX + childEdgeX) / 2
+                        val midY = (parentCenterY + childEdgeY) / 2
+                        if (isTouchNearBall(touchX, touchY, midX, midY)) {
+                            showDeleteDialog(childID)
+                            return true
+                        }
+                    }
+                }
+            }
+        }
+        return super.onTouchEvent(event)
+    }
+
+    // Check if the touch is near the ball
+    private fun isTouchNearBall(touchX: Float, touchY: Float, ballX: Float, ballY: Float): Boolean {
+        val buffer = 20f // Allow some buffer distance for touch detection
+        return (touchX >= ballX - buffer && touchX <= ballX + buffer &&
+                touchY >= ballY - buffer && touchY <= ballY + buffer)
+    }
+
+    private fun showDeleteDialog(childID: String) {
+        val builder = AlertDialog.Builder(context)
+        builder.setTitle("Delete this branch starting from:")
+
+        val childTitle = neo4jService.getTitleByNodeID(childID)
+
+        builder.setMessage("Node title: $childTitle")
+
+        builder.setPositiveButton("yes") { dialog, _ ->
+            (context as MindMapActivity).deleteBranch(childID)
+            dialog.dismiss()
+        }
+
+        builder.setNegativeButton("Cancel") { dialog, _ -> dialog.dismiss() }
+
+        builder.show()
+    }
+
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        neo4jService.close()
     }
 }

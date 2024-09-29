@@ -189,11 +189,12 @@ class MindMapActivity : AppCompatActivity() {
                                 draggedView.visibility = View.VISIBLE
 
                                 // Update position in the database
-                                val nodeID = draggedView.getTag(R.id.node_id_tag) as? String
+                                val nodeID = draggedView.getTag(R.id.node_id_tag) as String
                                 updateNodePosition(nodeID, dropX, dropY)
 
                                 // Redraw lines on LineDrawingView after the node has moved
-                                lineDrawingView.invalidate()
+//                                lineDrawingView.invalidate()
+                                lineDrawingView.updateNodePosition(nodeID, dropX, dropY)
 
                                 true
                             }
@@ -308,6 +309,7 @@ class MindMapActivity : AppCompatActivity() {
     @SuppressLint("ClickableViewAccessibility")
     private fun addChildNodeToView(node: Map<String, Any>) {
         val parentLayout = binding.zoomableView.findViewById<RelativeLayout>(R.id.mindMapContent)
+        val lineDrawingView = binding.zoomableView.findViewById<LineDrawingView>(R.id.lineDrawingView)
         val nodeView = layoutInflater.inflate(R.layout.mind_map_node, parentLayout, false)
         val nodeTitleEditText = nodeView.findViewById<EditText>(R.id.MindMapNode)
         nodeTitleEditText.setText(node["title"] as String)
@@ -367,8 +369,10 @@ class MindMapActivity : AppCompatActivity() {
                     draggedView.visibility = View.VISIBLE
 
                     // Update position in the database
-                    val childID = draggedView.getTag(R.id.node_id_tag) as? String
+                    val childID = draggedView.getTag(R.id.node_id_tag) as String
                     updateNodePosition(childID, dropX, dropY)
+
+                    lineDrawingView.updateNodePosition(childID, dropX, dropY)
                     true
                 }
 
@@ -396,7 +400,7 @@ class MindMapActivity : AppCompatActivity() {
     }
 
     // Delete a branch
-    private fun deleteBranch(nodeID: String) {
+    internal fun deleteBranch(nodeID: String) {
         Thread {
             neo4jService.deleteBranch(nodeID)
             runOnUiThread {
