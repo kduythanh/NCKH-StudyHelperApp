@@ -31,8 +31,8 @@ class LineDrawingView @JvmOverloads constructor(
         neo4jService = Neo4jService(neo4jUri, neo4jUser, neo4jPassword)
     }
 
-    // Data structure to store parent-child relationships, node positions, and dimensions
-    private val parentChildMap: MutableMap<String, List<String>> = mutableMapOf()
+    // Data structures to store parent-child relationships, node positions, and dimensions
+    private val parentChildMap: MutableMap<String, MutableList<String>> = mutableMapOf()
     private val nodePositions: MutableMap<String, Pair<Float, Float>> = mutableMapOf()
     private val nodeWidths: MutableMap<String, Int> = mutableMapOf()
     private val nodeHeights: MutableMap<String, Int> = mutableMapOf()
@@ -53,6 +53,12 @@ class LineDrawingView @JvmOverloads constructor(
 
     private val arrowSize = 20f
 
+    // Paint for the black ball
+    private val ballPaint = Paint().apply {
+        color = Color.BLACK
+        style = Paint.Style.FILL
+    }
+
     // Method to set relationships, positions, and dimensions
     fun setParentChildMap(
         parentChildMap: Map<String, List<String>>,
@@ -61,7 +67,10 @@ class LineDrawingView @JvmOverloads constructor(
         nodeHeights: Map<String, Int>
     ) {
         this.parentChildMap.clear()
-        this.parentChildMap.putAll(parentChildMap)
+        // Convert to mutable lists to allow adding new connections
+        for ((key, value) in parentChildMap) {
+            this.parentChildMap[key] = value.toMutableList()
+        }
 
         // Store node positions by their IDs
         nodePositions.clear()
@@ -158,8 +167,8 @@ class LineDrawingView @JvmOverloads constructor(
         arrowPath.moveTo(tipX, tipY)
 
         arrowPath.lineTo(
-                (endX - arrowSize * cos(angle - Math.PI / 6)).toFloat(),
-        (endY - arrowSize * sin(angle - Math.PI / 6)).toFloat()
+            (endX - arrowSize * cos(angle - Math.PI / 6)).toFloat(),
+            (endY - arrowSize * sin(angle - Math.PI / 6)).toFloat()
         )
         arrowPath.lineTo(
             (endX - arrowSize * cos(angle + Math.PI / 6)).toFloat(),
@@ -170,14 +179,25 @@ class LineDrawingView @JvmOverloads constructor(
         canvas.drawPath(arrowPath, arrowPaint)
     }
 
-    private val ballPaint = Paint().apply {
-        color = Color.BLACK
-        style = Paint.Style.FILL
-    }
-
-    // Update arrow after moving a node
+    // Update node position after moving a node
     fun updateNodePosition(nodeID: String, newX: Float, newY: Float) {
         nodePositions[nodeID] = Pair(newX, newY)
+        invalidate()
+    }
+
+    // Method to store node dimensions
+    fun storeNodeDimensions(nodeID: String, width: Int, height: Int) {
+        nodeWidths[nodeID] = width
+        nodeHeights[nodeID] = height
+    }
+
+    // Method to add a new connection line
+    fun addConnectionLine(parentID: String, childID: String) {
+        // Add the childID to the parent's list of children
+        val childrenList = parentChildMap.getOrPut(parentID) { mutableListOf() }
+        if (!childrenList.contains(childID)) {
+            childrenList.add(childID)
+        }
         invalidate()
     }
 
@@ -262,7 +282,7 @@ class LineDrawingView @JvmOverloads constructor(
 
         builder.setMessage("Node title: $childTitle")
 
-        builder.setPositiveButton("yes") { dialog, _ ->
+        builder.setPositiveButton("Yes") { dialog, _ ->
             (context as MindMapActivity).deleteBranch(childID)
             dialog.dismiss()
         }

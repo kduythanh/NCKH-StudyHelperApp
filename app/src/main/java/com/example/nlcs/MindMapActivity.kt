@@ -193,7 +193,6 @@ class MindMapActivity : AppCompatActivity() {
                                 updateNodePosition(nodeID, dropX, dropY)
 
                                 // Redraw lines on LineDrawingView after the node has moved
-//                                lineDrawingView.invalidate()
                                 lineDrawingView.updateNodePosition(nodeID, dropX, dropY)
 
                                 true
@@ -211,15 +210,6 @@ class MindMapActivity : AppCompatActivity() {
             }
         }.start()
     }
-
-
-    private fun updateNodePosition(nodeID: String?, x: Float, y: Float) {
-        if (nodeID == null) return
-        Thread {
-            neo4jService.updateNodePositionDB(nodeID, x, y)
-        }.start()
-    }
-
 
     @SuppressLint("InflateParams")
     private fun showContextMenu(view: View) {
@@ -240,7 +230,7 @@ class MindMapActivity : AppCompatActivity() {
                 if (newChildNode != null) {
                     runOnUiThread {
                         // Display the new child node in the UI
-                        addChildNodeToView(newChildNode)
+                        addChildNodeToView(newChildNode, parentNodeID)
                         Toast.makeText(this, "Child Node Added", Toast.LENGTH_SHORT).show()
                     }
                 } else {
@@ -307,17 +297,18 @@ class MindMapActivity : AppCompatActivity() {
 
     // Add a newly added child node to view
     @SuppressLint("ClickableViewAccessibility")
-    private fun addChildNodeToView(node: Map<String, Any>) {
+    private fun addChildNodeToView(node: Map<String, Any>, parentID: String?) {
         val parentLayout = binding.zoomableView.findViewById<RelativeLayout>(R.id.mindMapContent)
         val lineDrawingView = binding.zoomableView.findViewById<LineDrawingView>(R.id.lineDrawingView)
+
+        if (lineDrawingView == null) {
+            Log.e("MindMapActivity", "LineDrawingView is null!")
+            return
+        }
+
         val nodeView = layoutInflater.inflate(R.layout.mind_map_node, parentLayout, false)
         val nodeTitleEditText = nodeView.findViewById<EditText>(R.id.MindMapNode)
         nodeTitleEditText.setText(node["title"] as String)
-
-//        if (lineDrawingView == null) {
-//            Log.e("MindMapActivity", "LineDrawingView is null!")
-//            return@runOnUiThread // Early exit to prevent crash
-//        }
 
         // Retrieve and set the node ID as a tag to identify the node uniquely
         val nodeID = node["nodeID"] as String?
@@ -328,7 +319,6 @@ class MindMapActivity : AppCompatActivity() {
         val y = (node["y"] as? Float)?.toFloat() ?: 0f
         nodeView.x = x
         nodeView.y = y
-        Log.d("Applied Child Node position", "Node ID: $nodeID, X: $x, Y: $y")
 
         nodeTitleEditText.setOnLongClickListener {
             // Pass the event to the parent node view
@@ -386,6 +376,35 @@ class MindMapActivity : AppCompatActivity() {
         }
 
         parentLayout.addView(nodeView)
+
+        // Store dimensions and position after the view has been laid out
+        nodeView.post {
+            val width = nodeView.width
+            val height = nodeView.height
+            val id = nodeView.getTag(R.id.node_id_tag) as? String
+
+            if (id != null) {
+                // Store node dimensions and position
+                lineDrawingView.storeNodeDimensions(id, width, height)
+                lineDrawingView.updateNodePosition(id, x, y)
+
+                // If a parentID is provided, add the connection
+                if (parentID != null) {
+                    lineDrawingView.addConnectionLine(parentID, id)
+                }
+
+                // Invalidate LineDrawingView to redraw the lines
+                lineDrawingView.invalidate()
+            }
+        }
+    }
+
+    // Update node position
+    private fun updateNodePosition(nodeID: String?, x: Float, y: Float) {
+        if (nodeID == null) return
+        Thread {
+            neo4jService.updateNodePositionDB(nodeID, x, y)
+        }.start()
     }
 
     // Delete a node leaf
