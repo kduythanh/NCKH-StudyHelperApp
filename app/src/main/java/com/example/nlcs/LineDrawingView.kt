@@ -296,4 +296,23 @@ class LineDrawingView @JvmOverloads constructor(
         super.onDetachedFromWindow()
         neo4jService.close()
     }
+
+    fun removeNodeConnections(nodeID: String) {
+        // Remove the connections for the node and its children
+        parentChildMap.remove(nodeID) // Remove the node and its connections to children
+        nodePositions.remove(nodeID) // Remove the node's position data
+
+        // Optionally remove the node size data as well
+        nodeWidths.remove(nodeID)
+        nodeHeights.remove(nodeID)
+
+        // If this node is a child of another node, remove it from its parent's list
+        for ((_, childrenIDs) in parentChildMap) {
+            childrenIDs.remove(nodeID)
+        }
+    }
+
+    fun getChildIDs(parentID: String): List<String>? {
+        return parentChildMap[parentID]
+    }
 }

@@ -83,8 +83,6 @@ public class Neo4jService {
                     node.put("x", record.get("x").asFloat());
                     node.put("y", record.get("y").asFloat());
                     nodes.add(node);
-//                    Log.d("Neo4j Node Data", "Node ID: " + record.get("nodeID").asString() + ", X: " + record.get("x").asFloat() + ", Y: " + record.get("y").asFloat());
-
                 }
                 return nodes;
             });
@@ -201,6 +199,24 @@ public class Neo4jService {
                         parameters("nodeID", nodeID));
                 if (result.hasNext()) {
                     return result.single().get("title").asString();
+                }
+                return null;
+            });
+        }
+    }
+
+    public Map<String, Object> fetchPositionByID(final String nodeID) {
+        try (Session session = driver.session()) {
+            return session.readTransaction(tx -> {
+                String query = "MATCH (n:MindMap {nodeID: $nodeID}) " +
+                        "RETURN n.x AS x, n.y AS y";
+                Result result = tx.run(query, parameters("nodeID", nodeID));
+                if (result.hasNext()) {
+                    org.neo4j.driver.Record record = result.single();
+                    Map<String, Object> position = new HashMap<>();
+                    position.put("x", record.get("x").asFloat());
+                    position.put("y", record.get("y").asFloat());
+                    return position;
                 }
                 return null;
             });

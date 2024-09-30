@@ -109,6 +109,7 @@ class MindMapActivity : AppCompatActivity() {
                     return@runOnUiThread // Early exit to prevent crash
                 }
 
+
                 // Maps to hold node widths and heights
                 val nodeWidths = mutableMapOf<String, Int>()
                 val nodeHeights = mutableMapOf<String, Int>()
@@ -122,6 +123,7 @@ class MindMapActivity : AppCompatActivity() {
                     // Store the parent node ID as a tag
                     val parentNodeID = node["nodeID"] as String?
                     nodeView.setTag(R.id.node_id_tag, parentNodeID)
+
 
                     // Fetch and set node position (x and y coordinates)
                     val x = (node["x"] as? Float) ?: 0f
@@ -145,6 +147,7 @@ class MindMapActivity : AppCompatActivity() {
                     }
 
                     parentLayout.addView(nodeView)
+
                     nodeView.post {
                         val width = nodeView.width
                         val height = nodeView.height
@@ -155,8 +158,7 @@ class MindMapActivity : AppCompatActivity() {
                             nodeWidths[id] = width
                             nodeHeights[id] = height
                         }
-
-                        // After adding all nodes, pass the updated dimensions to LineDrawingView
+                        // Pass the updated dimensions to LineDrawingView after adding all nodes
                         if (node == nodes.last()) {
                             lineDrawingView.setParentChildMap(parentChildMap, nodes, nodeWidths, nodeHeights)
                         }
@@ -206,6 +208,7 @@ class MindMapActivity : AppCompatActivity() {
                             else -> false
                         }
                     }
+
                 }
             }
         }.start()
@@ -226,7 +229,13 @@ class MindMapActivity : AppCompatActivity() {
             val mindMapID = intent.getStringExtra("mindMapID") ?: return@setOnClickListener
 
             Thread {
-                val newChildNode = neo4jService.addChildNode(parentNodeID, childTitle, userID, mindMapID, 0f, 0f)
+                val position = neo4jService.fetchPositionByID(parentNodeID)
+                val parentX = (position["x"] as Float).toFloat()
+                val parentY = (position["y"] as Float).toFloat()
+
+                val x = binding.mindMapContent.width.toFloat() / 2f
+                val y = binding.mindMapContent.height.toFloat() / 2f
+                val newChildNode = neo4jService.addChildNode(parentNodeID, childTitle, userID, mindMapID, parentX, parentY + 120f)
                 if (newChildNode != null) {
                     runOnUiThread {
                         // Display the new child node in the UI
@@ -315,8 +324,8 @@ class MindMapActivity : AppCompatActivity() {
         nodeView.setTag(R.id.node_id_tag, nodeID)
 
         // Set node position for newly added nodes
-        val x = (node["x"] as? Float)?.toFloat() ?: 0f
-        val y = (node["y"] as? Float)?.toFloat() ?: 0f
+        val x = (node["x"] as? Double)?.toFloat() ?: 0f
+        val y = (node["y"] as? Double)?.toFloat() ?: 0f
         nodeView.x = x
         nodeView.y = y
 
@@ -413,10 +422,20 @@ class MindMapActivity : AppCompatActivity() {
             neo4jService.deleteLeafNode(nodeID)
             runOnUiThread {
                 Toast.makeText(this, "Node deleted successfully", Toast.LENGTH_SHORT).show()
-                refreshMindMap()
+
+                // Remove the node view from the layout
+                val parentLayout = binding.zoomableView.findViewById<RelativeLayout>(R.id.mindMapContent)
+                val nodeView = parentLayout.findViewWithTag<View>(nodeID)
+                parentLayout.removeView(nodeView)
+
+                // Remove the associated lines
+                val lineDrawingView = findViewById<LineDrawingView>(R.id.lineDrawingView)
+                lineDrawingView.removeNodeConnections(nodeID) // Remove the lines associated with the node
+                lineDrawingView.invalidate() // Redraw the view without the removed connections
             }
         }.start()
     }
+
 
     // Delete a branch
     internal fun deleteBranch(nodeID: String) {
@@ -424,17 +443,32 @@ class MindMapActivity : AppCompatActivity() {
             neo4jService.deleteBranch(nodeID)
             runOnUiThread {
                 Toast.makeText(this, "Node and its descendants deleted successfully", Toast.LENGTH_SHORT).show()
-                refreshMindMap()
+
+                // Remove the branch node and its descendants from the view
+                val parentLayout = binding.zoomableView.findViewById<RelativeLayout>(R.id.mindMapContent)
+                removeBranchViews(parentLayout, nodeID)
+
+                // Update the LineDrawingView to remove connections
+                val lineDrawingView = findViewById<LineDrawingView>(R.id.lineDrawingView)
+                lineDrawingView.removeNodeConnections(nodeID) // Remove connections associated with the branch
+                lineDrawingView.invalidate() // Redraw only the affected part of the view
             }
         }.start()
     }
 
-    // Refresh the mind map view after deletion
-    private fun refreshMindMap() {
-        val parentLayout = binding.zoomableView.findViewById<RelativeLayout>(R.id.mindMapContent)
-        parentLayout.removeAllViews() // Clear the current nodes
+    // Helper function to recursively remove branch views from the layout
+    private fun removeBranchViews(parentLayout: RelativeLayout, nodeID: String) {
+        val nodeView = parentLayout.findViewWithTag<View>(nodeID)
+        parentLayout.removeView(nodeView)
 
-        val mindMapID = intent.getStringExtra("mindMapID") ?: return
-        fetchAndDisplayAllNodes(mindMapID) // Fetch and display updated nodes
+        // Access the LineDrawingView instance
+        val lineDrawingView = findViewById<LineDrawingView>(R.id.lineDrawingView)
+
+        // Get child IDs and recursively remove them if needed
+        val childIDs = lineDrawingView.getChildIDs(nodeID) ?: return
+        for (childID in childIDs) {
+            removeBranchViews(parentLayout, childID)
+        }
     }
 }
+

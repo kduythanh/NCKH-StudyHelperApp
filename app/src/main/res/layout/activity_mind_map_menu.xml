@@ -21,25 +21,17 @@
             android:background="@color/background_2"
             app:title="@string/MindMap"
             app:titleTextColor="@color/black"
-            app:titleMarginStart="30dp"
+            app:titleMarginStart="92dp"
             android:theme="@style/ThemeOverlay.AppCompat.DayNight.ActionBar"
             app:navigationIcon="@drawable/ic_back_arrow"
             android:layout_alignParentTop="true"/>
 
-        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-            android:id="@+id/mindMapMenuSwipeRefreshLayout"
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/mindMapMenuRecycleView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_below="@+id/toolbar">
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/mindMapMenuRecycleView"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_below="@id/toolbar"
-                android:padding="16dp"/>
-
-        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+            android:layout_below="@id/toolbar"
+            android:padding="16dp"/>
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/mindMapAddButton"

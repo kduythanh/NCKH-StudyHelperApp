@@ -23,8 +23,6 @@ class SplashActivity : AppCompatActivity() {
         binding = ActivitySplashBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-
         // Initialize Firebase
         firebaseAuth = Firebase.auth
 
@@ -42,6 +40,6 @@ class SplashActivity : AppCompatActivity() {
                 startActivity(intent)
             }
             finish()
-        }, 1000)
+        }, 800)
     }
 }

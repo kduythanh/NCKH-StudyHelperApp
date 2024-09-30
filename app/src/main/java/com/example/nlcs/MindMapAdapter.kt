@@ -12,14 +12,17 @@ import androidx.recyclerview.widget.RecyclerView
 import android.content.Context
 import android.content.Intent
 import android.widget.Button
-import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import com.google.firebase.firestore.FirebaseFirestore
 
+interface MindMapListener {
+    fun onMindMapDeleted()
+}
 
 class MindMapAdapter(
     private var mindMapList: MutableList<MindMap>,
-    private val context: Context
+    private val context: Context,
+    private val listener: MindMapListener
 ): RecyclerView.Adapter<MindMapAdapter.MindMapViewHolder>(){
 
     // Calling elements of the layout
@@ -135,25 +138,36 @@ class MindMapAdapter(
             }
     }
 
-    // Delete mind map method
     private fun deleteMindMapFromFirestore(documentId: String, position: Int, mindMapID: String?) {
         val db = FirebaseFirestore.getInstance()
         val docRef = db.collection("mindMapTemp").document(documentId)
-
+        Log.d(TAG, "Before deletion, remaining items: ${mindMapList.size}")
         docRef.delete()
             .addOnSuccessListener {
-                // Safely remove the mind map at the specified position from the local list.
-                // Created a mutable copy to avoid potential issues with concurrent modification.
-                mindMapList = mindMapList.toMutableList().also {
-                    if (position in 0 until it.size) it.removeAt(position)
+                // Log the current size of mindMapList for debugging
+                Log.d(TAG, "Deletion in Firestore, remaining items: ${mindMapList.size}")
+
+                // Check if the position is valid before removing the item
+                if (position in 0 until mindMapList.size ) {
+                    // Remove the mind map from the local list directly
+                    mindMapList.removeAt(position)
+                    Log.d(TAG, "Mind map successfully deleted. Remaining items: ${mindMapList.size}")
+
+                    // Notify the adapter that the item was removed
+                    notifyItemRemoved(position)
+
+                    // Log the new size after deletion
+                    Log.d(TAG, "Mind map successfully deleted. Remaining items: ${mindMapList.size}")
+
+                    // Notify that the list has changed
+                    notifyItemRangeChanged(position, itemCount - position)
+
+                    // Notify the listener to refresh the mind maps
+                    listener.onMindMapDeleted()
+
+                } else {
+                    Log.w(TAG, "Attempted to delete at an invalid position: $position")
                 }
-                // Remove the mind map from the adapter
-                notifyItemRemoved(position)
-                // Notify the adapter that the list has changed
-                notifyItemChanged(position, mindMapList.size)
-//                notifyItemRangeChanged(position, itemCount - position)
-                Log.d(TAG, "Mind map successfully deleted!")
-                Toast.makeText(context, "Mind map successfully deleted!", Toast.LENGTH_SHORT).show()
 
                 // Delete the mind map from Neo4j
                 val neo4jService = Neo4jService("bolt+s://f4454805.databases.neo4j.io", "neo4j", "T79xAI8tRj6QzvCfiqDMBAlxb4pabJ1UBh_H7qIqlaQ")
@@ -163,8 +177,8 @@ class MindMapAdapter(
             .addOnFailureListener { e ->
                 Log.w(TAG, "Error deleting document with ID: $documentId", e)
             }
-
     }
+
 }
 
 
