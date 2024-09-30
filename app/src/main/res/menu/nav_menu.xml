@@ -6,16 +6,10 @@
 
     <group
         android:checkableBehavior="single">
-
         <item
-            android:id="@+id/nav_user_profile"
-            android:icon="@drawable/ic_user"
-            android:title="@string/userProfile"/>
-
-        <item
-            android:id="@+id/nav_setting"
+            android:id="@+id/nav_changePassword"
             android:icon="@drawable/ic_setting"
-            android:title="@string/setting"/>
+            android:title="Đổi mật khẩu"/>
 
         <item
             android:id="@+id/nav_logout"

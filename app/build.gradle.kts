@@ -65,4 +65,9 @@ dependencies {
     implementation(libs.google.api.services.calendar)
     implementation(libs.play.services.auth)
     implementation(libs.google.http.client.jackson2)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.google.firebase.firestore.ktx)
+    implementation(libs.firebase.auth.ktx)
+    implementation("com.google.firebase:firebase-auth-ktx")
+    implementation("com.google.firebase:firebase-firestore-ktx")
 }
