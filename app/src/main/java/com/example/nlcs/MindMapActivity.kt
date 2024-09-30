@@ -318,8 +318,8 @@ class MindMapActivity : AppCompatActivity() {
         nodeTitleEditText.setText(node["title"] as String)
 
         // Retrieve and set the node ID as a tag to identify the node uniquely
-        val nodeID = node["nodeID"] as String?
-        nodeView.setTag(R.id.node_id_tag, nodeID)
+        val childID = node["nodeID"] as String?
+        nodeView.setTag(R.id.node_id_tag, childID)
 
         // Set node position for newly added nodes
         val x = (node["x"] as? Double)?.toFloat() ?: 0f
@@ -366,10 +366,10 @@ class MindMapActivity : AppCompatActivity() {
                     draggedView.visibility = View.VISIBLE
 
                     // Update position in the database
-                    val childID = draggedView.getTag(R.id.node_id_tag) as String
-                    updateNodePosition(childID, dropX, dropY)
+                    val nodeID = draggedView.getTag(R.id.node_id_tag) as String
+                    updateNodePosition(nodeID, dropX, dropY)
 
-                    lineDrawingView.updateNodePosition(childID, dropX, dropY)
+                    lineDrawingView.updateNodePosition(nodeID, dropX, dropY)
                     true
                 }
 
@@ -423,8 +423,23 @@ class MindMapActivity : AppCompatActivity() {
 
                 // Remove the node view from the layout
                 val parentLayout = binding.zoomableView.findViewById<RelativeLayout>(R.id.mindMapContent)
-                val nodeView = parentLayout.findViewWithTag<View>(nodeID)
-                parentLayout.removeView(nodeView)
+                var nodeView: View? = null
+
+                for (i in 0 until parentLayout.childCount) {
+                    val childView = parentLayout.getChildAt(i)
+                    val tag = childView.getTag(R.id.node_id_tag)
+
+                    if (tag == nodeID) {
+                        nodeView = childView
+                        break
+                    }
+                }
+
+                if (nodeView != null) {
+                    parentLayout.removeView(nodeView)
+                } else {
+                    Log.e("deleteLeafNode", "Node view not found for nodeID: $nodeID")
+                }
 
                 // Remove the associated lines
                 val lineDrawingView = findViewById<LineDrawingView>(R.id.lineDrawingView)
@@ -444,6 +459,7 @@ class MindMapActivity : AppCompatActivity() {
 
                 // Remove the branch node and its descendants from the view
                 val parentLayout = binding.zoomableView.findViewById<RelativeLayout>(R.id.mindMapContent)
+
                 removeBranchViews(parentLayout, nodeID)
 
                 // Update the LineDrawingView to remove connections
@@ -454,15 +470,30 @@ class MindMapActivity : AppCompatActivity() {
         }.start()
     }
 
+
     // Helper function to recursively remove branch views from the layout
+// Helper function to recursively remove branch views from the layout
     private fun removeBranchViews(parentLayout: RelativeLayout, nodeID: String) {
-        val nodeView = parentLayout.findViewWithTag<View>(nodeID)
-        parentLayout.removeView(nodeView)
+        // Iterate over all child views to find the one with the matching nodeID tag
+        var nodeView: View? = null
+        for (i in 0 until parentLayout.childCount) {
+            val childView = parentLayout.getChildAt(i)
+            val tag = childView.getTag(R.id.node_id_tag)
+
+            if (tag == nodeID) {
+                nodeView = childView
+                break
+            }
+        }
+
+        if (nodeView != null) {
+            parentLayout.removeView(nodeView)  // Remove the node view from the layout
+        }
 
         // Access the LineDrawingView instance
         val lineDrawingView = findViewById<LineDrawingView>(R.id.lineDrawingView)
 
-        // Get child IDs and recursively remove them if needed
+        // Get child IDs and recursively remove them
         val childIDs = lineDrawingView.getChildIDs(nodeID) ?: return
         for (childID in childIDs) {
             removeBranchViews(parentLayout, childID)
