@@ -7,46 +7,73 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.nlcs.R
 import com.google.firebase.firestore.FirebaseFirestore
 
-class MyAdapter(var context: Context, var array: ArrayList<Message>) : RecyclerView.Adapter<MyAdapter.ItemHolder>() {
+class MyAdapter(
+    private val context: Context,
+    messages: List<Message>
+) : RecyclerView.Adapter<MyAdapter.ItemHolder>() {
 
+    // Private copy of the list to prevent external modifications
+    private val fullList: MutableList<Message> = messages.toMutableList()
+    private var filteredList: MutableList<Message> = fullList.toMutableList()
+
+    // ViewHolder class
     class ItemHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        var tvMessTitle: TextView = itemView.findViewById(R.id.tvMessTitle)
-        var tvMessContent: TextView = itemView.findViewById(R.id.tvMessContent)
-        var ivTrashCan: ImageView = itemView.findViewById(R.id.ivTrashCan)  // Add this line
+        val tvMessTitle: TextView = itemView.findViewById(R.id.tvMessTitle)
+        val tvMessContent: TextView = itemView.findViewById(R.id.tvMessContent)
+        val ivTrashCan: ImageView = itemView.findViewById(R.id.ivTrashCan)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.mess_function_item, parent, false)
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.mess_function_item, parent, false)
         return ItemHolder(view)
     }
 
     override fun onBindViewHolder(holder: ItemHolder, position: Int) {
-        val item = array[position]
+        val item = filteredList[position]
 
-        // Trim unnecessary spaces and newlines
+        // Set text after trimming unnecessary spaces and newlines
         holder.tvMessTitle.text = item.messTitle.trim()
         holder.tvMessContent.text = item.messContent.trim()
 
+        // Handle item click
         holder.itemView.setOnClickListener {
             onItemClick?.invoke(item, position)
         }
 
+        // Handle delete click
         holder.ivTrashCan.setOnClickListener {
-            removeItem(position)
+            removeItem(item)
         }
     }
 
-    override fun getItemCount(): Int {
-        return array.size
+    override fun getItemCount(): Int = filteredList.size
+
+    // Expose methods to manipulate the data safely
+
+    // Method to add a new item
+    fun addItem(message: Message) {
+        fullList.add(0, message) // Add to the beginning of the full list
+        filter("") // Refresh filtered list and UI
     }
 
-    private fun removeItem(position: Int) {
-        val message = array[position] // Get the message being deleted
+    // Method to update an existing item
+    fun updateItem(updatedMessage: Message) {
+        val index = fullList.indexOfFirst { it.messId == updatedMessage.messId }
+        if (index != -1) {
+            fullList[index] = updatedMessage
+            filter("") // Refresh filtered list and UI
+        }
+    }
+
+    // Method to remove an item
+    private fun removeItem(message: Message) {
         val db = FirebaseFirestore.getInstance()
 
         // Delete from Firestore using the document ID (messId)
@@ -56,20 +83,47 @@ class MyAdapter(var context: Context, var array: ArrayList<Message>) : RecyclerV
                 .delete()
                 .addOnSuccessListener {
                     Log.d("Firestore", "DocumentSnapshot successfully deleted!")
+                    // Remove from the local lists and update UI
+                    fullList.remove(message)
+                    filter("") // Refresh filtered list and UI
+
+                    // Notify the activity that an item was deleted
+                    onItemDeleted?.invoke(message)
                 }
                 .addOnFailureListener { e ->
                     Log.w("Firestore", "Error deleting document", e)
+                    Toast.makeText(context, "Failed to delete note", Toast.LENGTH_SHORT).show()
                 }
+        } ?: run {
+            // Handle case where messId is null
+            Log.w("Firestore", "Attempted to delete a note with a null messId.")
+            Toast.makeText(context, "Cannot delete note: invalid ID", Toast.LENGTH_SHORT).show()
         }
-
-        // Remove from the local array and update UI
-        array.removeAt(position)
-        notifyItemRemoved(position)
-        notifyItemRangeChanged(position, array.size)
     }
 
+    // Method to replace the entire list (e.g., after loading data)
+    fun setItems(messages: List<Message>) {
+        fullList.clear()
+        fullList.addAll(messages)
+        filter("") // Refresh filtered list and UI
+    }
 
+    // Method to filter messages
+    fun filter(query: String) {
+        val searchQuery = query.lowercase()
+        filteredList = if (searchQuery.isEmpty()) {
+            fullList.toMutableList()
+        } else {
+            fullList.filter { message ->
+                message.messTitle.lowercase().contains(searchQuery)
+            }.toMutableList()
+        }
+        notifyDataSetChanged()
+    }
 
+    // Listener for item clicks
     var onItemClick: ((Message, Int) -> Unit)? = null
-    var onItemClick2: ((Message) -> Unit)? = null
+
+    // Listener for item deletion
+    var onItemDeleted: ((Message) -> Unit)? = null
 }

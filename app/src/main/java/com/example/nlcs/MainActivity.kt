@@ -9,7 +9,7 @@ import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
-import com.example.nlcs.NoteFunction.NoteFunctionAcitivity
+import com.example.nlcs.NoteFunction.NoteFunctionActivity
 import com.example.nlcs.databinding.ActivityMainBinding
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
@@ -74,7 +74,7 @@ class MainActivity : AppCompatActivity() {
 //
         // Set click listener for the Focus card
         binding.card5.setOnClickListener {
-            val intent = Intent(this, NoteFunctionAcitivity::class.java)
+            val intent = Intent(this, NoteFunctionActivity::class.java)
             startActivity(intent)
         }
 //

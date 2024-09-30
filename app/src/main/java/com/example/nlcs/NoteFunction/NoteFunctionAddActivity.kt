@@ -5,6 +5,8 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.view.View
 import android.widget.Toast
@@ -15,24 +17,18 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.nlcs.R
 import com.example.nlcs.databinding.ActivityNoteFunctionAddBinding
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 
 class NoteFunctionAddActivity : AppCompatActivity() {
     private lateinit var binding: ActivityNoteFunctionAddBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        //Prevent dark mode
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-        setContentView(R.layout.activity_note_function_add)
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
-
-
+        // Prevent dark mode
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+        // Inflate the layout using view binding
         binding = ActivityNoteFunctionAddBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setSupportActionBar(binding.toolbar.root)
@@ -40,49 +36,58 @@ class NoteFunctionAddActivity : AppCompatActivity() {
         binding.toolbar.title.text = "Thêm ghi chú"
 
         binding.toolbar.BackArrow.setOnClickListener {
-            //Return to the previous activity
-//            val intent = Intent(this,NoteFunctionAcitivity::class.java)
-//            startActivity(intent)
-            finish()
+            finish() // Return to the previous activity
         }
 
-//        val db = FirebaseFirestore.getInstance()
-//        db.collection()
+        // Remove disabling of the save button
+        // binding.toolbar.AddMessage.isEnabled = false
 
-//        binding.btnSelectImage.setOnClickListener {
-//            val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-//            startActivityForResult(intent, REQUEST_IMAGE_PICK)
-//        }
+        // Remove text watchers for enabling/disabling save button
+        // setupTextWatchers()
 
         binding.toolbar.AddMessage.setOnClickListener {
-            val db = FirebaseFirestore.getInstance()
+            val title = binding.edtTitle.text.toString().trim()
+            val content = binding.edtContent.text.toString().trim()
 
-            // Create a new message without an ID initially
-            val message = Message(
-                messTitle = binding.edtTitle.text.toString(),
-                messContent = binding.edtContent.text.toString()
-            )
+            // Input validation: Check if title and content are not empty
+            if (title.isEmpty() || content.isEmpty()) {
+                // Show a notification to the user
+                Toast.makeText(this, "Tiêu đề và nội dung không được để trống.", Toast.LENGTH_SHORT).show()
+            } else {
+                val db = FirebaseFirestore.getInstance()
+                val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
 
-            // Add the message to Firestore and get the auto-generated document ID
-            db.collection("notes")
-                .add(message) // Let Firebase auto-generate the document ID
-                .addOnSuccessListener { documentReference ->
-                    message.messId =
-                        documentReference.id // Set the auto-generated ID back to the message object
-
-                    // Return the message with the generated ID to NoteFunctionActivity
-                    val intent = Intent().apply {
-                        putExtra("Message", message)
-                        putExtra(NoteFunctionAcitivity.KEY, NoteFunctionAcitivity.TYPE_ADD)
-                    }
-                    setResult(Activity.RESULT_OK, intent)
+                if (currentUserId == null) {
+                    Toast.makeText(this, "Bạn phải login để sử dụng chức năng ghi chú.", Toast.LENGTH_SHORT).show()
                     finish()
+                } else {
+                    // Create a new message with the user ID
+                    val message = Message(
+                        messTitle = title,
+                        messContent = content,
+                        userId = currentUserId
+                    )
+
+                    // Add the message to Firestore and get the auto-generated document ID
+                    db.collection("notes")
+                        .add(message)
+                        .addOnSuccessListener { documentReference ->
+                            message.messId = documentReference.id // Set the auto-generated ID back to the message object
+
+                            // Return the message with the generated ID to NoteFunctionActivity
+                            val intent = Intent().apply {
+                                putExtra("Message", message)
+                                putExtra(NoteFunctionActivity.KEY, NoteFunctionActivity.TYPE_ADD)
+                            }
+                            setResult(Activity.RESULT_OK, intent)
+                            finish()
+                        }
+                        .addOnFailureListener { e ->
+                            Log.w("FirestoreError", "Error adding document", e)
+                            Toast.makeText(this, "Failed to save note", Toast.LENGTH_SHORT).show()
+                        }
                 }
-                .addOnFailureListener { e ->
-                    Log.w("FirestoreError", "Error adding document", e)
-                }
+            }
         }
-
     }
-
 }

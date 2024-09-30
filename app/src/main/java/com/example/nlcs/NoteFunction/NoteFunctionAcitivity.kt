@@ -7,6 +7,7 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -19,13 +20,13 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.nlcs.R
 import com.example.nlcs.databinding.ActivityNoteFunctionAcitivityBinding
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
-class NoteFunctionAcitivity : AppCompatActivity() {
+class NoteFunctionActivity : AppCompatActivity() {
     private lateinit var binding: ActivityNoteFunctionAcitivityBinding
-    private var arrayItem: ArrayList<Message> = ArrayList() // Full list of messages
-    private var filteredList: ArrayList<Message> = ArrayList() // List to store filtered messages
-    private var MyAdapter: MyAdapter? = null
+    private var arrayItem: MutableList<Message> = mutableListOf() // Full list of messages
+    private lateinit var myAdapter: MyAdapter // Adapter instance
 
     companion object {
         const val KEY = "KEY"
@@ -34,45 +35,34 @@ class NoteFunctionAcitivity : AppCompatActivity() {
     }
 
     // Check which activity returns data for handling
-    private var startCheckType =
+    private val startCheckType =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
             if (result.resultCode == Activity.RESULT_OK) {
                 val type = result.data?.extras?.getString(KEY)
-                if (type == TYPE_ADD) {
-                    val message = result.data?.extras?.get("Message") as? Message
-                    if (message != null) {
-                        arrayItem.add(0, message)
-                        filterMessages("") // Update the displayed list (unfiltered)
-                    }
-                }
-                if (type == TYPE_EDIT) {
-                    val message = result.data?.extras?.get("Message") as? Message
-                    if (message != null) {
-                        for (item in arrayItem) {
-                            if (item.messId == message.messId) {
-                                item.messTitle = message.messTitle
-                                item.messContent = message.messContent
-                                break
+                val message = result.data?.extras?.get("Message") as? Message
+                if (message != null) {
+                    when (type) {
+                        TYPE_ADD -> {
+                            arrayItem.add(0, message) // Add to the beginning of the list
+                        }
+                        TYPE_EDIT -> {
+                            val index = arrayItem.indexOfFirst { it.messId == message.messId }
+                            if (index != -1) {
+                                arrayItem[index] = message
                             }
                         }
-                        filterMessages("") // Update the displayed list (unfiltered)
                     }
+                    // Refresh the filtered list and update the adapter
+                    filterMessages(binding.edtFind.text.toString())
                 }
             }
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        //Prevent dark mode
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-        setContentView(R.layout.activity_note_function_acitivity)
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
-
+        // Prevent dark mode
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+        // Inflate the layout using view binding
         binding = ActivityNoteFunctionAcitivityBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -82,39 +72,58 @@ class NoteFunctionAcitivity : AppCompatActivity() {
 
         // Set up RecyclerView layout and adapter
         binding.RecycleView.layoutManager = LinearLayoutManager(this)
-        binding.RecycleView.addItemDecoration(DividerItemDecoration(this, DividerItemDecoration.VERTICAL))
+        binding.RecycleView.addItemDecoration(
+            DividerItemDecoration(this, DividerItemDecoration.VERTICAL)
+        )
 
-        MyAdapter = MyAdapter(this, filteredList) // Bind the adapter to the filtered list
-        binding.RecycleView.adapter = MyAdapter
+        // Initialize the adapter with an empty list
+        myAdapter = MyAdapter(this, arrayListOf())
 
+        // Set up the adapter's callbacks
+        myAdapter.onItemClick = { message, position ->
+            val intent = Intent(this, NoteFunctionAdjustActivity::class.java)
+            intent.putExtra("Message", message)
+            startCheckType.launch(intent)
+        }
 
-// Firebase Firestore retrieval
+        myAdapter.onItemDeleted = { message ->
+            val index = arrayItem.indexOfFirst { it.messId == message.messId }
+            if (index != -1) {
+                arrayItem.removeAt(index)
+            }
+        }
+
+        // Set the adapter to the RecyclerView
+        binding.RecycleView.adapter = myAdapter
+
+        // Firebase Firestore retrieval
         val db = FirebaseFirestore.getInstance()
+        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
+        if (currentUserId == null) {
+            Toast.makeText(this, "Please log in to access notes.", Toast.LENGTH_SHORT).show()
+            finish()
+            return
+        }
         db.collection("notes")
+            .whereEqualTo("userId", currentUserId)
             .get()
             .addOnSuccessListener { result ->
+                arrayItem.clear()
                 for (document in result) {
                     val message = document.toObject(Message::class.java)
-                    arrayItem.add(message) // Add all messages from Firestore to arrayItem
+                    message.messId = document.id // Set the messId to the document ID
+                    arrayItem.add(message)
                 }
-                filterMessages("") // Display all messages initially
+                // Update the adapter's data
+                filterMessages(binding.edtFind.text.toString())
             }
             .addOnFailureListener { exception ->
                 Log.w("FirestoreError", "Error getting documents.", exception)
             }
 
-
-        // **Back Arrow Handling**
-        // Find the back arrow ImageView and set a click listener
-        binding.toolbar.root.findViewById<ImageView>(R.id.BackArrow).setOnClickListener {
-            onBackPressed() // Go back to the previous activity when clicked
-        }
-
-        // Handle item clicks
-        MyAdapter?.onItemClick = { message, position ->
-            val intent = Intent(this, NoteFunctionAdjustActivity::class.java)
-            intent.putExtra("Message", message)
-            startCheckType.launch(intent)
+        // Back Arrow Handling
+        binding.toolbar.BackArrow.setOnClickListener {
+            onBackPressed()
         }
 
         // Handle AddMessage button click
@@ -138,21 +147,17 @@ class NoteFunctionAcitivity : AppCompatActivity() {
     // Filter messages based on the search query
     private fun filterMessages(query: String) {
         val searchQuery = query.lowercase()
-        filteredList.clear()
-
-        if (searchQuery.isEmpty()) {
-            // If the search query is empty, display all notes
-            filteredList.addAll(arrayItem)
+        val filteredList = if (searchQuery.isEmpty()) {
+            arrayItem.toList() // Create a copy of the full list
         } else {
-            // Filter messages by title
-            for (message in arrayItem) {
-                if (message.messTitle.lowercase().contains(searchQuery)) {
-                    filteredList.add(message)
-                }
+            arrayItem.filter { message ->
+                message.messTitle.lowercase().contains(searchQuery)
             }
         }
-
-        // Notify the adapter that the dataset has changed
-        MyAdapter?.notifyDataSetChanged()
+        // Update the adapter's data
+        myAdapter.setItems(filteredList)
     }
 }
+
+
+

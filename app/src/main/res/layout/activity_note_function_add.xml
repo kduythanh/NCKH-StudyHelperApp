@@ -42,6 +42,7 @@
             android:layout_marginTop="20dp"
             android:background="@drawable/nodefunction_backgroundedt"
             android:hint="Nhập tiêu đề"
+            android:inputType="textMultiLine|textCapSentences"
             android:padding="8dp"
             android:textSize="20sp" />
 
@@ -54,6 +55,7 @@
             android:background="@drawable/nodefunction_backgroundedt"
             android:gravity="start"
             android:hint="Nhập nội dung"
+            android:inputType="textMultiLine|textCapSentences"
             android:padding="8dp"
             android:textSize="20sp" />
     </LinearLayout>
