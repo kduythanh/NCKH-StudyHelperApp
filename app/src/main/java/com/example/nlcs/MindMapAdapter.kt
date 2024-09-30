@@ -56,10 +56,9 @@ class MindMapAdapter(
         holder.deleteButton.setOnClickListener{
             val documentId = mindMap.id
             val mindMapID = mindMap.mindMapID
-            Log.d(TAG, "Delete button clicked for document with ID: $documentId and mindMapId: $mindMapID")
-
+            val mindMapTitle = mindMap.title
             if (documentId != null) {
-                showDeleteConfirmationDialog(documentId, position, mindMapID)
+                showDeleteConfirmationDialog(documentId, position, mindMapID, mindMapTitle)
             }
         }
 
@@ -101,12 +100,12 @@ class MindMapAdapter(
         dialog.show()
     }
 
-    private fun showDeleteConfirmationDialog(documentId: String, position: Int, mindMapID: String?) {
+    private fun showDeleteConfirmationDialog(documentId: String, position: Int, mindMapID: String?, mindMapTitle: String?) {
         val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_confirm_deletion_mind_map, null)
         val dialog = AlertDialog.Builder(context).setView(dialogView).create()
 
-        val mindMapIdTextView = dialogView.findViewById<TextView>(R.id.mindMapIdTextView)
-        mindMapIdTextView.text = documentId
+        val mindMapIdTextView = dialogView.findViewById<TextView>(R.id.mindMapTitleTextView)
+        mindMapIdTextView.text = mindMapTitle
 
         dialogView.findViewById<Button>(R.id.dialogConfirmDeletionButtonYes).setOnClickListener {
             deleteMindMapFromFirestore(documentId, position, mindMapID)
@@ -131,7 +130,6 @@ class MindMapAdapter(
             .addOnSuccessListener {
                 mindMap.title = newTitle
                 notifyItemChanged(position)
-                Log.d(TAG, "Mind map title updated successfully!")
             }
             .addOnFailureListener { e ->
                 Log.w(TAG, "Error updating mind map title", e)
@@ -141,23 +139,17 @@ class MindMapAdapter(
     private fun deleteMindMapFromFirestore(documentId: String, position: Int, mindMapID: String?) {
         val db = FirebaseFirestore.getInstance()
         val docRef = db.collection("mindMapTemp").document(documentId)
-        Log.d(TAG, "Before deletion, remaining items: ${mindMapList.size}")
         docRef.delete()
             .addOnSuccessListener {
-                // Log the current size of mindMapList for debugging
-                Log.d(TAG, "Deletion in Firestore, remaining items: ${mindMapList.size}")
-
                 // Check if the position is valid before removing the item
                 if (position in 0 until mindMapList.size ) {
                     // Remove the mind map from the local list directly
                     mindMapList.removeAt(position)
-                    Log.d(TAG, "Mind map successfully deleted. Remaining items: ${mindMapList.size}")
 
                     // Notify the adapter that the item was removed
                     notifyItemRemoved(position)
 
                     // Log the new size after deletion
-                    Log.d(TAG, "Mind map successfully deleted. Remaining items: ${mindMapList.size}")
 
                     // Notify that the list has changed
                     notifyItemRangeChanged(position, itemCount - position)

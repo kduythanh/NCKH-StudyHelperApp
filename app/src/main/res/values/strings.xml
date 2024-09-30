@@ -6,6 +6,7 @@
     <string name="email">Email</string>
     <string name="password">Mật khẩu</string>
     <string name="confirmPassword">Xác nhận mật khẩu</string>
+    <string name="confirmDeletionMindMapItem">Xác nhận xóa mind map với tiêu đề</string>
 
     <string name="createAccount">TẠO TÀI KHOẢN</string>
     <string name="haveAnAccount">Đã có tài khoản?\ </string>

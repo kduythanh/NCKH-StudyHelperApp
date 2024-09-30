@@ -20,7 +20,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:text="Xác nhận xóa mind map với ID"
+            android:text="@string/confirmDeletionMindMapItem"
             android:textSize="20sp"
             android:fontFamily="@font/roboto_bold"
             android:textColor="@color/black"
@@ -30,11 +30,11 @@
             android:background="@color/background_2"/>
 
         <TextView
-            android:id="@+id/mindMapIdTextView"
+            android:id="@+id/mindMapTitleTextView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:text="ID"
+            android:text="@string/TitlePlaceHolder"
             android:textSize="20sp"
             android:fontFamily="@font/roboto_bold"
             android:textColor="@color/black"

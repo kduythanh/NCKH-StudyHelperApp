@@ -85,7 +85,7 @@ class MindMapActivity : AppCompatActivity() {
         Thread {
             neo4jService.updateNodeTitles(nodeUpdates)
             runOnUiThread {
-                Toast.makeText(this, "All changes saved!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Lưu thay đổi thành công", Toast.LENGTH_SHORT).show()
             }
         }.start()
     }
@@ -224,7 +224,7 @@ class MindMapActivity : AppCompatActivity() {
         contextMenuView.findViewById<ImageView>(R.id.addChildIcon).setOnClickListener {
             // Get parentNodeID, childTitle, userID, and mindMapID
             val parentNodeID = view.getTag(R.id.node_id_tag) as? String
-            val childTitle = "New Child Node"
+            val childTitle = "Nút con"
             val userID = FirebaseAuth.getInstance().currentUser?.uid
             val mindMapID = intent.getStringExtra("mindMapID") ?: return@setOnClickListener
 
@@ -233,18 +233,16 @@ class MindMapActivity : AppCompatActivity() {
                 val parentX = (position["x"] as Float).toFloat()
                 val parentY = (position["y"] as Float).toFloat()
 
-                val x = binding.mindMapContent.width.toFloat() / 2f
-                val y = binding.mindMapContent.height.toFloat() / 2f
                 val newChildNode = neo4jService.addChildNode(parentNodeID, childTitle, userID, mindMapID, parentX, parentY + 120f)
                 if (newChildNode != null) {
                     runOnUiThread {
                         // Display the new child node in the UI
                         addChildNodeToView(newChildNode, parentNodeID)
-                        Toast.makeText(this, "Child Node Added", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, "Thêm nút con thành công!", Toast.LENGTH_SHORT).show()
                     }
                 } else {
                     runOnUiThread {
-                        Toast.makeText(this, "Failed to add child node", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, "Thêm nút con thất bại!", Toast.LENGTH_SHORT).show()
                     }
                 }
             }.start()
@@ -281,7 +279,7 @@ class MindMapActivity : AppCompatActivity() {
                     }
                 } else {
                     runOnUiThread {
-                        Toast.makeText(this, "No children to delete.", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, "Không có nút con để xóa!", Toast.LENGTH_SHORT).show()
                     }
                 }
             }.start()
@@ -421,7 +419,7 @@ class MindMapActivity : AppCompatActivity() {
         Thread {
             neo4jService.deleteLeafNode(nodeID)
             runOnUiThread {
-                Toast.makeText(this, "Node deleted successfully", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Xóa nút lá thành công!", Toast.LENGTH_SHORT).show()
 
                 // Remove the node view from the layout
                 val parentLayout = binding.zoomableView.findViewById<RelativeLayout>(R.id.mindMapContent)
@@ -442,7 +440,7 @@ class MindMapActivity : AppCompatActivity() {
         Thread {
             neo4jService.deleteBranch(nodeID)
             runOnUiThread {
-                Toast.makeText(this, "Node and its descendants deleted successfully", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Xóa nhánh thành công!", Toast.LENGTH_SHORT).show()
 
                 // Remove the branch node and its descendants from the view
                 val parentLayout = binding.zoomableView.findViewById<RelativeLayout>(R.id.mindMapContent)
