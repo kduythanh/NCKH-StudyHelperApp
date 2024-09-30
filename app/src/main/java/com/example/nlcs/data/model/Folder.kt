@@ -7,52 +7,87 @@ class Folder {
     var id: String? = null
     var name: String? = null
     var description: String? = null
+   // var is_public: Int = 0
     var created_at: String? = null
     var updated_at: String? = null
-
+    var user_id: String? = null
     constructor()
 
     constructor(
         id: String?,
         name: String?,
         description: String?,
+     //   is_public: Int,
         created_at: String?,
-        updated_at: String?
+        updated_at: String?,
+        user_id: String?
     ) {
         this.id = id
         this.name = name
         this.description = description
+      //  this.is_public = is_public
         this.created_at = created_at
         this.updated_at = updated_at
+        this.user_id = user_id
     }
 
-    fun getCreated_at(): String? {
+    //fun SetIs_public(is_public: Int) {
+       // this.is_public = is_public;
+
+   // }
+
+    fun SetUser_id(user_id: String) {
+        this.user_id = user_id;
+
+    }
+
+    fun SetId(id: String) {
+        this.id = id;
+
+    }
+    fun SetDescription(description: String) {
+        this.description = description;
+
+    }
+
+    fun SetName(name: String) {
+        this.name = name;
+
+    }
+    fun SetCreated_at(created_at: String) {
+        this.created_at = created_at;
+
+    }
+    fun SetUpdated_at(updated_at: String) {
+        this.updated_at = updated_at;
+
+    }
+
+
+    fun fetchCreated_at(): String? {
         return created_at;
     }
 
-    fun getUpdated_at(): String? {
+    fun fetchId(): String? {
+        return id;
+    }
+    fun fetchName(): String? {
+        return name;
+    }
+
+    fun fetchDescription(): String? {
+        return description;
+    }
+
+    fun fetchUpdated_at(): String? {
         return updated_at;
     }
 
-    suspend fun copy(id: String): Folder? {
-        // Assuming you have a FolderDAO or some way to get a Folder by its ID
-        val folderDAO = FolderDAO()
-
-        // Retrieve the folder from the data source by ID
-        val originalFolder = folderDAO.getFolderById(id) ?: return null
-
-        // Create a new folder with the same properties (deep copy)
-        val newFolder = Folder(
-            id = UUID.randomUUID().toString(), // Generate a new ID for the copied folder
-            name = originalFolder.name + " - Copy",
-            created_at = System.currentTimeMillis(), // Set the current time for the new folder
-            // Add other properties that need to be copied
-        )
-
-        // Optionally, save the new folder to the database
-        folderDAO.insertFolder(newFolder)
-
-        // Return the newly created folder
-        return newFolder
+    fun fetchUser_id(): String? {
+        return user_id
     }
+
+
+
+
 }

@@ -2,6 +2,7 @@ package com.example.nlcs.ui.activities.learn
 
 import android.app.Dialog
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.example.nlcs.R
@@ -37,23 +38,35 @@ class QuizActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(binding.root)
-        id = intent.getStringExtra("id") ?: ""
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        binding.toolbar.setNavigationOnClickListener {
-            onBackPressedDispatcher.onBackPressed()
+        CoroutineScope(Dispatchers.Main).launch {
+            setContentView(binding.root)
+            id = intent.getStringExtra("id") ?: ""
+            supportActionBar?.setDisplayHomeAsUpEnabled(true)
+            binding.toolbar.setNavigationOnClickListener {
+                onBackPressedDispatcher.onBackPressed()
+            }
+            setNextQuestion()
+            val max = cardDAO.getCardByIsLearned(id, 0).size
+            binding.timelineProgress.max = max
         }
-        setNextQuestion()
-        val max = cardDAO.getCardByIsLearned(id, 0).size
-        binding.timelineProgress.max = max
     }
 
     private fun checkAnswer(selectedAnswer: String, cardId: String): Boolean {
         return if (selectedAnswer == correctAnswer) {
             correctDialog(correctAnswer)
-            CoroutineScope(Dispatchers.IO).launch {
-                cardDAO.updateIsLearnedCardById(cardId, 1)
+
+            // Thực hiện việc cập nhật không đồng bộ trong CoroutineScope
+            CoroutineScope(Dispatchers.Main).launch {
+                val result = cardDAO.updateIsLearnedCardById(cardId, 1)
+                if (result > 0) {
+                    Log.d("CardDAO", "Card with ID: $cardId updated successfully")
+                } else {
+                    Log.e("CardDAO", "Failed to update card with ID: $cardId")
+                }
+
+
             }
+
             setNextQuestion()
             progress++
             setUpProgressBar()
@@ -71,14 +84,14 @@ class QuizActivity : AppCompatActivity() {
 
 
     private fun setNextQuestion() {
-        scope.launch {
+        CoroutineScope(Dispatchers.Main).launch {
+            // Sử dụng DAO đã sửa để lấy dữ liệu
             val cards = cardDAO.getCardByIsLearned(id, 0) // get a list of cards that are not learned
             val randomCard = cardDAO.getAllCardByFlashCardId(id) // get all cards
 
             if (cards.isEmpty()) {
                 finishQuiz()
                 return@launch
-
             }
 
             val correctCard = cards.random() // get a random card from a list of cards that are not learned
@@ -88,7 +101,7 @@ class QuizActivity : AppCompatActivity() {
 
             val allCards = (listOf(correctCard) + incorrectCards).shuffled() // shuffle 4 cards
             val question = correctCard.front
-            correctAnswer = correctCard.back
+            correctAnswer = correctCard.back.toString()
 
             withContext(Dispatchers.Main) {
                 binding.tvQuestion.text = question
@@ -97,44 +110,42 @@ class QuizActivity : AppCompatActivity() {
                 binding.optionThree.text = allCards[2].back
                 binding.optionFour.text = allCards[3].back
 
+                // In ra log để kiểm tra ID của correctCard
+                Log.d("QuizDebug", "correctCard.id: ${correctCard.id}")
+
                 binding.optionOne.setOnClickListener {
                     correctCard.id?.let { it1 ->
-                        checkAnswer(binding.optionOne.text.toString(),
-                            it1
-                        )
-                    }
+                        Log.d("QuizDebug", "Option One Selected - correctCard.id: $it1")
+                        checkAnswer(binding.optionOne.text.toString(), it1)
+                    } ?: Log.e("QuizDebug", "correctCard.id is null for Option One")
                 }
 
                 binding.optionTwo.setOnClickListener {
                     correctCard.id?.let { it1 ->
-                        checkAnswer(binding.optionTwo.text.toString(),
-                            it1
-                        )
-                    }
+                        Log.d("QuizDebug", "Option Two Selected - correctCard.id: $it1")
+                        checkAnswer(binding.optionTwo.text.toString(), it1)
+                    } ?: Log.e("QuizDebug", "correctCard.id is null for Option Two")
                 }
 
                 binding.optionThree.setOnClickListener {
                     correctCard.id?.let { it1 ->
-                        checkAnswer(binding.optionThree.text.toString(),
-                            it1
-                        )
-                    }
+                        Log.d("QuizDebug", "Option Three Selected - correctCard.id: $it1")
+                        checkAnswer(binding.optionThree.text.toString(), it1)
+                    } ?: Log.e("QuizDebug", "correctCard.id is null for Option Three")
                 }
 
                 binding.optionFour.setOnClickListener {
                     correctCard.id?.let { it1 ->
-                        checkAnswer(binding.optionFour.text.toString(),
-                            it1
-                        )
-                    }
+                        Log.d("QuizDebug", "Option Four Selected - correctCard.id: $it1")
+                        checkAnswer(binding.optionFour.text.toString(), it1)
+                    } ?: Log.e("QuizDebug", "correctCard.id is null for Option Four")
                 }
 
                 askedCards.add(correctCard)
-
-
             }
         }
     }
+
 
     private fun finishQuiz() { //1 quiz, 2 learn
         runOnUiThread {
@@ -159,19 +170,28 @@ class QuizActivity : AppCompatActivity() {
     }
 
     private fun correctDialog(answer: String) {
-        val dialog = AlertDialog.Builder(this)
+        // Tạo một AlertDialog.Builder
+        val dialogBuilder = AlertDialog.Builder(this)
+
+        // Sử dụng DialogCorrectBinding để tạo nội dung dialog
         val dialogBinding = DialogCorrectBinding.inflate(layoutInflater)
-        dialog.setView(dialogBinding.root)
-        dialog.setCancelable(true)
-        val builder = dialog.create()
+
+        // Gán giá trị cho TextView trong binding
         dialogBinding.questionTv.text = answer
+
+        // Thiết lập view cho dialog
+        dialogBuilder.setView(dialogBinding.root)
+
+        // Tạo dialog
+        val dialog = dialogBuilder.create()
+
+        // Thiết lập sự kiện khi dialog bị đóng
         dialog.setOnDismissListener {
-            // startAnimations()
+            // Có thể thêm hành động khi dialog bị đóng nếu cần
         }
 
-
-        builder.show()
-
+        // Hiển thị dialog
+        dialog.show()
     }
 
     private fun wrongDialog(answer: String, question: String, userAnswer: String) {
@@ -198,3 +218,4 @@ class QuizActivity : AppCompatActivity() {
     }
 
 }
+

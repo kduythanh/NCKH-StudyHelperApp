@@ -14,6 +14,9 @@ import com.example.nlcs.databinding.ItemSetCopyBinding
 import com.example.nlcs.ui.activities.set.ViewSetActivity
 import com.google.android.gms.tasks.Task
 import com.google.firebase.firestore.QuerySnapshot
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 
 class SetCopyAdapter(private val context: Context, private val sets: ArrayList<FlashCard>) :
@@ -28,20 +31,27 @@ class SetCopyAdapter(private val context: Context, private val sets: ArrayList<F
 
     @SuppressLint("SetTextI18n")
     override fun onBindViewHolder(holder: SetViewHolder, position: Int) {
-        val set = sets[position]
-        cardDAO = CardDAO(context)
-        val count: Task<QuerySnapshot> = cardDAO!!.countCardByFlashCardId(set.id!!)
+        val flashCard: FlashCard = sets[position]
 
-        holder.binding.setNameTv.text = set.name
-        holder.binding.termCountTv.text = "$count terms"
-        holder.binding.createdDateTv.text = set.created_at
+        holder.binding.setNameTv.text = flashCard.GetName()
+        holder.binding.createdDateTv.text = flashCard.GetCreated_at()
 
-        holder.itemView.setOnClickListener { v: View? ->
-            val intent = Intent(context, ViewSetActivity::class.java)
-            intent.putExtra("id", set.id)
+        // Launch a coroutine to count the cards asynchronously
+        holder.itemView.setOnClickListener {
+            // Launch a coroutine to handle the count retrieval
+            CoroutineScope(Dispatchers.Main).launch {
+                val count = flashCard.GetId()?.let { it1 -> cardDAO?.countCardByFlashCardId(it1) }
+                holder.binding.termCountTv.text = "$count terms"
+            }
+
+            // Start the ViewSetActivity
+            val intent = Intent(context, ViewSetActivity::class.java).apply {
+                putExtra("id", flashCard.GetId())
+            }
             context.startActivity(intent)
         }
     }
+
 
     override fun getItemCount(): Int {
         return sets.size

@@ -5,11 +5,7 @@
             android:title="@string/home"
             android:icon="@drawable/ic_home"
             />
-    <item
-            android:id="@+id/bookFragment"
-            android:title="@string/book"
-            android:icon="@drawable/ic_book"
-            />
+
     <item
             android:id="@+id/createFragment"
             android:title=""
@@ -20,9 +16,5 @@
             android:title="@string/library"
             android:icon="@drawable/ic_library"
             />
-    <item
-            android:id="@+id/profileFragment"
-            android:title="@string/profile"
-            android:icon="@drawable/ic_profile"
-            />
+
 </menu>

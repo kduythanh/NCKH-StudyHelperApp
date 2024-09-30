@@ -19,6 +19,12 @@ import com.example.nlcs.data.model.FlashCard
 import com.example.nlcs.data.model.Folder
 import com.example.nlcs.databinding.FragmentHomeBinding
 import com.example.nlcs.ui.activities.create.CreateSetActivity
+import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.auth
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class HomeFragment : Fragment() {
     private var binding: FragmentHomeBinding? = null
@@ -26,6 +32,7 @@ class HomeFragment : Fragment() {
     private var folders: ArrayList<Folder>? = null
     private var flashCardDAO: FlashCardDAO? = null
     private var folderDAO: FolderDAO? = null
+    private lateinit var firebaseAuth: FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,18 +52,22 @@ class HomeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        CoroutineScope(Dispatchers.Main).launch {
+            requireActivity()
 
-        requireActivity()
+            setupFlashCards()
+            setupFolders()
+            setupVisibility()
+            setupSwipeRefreshLayout()
+            setupSearchBar()
+            setupCreateSetsButton()
+        }
 
-        setupFlashCards()
-        setupFolders()
-        setupVisibility()
-        setupSwipeRefreshLayout()
-        setupSearchBar()
-        setupCreateSetsButton()
 
         binding!!.swipeRefreshLayout.setOnRefreshListener {
-            refreshData()
+            CoroutineScope(Dispatchers.Main).launch {
+                refreshData()
+            }
             binding!!.swipeRefreshLayout.isRefreshing = false
             Toast.makeText(requireActivity(), "Refreshed", Toast.LENGTH_SHORT).show()
         }
@@ -64,7 +75,9 @@ class HomeFragment : Fragment() {
 
     @SuppressLint("NotifyDataSetChanged")
     private suspend fun setupFlashCards() {
-        flashCards = flashCardDAO.getAllFlashCards()
+        firebaseAuth = Firebase.auth
+        val userId = firebaseAuth.currentUser?.uid ?: ""
+        flashCards = flashCardDAO!!.getAllFlashCardByUserId(userId )
         val linearLayoutManager =
             LinearLayoutManager(requireActivity(), RecyclerView.HORIZONTAL, false)
         binding!!.setsRv.layoutManager = linearLayoutManager
@@ -75,7 +88,9 @@ class HomeFragment : Fragment() {
 
     @SuppressLint("NotifyDataSetChanged")
     private suspend fun setupFolders() {
-        folders = folderDAO!!.getAllFolders()
+        firebaseAuth = Firebase.auth
+        val userId = firebaseAuth.currentUser?.uid ?: ""
+        folders = folderDAO!!.getAllFolderByUserId(userId)
         val folderAdapter = FolderAdapter(requireActivity(), folders!!)
         val linearLayoutManager1 =
             LinearLayoutManager(requireActivity(), RecyclerView.HORIZONTAL, false)
@@ -100,7 +115,9 @@ class HomeFragment : Fragment() {
 
     private fun setupSwipeRefreshLayout() {
         binding!!.swipeRefreshLayout.setOnRefreshListener {
-            refreshData()
+            CoroutineScope(Dispatchers.Main).launch {
+                refreshData()
+            }
             binding!!.swipeRefreshLayout.isRefreshing = false
         }
     }
@@ -130,7 +147,10 @@ class HomeFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        refreshData()
+        CoroutineScope(Dispatchers.Main).launch {
+            refreshData()
+
+        }
     }
 
 

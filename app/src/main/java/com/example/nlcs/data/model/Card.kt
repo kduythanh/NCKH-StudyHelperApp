@@ -54,67 +54,67 @@ class Card {
         return Objects.hash(id, front, back)
     }
 
-    fun setFront(front: String) {
+    fun SetFront(front: String) {
         this.front = front;
     }
 
-    fun setBack(back: String) {
+    fun SetBack(back: String) {
         this.back = back;
     }
 
-    fun setId(id: String) {
+    fun SetId(id: String) {
         this.id = id;
     }
 
-    fun setStatus(status: Int) {
+    fun SetStatus(status: Int) {
         this.status = status;
     }
 
-    fun setIsLearned(isLearned: Int) {
+    fun SetIsLearned(isLearned: Int) {
         this.isLearned = isLearned;
     }
 
-    fun setFlashcard_id(flashcard_id: String) {
+    fun SetFlashcard_id(flashcard_id: String) {
         this.flashcard_id = flashcard_id;
     }
 
-    fun setCreated_at(created_at: String) {
+    fun SetCreated_at(created_at: String) {
         this.created_at = created_at;
     }
 
-    fun setUpdated_at(updated_at: String) {
+    fun SetUpdated_at(updated_at: String) {
         this.updated_at = updated_at;
     }
 
-    fun getFront(): String? {
+    fun GetFront(): String? {
         return front;
     }
 
-    fun getBack(): String? {
+    fun GetBack(): String? {
         return back;
     }
 
-    fun getId(): String? {
+    fun GetId(): String? {
         return id;
     }
 
-    fun getStatus(): Int {
+    fun GetStatus(): Int {
         return status;
     }
 
-    fun getIsLearned(): Int {
+    fun GetIsLearned(): Int {
         return isLearned;
     }
 
-    fun getFlashcard_id(): String? {
+    fun GetFlashcard_id(): String? {
         return flashcard_id;
     }
 
-    fun getCreated_at(): String? {
+    fun GetCreated_at(): String? {
         return created_at;
     }
 
-    fun getUpdated_at(): String? {
+    fun GetUpdated_at(): String? {
         return updated_at;
     }
 

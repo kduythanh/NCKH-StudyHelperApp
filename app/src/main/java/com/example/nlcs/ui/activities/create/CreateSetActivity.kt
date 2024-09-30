@@ -7,12 +7,12 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.CompoundButton
 import android.widget.Toast
-import androidx.activity.OnBackPressedDispatcher.onBackPressed
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -25,9 +25,16 @@ import com.example.nlcs.data.dao.CardDAO
 import com.example.nlcs.data.dao.FlashCardDAO
 import com.example.nlcs.data.model.Card
 import com.example.nlcs.data.model.FlashCard
+import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.auth
 import com.example.nlcs.databinding.ActivityCreateSetBinding
 import com.example.nlcs.ui.activities.set.ViewSetActivity
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -39,6 +46,7 @@ class CreateSetActivity : AppCompatActivity() {
     private var cards: ArrayList<Card>? = null
     private var binding: ActivityCreateSetBinding? = null
     private val id = genUUID()
+    private lateinit var firebaseAuth: FirebaseAuth
 
     @SuppressLint("NotifyDataSetChanged")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -152,7 +160,7 @@ class CreateSetActivity : AppCompatActivity() {
     }
 
     private fun handleOnSwiped(viewHolder: RecyclerView.ViewHolder) {
-        val position = viewHolder.bindingAdapterPosition
+        val position = viewHolder.getBindingAdapterPosition()
 
         // Backup of removed item for undo purpose
         val deletedItem = cards!![position]
@@ -220,13 +228,15 @@ class CreateSetActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == R.id.done) {
-            saveChanges()
+            CoroutineScope(Dispatchers.Main).launch {
+                saveChanges()
+            }
             return true
         }
         return super.onOptionsItemSelected(item)
     }
 
-    private fun saveChanges() {
+    private suspend fun saveChanges() {
         val subject = binding!!.subjectEt.text.toString()
         val description = binding!!.descriptionEt.text.toString()
 
@@ -238,98 +248,118 @@ class CreateSetActivity : AppCompatActivity() {
             binding!!.subjectTil.error = null
         }
 
-        if (!saveAllCards()) {
-            return
-        }
-
-        if (!saveFlashCard(subject, description)) {
+        // Lưu flashcard và nhận về document ID (flashcard_id)
+        val flashcardId = saveFlashCard(subject, description)
+        if (flashcardId == null) {
             Toast.makeText(this, "Insert flashcard failed", Toast.LENGTH_SHORT).show()
             return
         }
 
+        // Lưu tất cả các card với flashcardId
+        if (!saveAllCards(flashcardId)) {
+            return
+        }
+
+        // Chuyển sang ViewSetActivity và truyền flashcardId vào Intent
         val intent = Intent(this, ViewSetActivity::class.java)
-        intent.putExtra("id", id)
+        intent.putExtra("id", flashcardId)
         startActivity(intent)
         finish()
     }
 
-    private fun saveAllCards(): Boolean {
+
+
+    private suspend fun saveAllCards(flashcardId: String): Boolean {
         for (card in cards!!) {
-            if (!saveCard(card)) {
+            if (!saveCard(card, flashcardId)) {
                 return false
             }
         }
         return true
     }
 
-    private fun saveCard(card: Card): Boolean {
-        val front: String = card.getFront().toString()
-        val back: String = card.getBack().toString()
 
-        if (front == null || front.isEmpty()) {
+
+
+    //Save cards
+    private suspend fun saveCard(card: Card, flashcardId: String): Boolean {
+        val front: String = card.GetFront().toString()
+        val back: String = card.GetBack().toString()
+
+        if (front.isEmpty()) {
             binding!!.cardsLv.requestFocus()
             Toast.makeText(this, "Please enter front", Toast.LENGTH_SHORT).show()
             return false
         }
 
-        if (back == null || back.isEmpty()) {
+        if (back.isEmpty()) {
             binding!!.cardsLv.requestFocus()
             Toast.makeText(this, "Please enter back", Toast.LENGTH_SHORT).show()
             return false
         }
 
         val cardDAO = CardDAO(this)
-        card.setId(genUUID())
-        card.setFront(front)
-        card.setBack(back)
-        card.setStatus(0)
-        card.setIsLearned(0)
-        card.setFlashcard_id(id)
-        card.setCreated_at(currentDate)
-        card.setUpdated_at(currentDate)
+        card.SetId(genUUID()) // Tạo ID duy nhất cho card
+        card.SetFront(front)
+        card.SetBack(back)
+        card.SetStatus(0) // Trạng thái ban đầu
+        card.SetIsLearned(0) // Trạng thái học tập ban đầu
+        card.SetFlashcard_id(flashcardId) // Lưu flashcardId vào field flashcard_id của card
+        card.SetCreated_at(getCurrentDate())
+        card.SetUpdated_at(getCurrentDate())
+
+        // Chèn card vào Firestore qua CardDAO
         if (cardDAO.insertCard(card) <= 0) {
-            Toast.makeText(this, "Insert card failed$id", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Insert card failed with flashcardId: $flashcardId", Toast.LENGTH_SHORT).show()
             return false
         }
 
         return true
     }
 
-    private suspend fun saveFlashCard(subject: String, description: String): Boolean {
+
+
+    private suspend fun saveFlashCard(subject: String, description: String): String? {
         val flashCardDAO = FlashCardDAO(this)
         val flashCard = FlashCard()
-        flashCard.name = subject
-        flashCard.description = description
-        flashCard.created_at = currentDate
-        flashCard.updated_at = currentDate
-        flashCard.id = id
-        binding!!.privateSwitch.setOnCheckedChangeListener { buttonView: CompoundButton?, isChecked: Boolean ->
-            if (isChecked) {
-                Toast.makeText(this, "Public", Toast.LENGTH_SHORT).show()
-                flashCard.setIs_public(1)
-            } else {
-                Toast.makeText(this, "Private", Toast.LENGTH_SHORT).show()
-                flashCard.setIs_public(0)
-            }
+            flashCard.name = subject
+            flashCard.description = description
+            flashCard.created_at = getCurrentDate()
+            flashCard.updated_at = getCurrentDate()
+
+
+        // Set trạng thái công khai hoặc riêng tư
+        binding!!.privateSwitch.setOnCheckedChangeListener { _, isChecked ->
+            flashCard.SetIs_public(if (isChecked) 1 else 0)
         }
 
-        return flashCardDAO.insertFlashCard(flashCard) > 0
+        // Gọi insertFlashCard và nhận về document ID sau khi thêm thành công
+        return try {
+            val result = flashCardDAO.insertFlashCard(flashCard) // Gọi hàm DAO để lưu flashcard
+            if (result > 0) {
+                flashCard.GetId() // Trả về ID của flashcard
+            } else {
+                null // Trả về null nếu thất bại
+            }
+        } catch (e: Exception) {
+            Log.e("saveFlashCard", "Error saving flashcard: ${e.message}")
+            null
+        }
     }
 
-    private val currentDate: String
-        get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            currentDateNewApi
+
+    private fun getCurrentDate(): String {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            getCurrentDateNewApi()
         } else {
-            currentDateOldApi
+            getCurrentDateOldApi()
         }
+    }
 
     fun checkTwoCardsEmpty(): Boolean {
-        // check if 2 cards are empty return true
         var emptyCount = 0
         for (card in cards!!) {
-            if (card.getFront() == null || card.getFront()!!
-                    .isEmpty() || card.getBack() == null || card.getBack()!!.isEmpty()
-            ) {
+            if (card.front.isNullOrEmpty() || card.back.isNullOrEmpty()) {
                 emptyCount++
                 if (emptyCount == 2) {
                     return true
@@ -339,23 +369,25 @@ class CreateSetActivity : AppCompatActivity() {
         return false
     }
 
+
     private fun genUUID(): String {
         return UUID.randomUUID().toString()
     }
 
-    @get:RequiresApi(api = Build.VERSION_CODES.O)
-    private val currentDateNewApi: String
-        get() {
-            val currentDate = LocalDate.now()
-            val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
-            return currentDate.format(formatter)
-        }
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun getCurrentDateNewApi(): String {
+        val currentDate = LocalDate.now()
+        val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+        return currentDate.format(formatter)
+    }
 
-    private val currentDateOldApi: String
-        get() {
-            @SuppressLint("SimpleDateFormat") val sdf = SimpleDateFormat("dd/MM/yyyy")
-            return sdf.format(Date())
-        }
+
+    @SuppressLint("SimpleDateFormat")
+    private fun getCurrentDateOldApi(): String {
+        val sdf = SimpleDateFormat("dd/MM/yyyy")
+        return sdf.format(Date())
+    }
+
 }
 
 

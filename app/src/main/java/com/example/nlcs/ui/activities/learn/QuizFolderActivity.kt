@@ -45,8 +45,7 @@ class QuizFolderActivity : AppCompatActivity() {
         binding.toolbar.setNavigationOnClickListener {
             onBackPressedDispatcher.onBackPressed()
         }
-
-        setUpProgressBar()
+        CoroutineScope(Dispatchers.Main).launch { setUpProgressBar() }
 
     }
 
@@ -133,7 +132,7 @@ class QuizFolderActivity : AppCompatActivity() {
                 Log.d("QuizFolderActivity", "Card back: ${card.back}")
             }
             val question = correctCard.front
-            correctAnswer = correctCard.back
+            correctAnswer = correctCard.back.toString()
 
             withContext(Dispatchers.Main) {
                 binding.tvQuestion.text = question
@@ -143,19 +142,35 @@ class QuizFolderActivity : AppCompatActivity() {
                 binding.optionFour.text = allCards[3].back
 
                 binding.optionOne.setOnClickListener {
-                    checkAnswer(binding.optionOne.text.toString(), correctCard.id)
+                    correctCard.id?.let { it1 ->
+                        checkAnswer(binding.optionOne.text.toString(),
+                            it1
+                        )
+                    }
                 }
 
                 binding.optionTwo.setOnClickListener {
-                    checkAnswer(binding.optionTwo.text.toString(), correctCard.id)
+                    correctCard.id?.let { it1 ->
+                        checkAnswer(binding.optionTwo.text.toString(),
+                            it1
+                        )
+                    }
                 }
 
                 binding.optionThree.setOnClickListener {
-                    checkAnswer(binding.optionThree.text.toString(), correctCard.id)
+                    correctCard.id?.let { it1 ->
+                        checkAnswer(binding.optionThree.text.toString(),
+                            it1
+                        )
+                    }
                 }
 
                 binding.optionFour.setOnClickListener {
-                    checkAnswer(binding.optionFour.text.toString(), correctCard.id)
+                    correctCard.id?.let { it1 ->
+                        checkAnswer(binding.optionFour.text.toString(),
+                            it1
+                        )
+                    }
                 }
 
                 askedCards.add(correctCard)
@@ -164,7 +179,7 @@ class QuizFolderActivity : AppCompatActivity() {
         }
     }
 
-    private fun finishQuiz(status: Int) { //1 quiz, 2 learn
+    private suspend fun finishQuiz(status: Int) { //1 quiz, 2 learn
 
         binding.timelineProgress.progress = setUpProgressBar()
         runOnUiThread {
@@ -226,5 +241,9 @@ class QuizFolderActivity : AppCompatActivity() {
         job.cancel()
         dialogCorrect?.create()?.dismiss()
     }
+
+}
+
+private fun <E> List<E>.addAll(allCardByFlashCardId: List<E>) {
 
 }

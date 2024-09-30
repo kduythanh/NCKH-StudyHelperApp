@@ -23,9 +23,9 @@ class ViewSetAdapter(private val context: Context, private val cards: ArrayList<
     }
 
     override fun onBindViewHolder(holder: ViewSetViewHolder, position: Int) {
-        val card = cards[position]
-        holder.binding.backTv.setText(card.getFront())
-        holder.binding.frontTv.setText(card.getBack())
+        val card: Card = cards[position]
+        holder.binding.backTv.setText(card.GetFront())
+        holder.binding.frontTv.setText(card.GetBack())
         holder.binding.cardViewFlip.flipDuration = 450
         holder.binding.cardViewFlip.isFlipEnabled = true
         holder.binding.cardViewFlip.setOnClickListener { v: View? ->

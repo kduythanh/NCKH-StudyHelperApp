@@ -24,7 +24,6 @@ class ViewTermsAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val card = cards[position]
-
         val status = card.status
         // change color of card
         when (status) {

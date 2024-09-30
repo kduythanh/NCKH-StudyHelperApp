@@ -25,6 +25,9 @@ import com.kennyc.bottomsheet.BottomSheetMenuDialogFragment
 import com.saadahmedsoft.popupdialog.PopupDialog
 import com.saadahmedsoft.popupdialog.Styles
 import com.saadahmedsoft.popupdialog.listener.OnDialogButtonClickListener
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class ViewFolderActivity : AppCompatActivity(), BottomSheetListener {
     private val binding by lazy { ActivityViewFolderBinding.inflate(layoutInflater) }
@@ -52,22 +55,58 @@ class ViewFolderActivity : AppCompatActivity(), BottomSheetListener {
 
     @SuppressLint("SetTextI18n")
     private fun setupFolderDetails() {
+        // Retrieve folder ID from the intent
         val id = intent.getStringExtra("id")
-        UserSharePreferences(this)
-        val folder = folderDAO.getFolderById(id)
-        binding.folderNameTv.text = folder.name
-        binding.termCountTv.text = folderDAO.getAllFlashCardByFolderId(id).size.toString() + " flashcards"
+
+        // Check if ID is not null
+        if (id != null) {
+            // Fetch folder details asynchronously
+            folderDAO.getFolderById(id) { folder ->
+                if (folder != null) {
+                    // Update folder name UI
+                    binding.folderNameTv.text = folder.name
+                }
+
+                // Fetch flashcards asynchronously and update the flashcard count
+                folderDAO.getAllFlashCardByFolderId(id) { flashCards ->
+                    binding.termCountTv.text = "${flashCards.size} flashcards"
+                }
+            }
+        } else {
+            // Handle the case where folder ID is null
+            Log.e("FolderDetails", "Folder ID is null")
+        }
     }
+
+
+
+
 
     @SuppressLint("NotifyDataSetChanged")
     private fun setupRecyclerView() {
         val id = intent.getStringExtra("id")
-        adapter = SetFolderViewAdapter(folderDAO.getAllFlashCardByFolderId(id) as ArrayList<FlashCard>, false)
-        val linearLayoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
-        binding.setRv.layoutManager = linearLayoutManager
-        binding.setRv.adapter = adapter
-        adapter.notifyDataSetChanged()
+
+        // Ensure the folder ID is not null
+        if (id != null) {
+            // Fetch flashcards asynchronously using the callback
+            folderDAO.getAllFlashCardByFolderId(id) { flashCards ->
+                // Once flashcards are retrieved, initialize the adapter
+                adapter = SetFolderViewAdapter(flashCards, false)
+
+                // Set up the RecyclerView layout manager and adapter
+                val linearLayoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+                binding.setRv.layoutManager = linearLayoutManager
+                binding.setRv.adapter = adapter
+
+                // Notify the adapter that the data has changed
+                adapter.notifyDataSetChanged()
+            }
+        } else {
+            // Handle case where folder ID is null
+            Log.e("RecyclerViewSetup", "Folder ID is null")
+        }
     }
+
 
     private fun setupLearnButton() {
         val id = intent.getStringExtra("id")
@@ -95,16 +134,24 @@ class ViewFolderActivity : AppCompatActivity(), BottomSheetListener {
         return super.onOptionsItemSelected(item)
     }
 
-    override fun onSheetDismissed(bottomSheet: BottomSheetMenuDialogFragment, `object`: Any?, dismissEvent: Int) {
+    override fun onSheetDismissed(
+        bottomSheet: BottomSheetMenuDialogFragment,
+        `object`: Any?,
+        dismissEvent: Int
+    ) {
         Log.d("TAG", "onSheetDismissed: ")
     }
 
 
     @SuppressLint("SetTextI18n")
-    override fun onSheetItemSelected(bottomSheet: BottomSheetMenuDialogFragment, item: MenuItem, `object`: Any?) {
+    override fun onSheetItemSelected(
+        bottomSheet: BottomSheetMenuDialogFragment,
+        item: MenuItem,
+        `object`: Any?
+    ) {
         when (item.itemId) {
             R.id.edit_folder -> {
-                handleEditFolder()
+                CoroutineScope(Dispatchers.Main).launch { handleEditFolder() }
             }
 
             R.id.delete_folder -> {
@@ -118,9 +165,6 @@ class ViewFolderActivity : AppCompatActivity(), BottomSheetListener {
 
             }
 
-            R.id.share -> {
-
-            }
         }
     }
 
@@ -132,17 +176,26 @@ class ViewFolderActivity : AppCompatActivity(), BottomSheetListener {
     }
 
     private fun handleDeleteFolder() {
+        // Show a confirmation dialog
         PopupDialog.getInstance(this)
             .setStyle(Styles.STANDARD)
             .setHeading("Delete Folder")
             .setDescription("Are you sure you want to delete this folder?")
             .setPopupDialogIcon(R.drawable.ic_delete)
             .setCancelable(true)
-            .showDialog(
-                object : OnDialogButtonClickListener() {
-                    override fun onPositiveClicked(dialog: Dialog?) {
-                        super.onPositiveClicked(dialog)
-                        if (folderDAO.deleteFolder(intent.getStringExtra("id")) > 0L) {
+            .showDialog(object : OnDialogButtonClickListener() {
+                override fun onPositiveClicked(dialog: Dialog?) {
+                    super.onPositiveClicked(dialog)
+
+                    // Get the folder ID from the intent
+                    val folderId = intent.getStringExtra("id")
+
+                    if (folderId != null) {
+                        // Attempt to delete the folder
+                        val isDeleted = folderDAO.deleteFolder(folderId)
+
+                        if (isDeleted) {
+                            // Show success dialog if folder deletion was successful
                             PopupDialog.getInstance(this@ViewFolderActivity)
                                 .setStyle(Styles.SUCCESS)
                                 .setHeading(getString(R.string.success))
@@ -152,10 +205,11 @@ class ViewFolderActivity : AppCompatActivity(), BottomSheetListener {
                                 .showDialog(object : OnDialogButtonClickListener() {
                                     override fun onDismissClicked(dialog: Dialog) {
                                         super.onDismissClicked(dialog)
-                                        finish()
+                                        finish() // Close the activity after successful deletion
                                     }
                                 })
                         } else {
+                            // Show error dialog if folder deletion failed
                             PopupDialog.getInstance(this@ViewFolderActivity)
                                 .setStyle(Styles.FAILED)
                                 .setHeading(getString(R.string.error))
@@ -168,29 +222,33 @@ class ViewFolderActivity : AppCompatActivity(), BottomSheetListener {
                                 })
                         }
                     }
-
-                    override fun onNegativeClicked(dialog: Dialog?) {
-                        super.onNegativeClicked(dialog)
-                        dialog?.dismiss()
-                    }
                 }
-            )
+
+                override fun onNegativeClicked(dialog: Dialog?) {
+                    super.onNegativeClicked(dialog)
+                    dialog?.dismiss() // Dismiss dialog when cancel is clicked
+                }
+            })
     }
 
-    @SuppressLint("SetTextI18n")
-    private suspend fun handleEditFolder() {
 
+    @SuppressLint("SetTextI18n")
+    private fun handleEditFolder() {
         val builder = AlertDialog.Builder(this)
         val dialogBinding = DialogCreateFolderBinding.inflate(layoutInflater)
 
-        //set data
+        // Get the folder ID from the intent
         val id = intent.getStringExtra("id")
-        val folder = id?.let { folderDAO.getFolderById(it) }
-        if (folder != null) {
-            dialogBinding.folderEt.setText(folder.name)
-        }
-        if (folder != null) {
-            dialogBinding.descriptionEt.setText(folder.description)
+
+        // Fetch the folder asynchronously from Firestore
+        if (id != null) {
+            folderDAO.getFolderById(id) { folder ->
+                if (folder != null) {
+                    // Set the folder name and description in the dialog
+                    dialogBinding.folderEt.setText(folder.name)
+                    dialogBinding.descriptionEt.setText(folder.description)
+                }
+            }
         }
 
         builder.setView(dialogBinding.root)
@@ -199,8 +257,9 @@ class ViewFolderActivity : AppCompatActivity(), BottomSheetListener {
 
         dialogBinding.folderEt.requestFocus()
         dialogBinding.cancelTv.setOnClickListener {
-            dialog.dismiss()
+            dialog.dismiss() // Dismiss the dialog when cancel is clicked
         }
+
         dialogBinding.okTv.setOnClickListener {
             val name = dialogBinding.folderEt.text.toString()
             val description = dialogBinding.descriptionEt.text.toString()
@@ -208,26 +267,49 @@ class ViewFolderActivity : AppCompatActivity(), BottomSheetListener {
             if (name.isEmpty()) {
                 Toast.makeText(this, "Please enter folder name", Toast.LENGTH_SHORT).show()
             } else {
-                folder.name = name
-                folder.description = description
-                if (folderDAO.updateFolder(folder) > 0L) {
-                    Toast.makeText(this, "Update folder successfully", Toast.LENGTH_SHORT).show()
-                    //refresh data folder
-                    if (folder != null) {
-                        binding.folderNameTv.text = folder.name
+                // Update the folder if it's valid
+                id?.let { folderId ->
+                    folderDAO.getFolderById(folderId) { folder ->
+                        if (folder != null) {
+                            folder.name = name
+                            folder.description = description
+
+                            // Call updateFolder() and check the Boolean result
+                            if (folderDAO.updateFolder(folder)) {
+                                // If update was successful
+                                Toast.makeText(
+                                    this,
+                                    "Update folder successfully",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+
+                                // Update UI with new folder name
+                                binding.folderNameTv.text = folder.name
+
+                                // Fetch and update flashcard count asynchronously
+                                folderDAO.getAllFlashCardByFolderId(folderId) { flashCards ->
+                                    runOnUiThread {
+                                        binding.termCountTv.text = "${flashCards.size} flashcards"
+                                    }
+                                }
+
+                                dialog.dismiss() // Close the dialog after success
+                            } else {
+                                // Handle the case where folder update failed
+                                Toast.makeText(this, "Update folder failed", Toast.LENGTH_SHORT).show()
+                                dialog.dismiss()
+                                onBackPressedDispatcher.onBackPressed() // Go back if update fails
+                            }
+                        }
                     }
-                    binding.termCountTv.text = folderDAO.getAllFlashCardByFolderId(id).size.toString() + " flashcards"
-                    dialog.dismiss()
-                } else {
-                    Toast.makeText(this, "Update folder failed", Toast.LENGTH_SHORT).show()
-                    dialog.dismiss()
-                    onBackPressedDispatcher.onBackPressed()
                 }
             }
         }
-        dialog.show()
 
+        dialog.show() // Show the dialog after setting everything
     }
+
+
 
     override fun onSheetShown(bottomSheet: BottomSheetMenuDialogFragment, `object`: Any?) {
         Log.d("TAG", "onSheetShown: ")
@@ -237,15 +319,30 @@ class ViewFolderActivity : AppCompatActivity(), BottomSheetListener {
     override fun onResume() {
         super.onResume()
 
-        //refresh data adapter
+        // Retrieve the folder ID from the intent
         val id = intent.getStringExtra("id")
-        adapter = SetFolderViewAdapter(folderDAO.getAllFlashCardByFolderId(id) as ArrayList<FlashCard>, false)
-        val linearLayoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
-        binding.setRv.layoutManager = linearLayoutManager
-        binding.setRv.adapter = adapter
-        adapter.notifyDataSetChanged()
 
+        // Fetch the flashcards asynchronously using the callback
+        id?.let { folderId ->
+            folderDAO.getAllFlashCardByFolderId(folderId) { flashCards ->
+                // This block is called when flashcards are fetched
+
+                // Set up the adapter with the fetched flashcards
+                adapter = SetFolderViewAdapter(flashCards, false)
+
+                // Set up the RecyclerView
+                val linearLayoutManager =
+                    LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+                binding.setRv.layoutManager = linearLayoutManager
+                binding.setRv.adapter = adapter
+
+                // Notify the adapter that the data has changed
+                adapter.notifyDataSetChanged()
+            }
+        }
+        // Set up folder details
         setupFolderDetails()
-
     }
 }
+
+

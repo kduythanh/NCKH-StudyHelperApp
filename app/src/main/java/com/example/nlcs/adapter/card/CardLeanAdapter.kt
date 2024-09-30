@@ -27,9 +27,13 @@ class CardLeanAdapter(
     }
 
     fun setCards(cards: List<Card>) {
-        this.cardList = cards
+        // Assign the new list to cardList
+        this.cardList = cards.toMutableList() // If cardList is mutable, make a copy of cards
+
+        // Initialize the flippedStates list with 'false' for each card
         flippedStates = MutableList(cards.size) { false }
     }
+
 
     fun getCards(): List<Card> {
         return cardList

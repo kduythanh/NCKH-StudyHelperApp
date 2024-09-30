@@ -8,7 +8,6 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
-import androidx.activity.OnBackPressedDispatcher.onBackPressed
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import com.example.nlcs.R
@@ -17,6 +16,9 @@ import com.example.nlcs.data.model.Folder
 import com.example.nlcs.databinding.ActivityCreateFolderBinding
 import com.example.nlcs.ui.activities.folder.ViewFolderActivity
 import java.text.SimpleDateFormat
+import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.auth
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Date
@@ -24,6 +26,7 @@ import java.util.UUID
 
 class CreateFolderActivity : AppCompatActivity() {
     private var binding: ActivityCreateFolderBinding? = null
+    private lateinit var firebaseAuth: FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,22 +49,27 @@ class CreateFolderActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         val itemId = item.itemId
+        firebaseAuth = Firebase.auth
         if (itemId == R.id.done) {
-            val folderName = binding!!.folderEt.text.toString().trim { it <= ' ' }
-            val description = binding!!.descriptionEt.text.toString().trim { it <= ' ' }
+            val folderName = binding!!.folderEt.text.toString().trim()
+            val description = binding!!.descriptionEt.text.toString().trim()
+
             if (folderName.isEmpty()) {
-                binding!!.folderTil.error = ""
-                binding!!.folderTil.helperText = "Folder name cannot be empty"
+                binding!!.folderTil.error = "Folder name cannot be empty"
                 binding!!.folderEt.requestFocus()
                 return false
             } else {
                 val folderId = genUUID()
                 val createdAt = currentDate
                 val updatedAt = currentDate
+                val userId = firebaseAuth.currentUser?.uid
 
-                val folder = Folder(folderId, folderName, description, createdAt, updatedAt)
+                val folder = Folder(folderId, folderName, description, createdAt, updatedAt, userId )
                 val folderDAO = FolderDAO(this)
-                if (folderDAO.insertFolder(folder) > 0) {
+
+                // Call insertFolder and handle the result
+                val success = folderDAO.insertFolder(folder)
+                if (success) {
                     Toast.makeText(this, "Folder created", Toast.LENGTH_SHORT).show()
                     startActivity(
                         Intent(this, ViewFolderActivity::class.java).putExtra(
@@ -77,6 +85,7 @@ class CreateFolderActivity : AppCompatActivity() {
         }
         return super.onOptionsItemSelected(item)
     }
+
 
     private val currentDate: String
         get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

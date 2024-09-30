@@ -7,6 +7,9 @@ import com.example.nlcs.adapter.DefineListAdapter
 import com.example.nlcs.data.dao.CardDAO
 import com.example.nlcs.data.model.Card
 import com.example.nlcs.databinding.ActivitySelectDefineBinding
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class SelectDefineActivity : AppCompatActivity() {
 
@@ -18,15 +21,23 @@ class SelectDefineActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
+
         val id = intent.getStringExtra("id")
-        cardList = cardDAO.getCardsByFlashCardId(id)
-        binding.defineRv.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
-        binding.defineRv.setHasFixedSize(true)
-        defineListAdapter = DefineListAdapter(cardList)
-        binding.defineRv.adapter = defineListAdapter
-        defineListAdapter.notifyDataSetChanged()
 
+        // Use lifecycleScope to launch the coroutine
+        CoroutineScope(Dispatchers.Main).launch {
+            // Call the suspend function to get the card list
+            val cardDAO = CardDAO(this@SelectDefineActivity)
+            val cardList =
+                id?.let { cardDAO.getCardsByFlashCardId(it) }   // Fallback to an empty list if id is null
 
+            // Set up the RecyclerView after retrieving the data
+            binding.defineRv.layoutManager = LinearLayoutManager(this@SelectDefineActivity, LinearLayoutManager.VERTICAL, false)
+            binding.defineRv.setHasFixedSize(true)
+            defineListAdapter = cardList?.let { DefineListAdapter(it) }!!
+            binding.defineRv.adapter = defineListAdapter
+            defineListAdapter.notifyDataSetChanged()
+        }
     }
 
 }

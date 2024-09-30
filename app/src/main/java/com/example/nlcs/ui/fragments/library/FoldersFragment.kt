@@ -14,12 +14,19 @@ import com.example.nlcs.data.dao.FolderDAO
 import com.example.nlcs.data.model.Folder
 import com.example.nlcs.databinding.FragmentFoldersBinding
 import com.example.nlcs.ui.activities.create.CreateFolderActivity
+import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.auth
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class FoldersFragment : Fragment() {
     private var binding: FragmentFoldersBinding? = null
     private var folders: ArrayList<Folder>? = null
     private var folderAdapter: FolderCopyAdapter? = null
     private var folderDAO: FolderDAO? = null
+    private lateinit var firebaseAuth: FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,10 +43,12 @@ class FoldersFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        setupCreateButton()
-        setupFolders()
-        setupRecyclerView()
+        CoroutineScope(Dispatchers.Main).launch {
+            super.onViewCreated(view, savedInstanceState)
+            setupCreateButton()
+            setupFolders()
+            setupRecyclerView()
+        }
     }
 
 
@@ -54,7 +63,9 @@ class FoldersFragment : Fragment() {
     }
 
     private suspend fun setupFolders() {
-        folders = folderDAO!!.getAllFolders()
+        firebaseAuth = Firebase.auth
+        val userId = firebaseAuth.currentUser?.uid ?: ""
+        folders = folderDAO!!.getAllFolderByUserId(userId)
         if (folders!!.isEmpty()) {
             binding!!.folderCl.visibility = View.VISIBLE
             binding!!.foldersRv.visibility = View.GONE
@@ -76,13 +87,16 @@ class FoldersFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        refreshData()
+        CoroutineScope(Dispatchers.Main).launch {
+            refreshData()
+        }
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    private fun refreshData() {
-        folders = folderDAO!!.getAllFolders()
-
+    private suspend fun refreshData() {
+        firebaseAuth = Firebase.auth
+        val userId = firebaseAuth.currentUser?.uid ?: ""
+        folders = folderDAO!!.getAllFolderByUserId(userId )
         folderAdapter = FolderCopyAdapter(requireActivity(), folders!!)
         binding!!.foldersRv.adapter = folderAdapter
         folderAdapter!!.notifyDataSetChanged()

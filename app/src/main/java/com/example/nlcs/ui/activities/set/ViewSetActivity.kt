@@ -5,11 +5,11 @@ import android.app.Dialog
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
-import androidx.activity.OnBackPressedDispatcher.onBackPressed
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -20,29 +20,21 @@ import com.example.nlcs.adapter.card.ViewTermsAdapter
 import com.example.nlcs.data.dao.CardDAO
 import com.example.nlcs.data.dao.FlashCardDAO
 import com.example.nlcs.data.model.Card
-import com.example.nlcs.data.model.Card.setCreated_at
-import com.example.nlcs.data.model.Card.setFlashcard_id
-import com.example.nlcs.data.model.Card.setId
-import com.example.nlcs.data.model.Card.setIsLearned
-import com.example.nlcs.data.model.Card.setStatus
-import com.example.nlcs.data.model.Card.setUpdated_at
 import com.example.nlcs.databinding.ActivityViewSetBinding
 import com.example.nlcs.ui.activities.folder.AddToFolderActivity
 import com.example.nlcs.ui.activities.learn.LearnActivity
 import com.example.nlcs.ui.activities.learn.QuizActivity
 import com.example.nlcs.ui.activities.learn.TrueFalseFlashCardsActivity
+import com.google.firebase.firestore.FirebaseFirestore
 import com.kennyc.bottomsheet.BottomSheetListener
 import com.kennyc.bottomsheet.BottomSheetMenuDialogFragment
-import com.kennyc.bottomsheet.BottomSheetMenuDialogFragment.Builder.setAutoExpand
-import com.kennyc.bottomsheet.BottomSheetMenuDialogFragment.Builder.setCancelable
-import com.kennyc.bottomsheet.BottomSheetMenuDialogFragment.Builder.setCloseTitle
-import com.kennyc.bottomsheet.BottomSheetMenuDialogFragment.Builder.setListener
-import com.kennyc.bottomsheet.BottomSheetMenuDialogFragment.Builder.setSheet
-import com.kennyc.bottomsheet.BottomSheetMenuDialogFragment.Builder.setTitle
-import com.kennyc.bottomsheet.BottomSheetMenuDialogFragment.Builder.show
 import com.saadahmedsoft.popupdialog.PopupDialog
 import com.saadahmedsoft.popupdialog.Styles
 import com.saadahmedsoft.popupdialog.listener.OnDialogButtonClickListener
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -58,6 +50,8 @@ class ViewSetActivity : AppCompatActivity() {
     private var listPosition = 0
 
 
+
+
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -68,15 +62,18 @@ class ViewSetActivity : AppCompatActivity() {
         flashCardDAO = FlashCardDAO(this)
 
         setupRecyclerView(savedInstanceState)
-        setupCardData()
-        setupNavigationListener()
-        setupScrollListeners()
-        setupOnScrollListener()
-        setupUserDetails()
-        setupReviewClickListener()
-        setupLearnClickListener()
-        setTrueFalseClickListener()
-        setupToolbarNavigation()
+        CoroutineScope(Dispatchers.Main).launch {
+            setupCardData()
+
+            setupNavigationListener()
+            setupScrollListeners()
+            setupOnScrollListener()
+            setupUserDetails()
+            setupReviewClickListener()
+            setupLearnClickListener()
+            setTrueFalseClickListener()
+            setupToolbarNavigation()
+        }
     }
 
     private fun setTrueFalseClickListener() {
@@ -92,31 +89,49 @@ class ViewSetActivity : AppCompatActivity() {
     }
 
     private fun setupOnScrollListener() {
-        binding!!.recyclerViewSet.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+        // Check if binding, linearLayoutManager, and cards are initialized before setting the scroll listener
+        //if (cards == null) {
+         //   Log.e("Error", "Binding, LinearLayoutManager, or Cards is null")
+        //    return
+       // }
+
+        // Safely add a scroll listener
+        binding?.recyclerViewSet?.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
-                val centerPosition = linearLayoutManager!!.findFirstVisibleItemPosition() + 1
-                binding!!.centerTv.text = centerPosition.toString()
-                binding!!.previousTv.text =
-                    if (centerPosition > 1) (centerPosition - 1).toString() else ""
-                binding!!.nextTv.text =
-                    if (centerPosition < cards!!.size) (centerPosition + 1).toString() else ""
+
+                // Safely get the center position using a safe call
+                val centerPosition = linearLayoutManager?.findFirstVisibleItemPosition()?.plus(1) ?: return
+
+                // Safely update the TextViews
+                binding?.centerTv?.text = centerPosition.toString()
+
+                // Previous item: if centerPosition > 1, display the previous item, otherwise display an empty string
+                binding?.previousTv?.text = if (centerPosition > 1) (centerPosition - 1).toString() else ""
+
+                // Next item: if centerPosition < the size of the cards, display the next item, otherwise display an empty string
+                binding?.nextTv?.text = if (centerPosition < (cards?.size ?: 0)) (centerPosition + 1).toString() else ""
             }
         })
     }
 
+
     @SuppressLint("SetTextI18n")
     private fun setupUserDetails() {
         val id = intent.getStringExtra("id")
-        flashCardDAO = FlashCardDAO(this)
-        binding!!.descriptionTv.setText(flashCardDAO!!.getFlashCardById(id!!).getDescription())
-        cardDAO = CardDAO(this)
-        binding!!.termCountTv.text = cardDAO!!.countCardByFlashCardId(intent.getStringExtra("id")!!)
-            .toString() + " " + getString(R.string.term)
-        flashCardDAO = FlashCardDAO(this)
-        binding!!.setNameTv.setText(
-            flashCardDAO!!.getFlashCardById(intent.getStringExtra("id")!!).getName()
-        )
+        CoroutineScope(Dispatchers.Main).launch {
+            flashCardDAO = FlashCardDAO(this@ViewSetActivity)
+            binding!!.descriptionTv.setText(flashCardDAO!!.getFlashCardById(id!!)?.GetDescription()
+                 )
+            cardDAO = CardDAO(this@ViewSetActivity)
+            binding!!.termCountTv.text =
+                cardDAO!!.countCardByFlashCardId(intent.getStringExtra("id")!!)
+                    .toString() + " " + getString(R.string.term)
+            flashCardDAO = FlashCardDAO(this@ViewSetActivity)
+            binding!!.setNameTv.setText(
+                flashCardDAO!!.getFlashCardById(intent.getStringExtra("id")!!)?.GetName()
+            )
+        }
     }
 
     private fun setupReviewClickListener() {
@@ -132,21 +147,35 @@ class ViewSetActivity : AppCompatActivity() {
     }
 
     private fun setupLearnClickListener() {
-        binding!!.learnCl.setOnClickListener { v: View? ->
-            cardDAO = CardDAO(this)
-            if (!isUserOwner) {
-                showLearnErrorDialog()
-                return@setOnClickListener
-            }
-            if (cardDAO!!.countCardByFlashCardId(intent.getStringExtra("id")!!) < 4) {
-                showReviewErrorDialog()
-            } else {
-                val intent = Intent(this, QuizActivity::class.java)
-                intent.putExtra("id", getIntent().getStringExtra("id"))
-                startActivity(intent)
+        binding?.learnCl?.setOnClickListener {
+            // Make sure we are within the lifecycle scope to launch coroutines
+            cardDAO = CardDAO(this@ViewSetActivity) // Replace `YourActivityName` with your actual activity name
+
+            // Launch a coroutine on the main thread
+            CoroutineScope(Dispatchers.Main).launch {
+                // Check if the user is not the owner
+                if (!isUserOwner) {
+                    showLearnErrorDialog()
+                    return@launch
+                }
+
+                // Safely get the ID from the intent
+                val flashcardId = intent.getStringExtra("id") ?: return@launch
+
+                // Call the suspend function in a coroutine context
+                val cardCount = cardDAO?.countCardByFlashCardId(flashcardId) ?: 0
+
+                if (cardCount < 4) {
+                    showReviewErrorDialog()
+                } else {
+                    val quizIntent = Intent(this@ViewSetActivity, QuizActivity::class.java)
+                    quizIntent.putExtra("id", flashcardId)
+                    startActivity(quizIntent)
+                }
             }
         }
     }
+
 
     private fun showReviewErrorDialog() {
         PopupDialog.getInstance(this)
@@ -180,27 +209,33 @@ class ViewSetActivity : AppCompatActivity() {
 
                 override fun onPositiveClicked(dialog: Dialog) {
                     super.onPositiveClicked(dialog)
-                    copyFlashCard()
-                    PopupDialog.getInstance(this@ViewSetActivity)
-                        .setStyle(Styles.SUCCESS)
-                        .setHeading(getString(R.string.success))
-                        .setDescription(getString(R.string.review_success))
-                        .setCancelable(false)
-                        .setDismissButtonText(getString(R.string.view))
-                        .showDialog(object : OnDialogButtonClickListener() {
-                            override fun onDismissClicked(dialog: Dialog) {
-                                super.onDismissClicked(dialog)
-                                dialog.dismiss()
-                            }
-                        })
-                }
+                    CoroutineScope(Dispatchers.Main).launch {
+                        copyFlashCard()
+                        PopupDialog.getInstance(this@ViewSetActivity)
+                            .setStyle(Styles.SUCCESS)
+                            .setHeading(getString(R.string.success))
+                            .setDescription(getString(R.string.review_success))
+                            .setCancelable(false)
+                            .setDismissButtonText(getString(R.string.view))
+                            .showDialog(object : OnDialogButtonClickListener() {
+                                override fun onDismissClicked(dialog: Dialog) {
+                                    super.onDismissClicked(dialog)
+                                    dialog.dismiss()
+                                }
+                            })
+                    }
+                    }
+
             })
     }
 
 
     private fun setupToolbarNavigation() {
-        binding!!.toolbar.setNavigationOnClickListener { v: View? -> getOnBackPressedDispatcher().onBackPressed() }
+        binding?.toolbar?.setNavigationOnClickListener {
+            onBackPressedDispatcher.onBackPressed() // No need for getOnBackPressedDispatcher()
+        }
     }
+
 
     private fun setupRecyclerView(savedInstanceState: Bundle?) {
         if (savedInstanceState != null) {
@@ -221,37 +256,69 @@ class ViewSetActivity : AppCompatActivity() {
         binding!!.recyclerViewTerms.isNestedScrollingEnabled = false
     }
 
+
     @SuppressLint("NotifyDataSetChanged")
     private fun setupCardData() {
-        val id = intent.getStringExtra("id")
-        cardDAO = CardDAO(this)
-        cards = cardDAO!!.getCardsByFlashCardId(id!!)
-        setUpProgress(cards!!)
-        val viewSetAdapter = ViewSetAdapter(this, cards!!)
-        binding!!.recyclerViewSet.adapter = viewSetAdapter
-        viewSetAdapter.notifyDataSetChanged()
 
-        val viewTermsAdapter = ViewTermsAdapter(cards!!)
-        binding!!.recyclerViewTerms.adapter = viewTermsAdapter
-        viewTermsAdapter.notifyDataSetChanged()
-    }
+        val id = intent.getStringExtra("id") // Sử dụng ID đã truyền qua Intent
 
-    private fun setupNavigationListener() {
-        binding!!.toolbar.setNavigationOnClickListener { v: View? -> getOnBackPressedDispatcher() }
-    }
+        // Kiểm tra nếu id null hoặc rỗng
+        if (id == null || id.isEmpty()) {
+            Log.e("setupCardData", "Flashcard ID is null or empty")
+            return
+        } else {
+            Log.d("setupCardData", "Flashcard ID: $id")
+        }
+        CoroutineScope(Dispatchers.Main).launch {
+            // Khởi tạo DAO
+            cardDAO = CardDAO(this@ViewSetActivity)
 
-    private fun setupScrollListeners() {
-        binding!!.previousIv.setOnClickListener { v: View? ->
-            val currentPosition = linearLayoutManager!!.findFirstCompletelyVisibleItemPosition()
-            if (currentPosition > 0) {
-                binding!!.recyclerViewSet.scrollToPosition(currentPosition - 1)
+            // Sử dụng ID để lấy dữ liệu các thẻ (cards)
+            cards = cardDAO?.getCardsByFlashCardId(id)
+
+            // Kiểm tra nếu có dữ liệu thẻ trả về
+            if (cards != null && cards!!.isNotEmpty()) {
+                setUpProgress(cards!!) // Thiết lập tiến độ nếu cần
+
+                // Thiết lập adapter cho RecyclerViewSet
+                val viewSetAdapter = ViewSetAdapter(this@ViewSetActivity, cards!!)
+                binding!!.recyclerViewSet.adapter = viewSetAdapter
+                viewSetAdapter.notifyDataSetChanged()
+
+                // Thiết lập adapter cho RecyclerViewTerms
+                val viewTermsAdapter = ViewTermsAdapter(cards!!)
+                binding!!.recyclerViewTerms.adapter = viewTermsAdapter
+                viewTermsAdapter.notifyDataSetChanged()
+            } else {
+                Log.e("setupCardData", "No cards found for flashcard ID: $id")
             }
         }
 
-        binding!!.nextIv.setOnClickListener { v: View? ->
-            val currentPosition = linearLayoutManager!!.findLastCompletelyVisibleItemPosition()
-            if (currentPosition < cards!!.size - 1) {
-                binding!!.recyclerViewSet.scrollToPosition(currentPosition + 1)
+
+    }
+
+
+    private fun setupNavigationListener() {
+        binding?.toolbar?.setNavigationOnClickListener {
+            onBackPressedDispatcher.onBackPressed() // Correct method to trigger back press
+        }
+    }
+
+
+    private fun setupScrollListeners() {
+        // Safely access previous and next image view bindings
+        binding?.previousIv?.setOnClickListener {
+            val currentPosition = linearLayoutManager?.findFirstCompletelyVisibleItemPosition() ?: -1
+            if (currentPosition > 0) {
+                binding?.recyclerViewSet?.scrollToPosition(currentPosition - 1)
+            }
+        }
+
+        binding?.nextIv?.setOnClickListener {
+            val currentPosition = linearLayoutManager?.findLastCompletelyVisibleItemPosition() ?: -1
+            // Ensure cards is initialized and has elements
+            if (currentPosition < (cards?.size ?: 0) - 1) {
+                binding?.recyclerViewSet?.scrollToPosition(currentPosition + 1)
             }
         }
     }
@@ -268,15 +335,12 @@ class ViewSetActivity : AppCompatActivity() {
 
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == R.id.menu) {
-            Builder(this)
+        return if (item.itemId == R.id.menu) {
+            BottomSheetMenuDialogFragment.Builder(this)
                 .setSheet(R.menu.menu_bottom_view_set)
-                .setTitle(R.string.book)
                 .setListener(object : BottomSheetListener {
-                    override fun onSheetShown(
-                        bottomSheetMenuDialogFragment: BottomSheetMenuDialogFragment,
-                        o: Any?
-                    ) {
+                    override fun onSheetShown(bottomSheetMenuDialogFragment: BottomSheetMenuDialogFragment, o: Any?) {
+                        // Optional: Handle when the sheet is shown
                     }
 
                     override fun onSheetItemSelected(
@@ -285,65 +349,52 @@ class ViewSetActivity : AppCompatActivity() {
                         o: Any?
                     ) {
                         val id = intent.getStringExtra("id")
-
                         val itemId = menuItem.itemId
-                        if (itemId == R.id.edit) {
-                            if (this.isUserOwner) {
-                                handleEditOption(id)
-                            } else {
-                                Toast.makeText(
-                                    this@ViewSetActivity,
-                                    getString(R.string.edit_error),
-                                    Toast.LENGTH_SHORT
-                                ).show()
+
+                        when (itemId) {
+                            R.id.edit -> {
+                                if (isUserOwner) {
+                                    handleEditOption(id)
+                                } else {
+                                    Toast.makeText(this@ViewSetActivity, getString(R.string.edit_error), Toast.LENGTH_SHORT).show()
+                                }
                             }
-                        } else if (itemId == R.id.delete_set) {
-                            if (this.isUserOwner) {
-                                handleDeleteSetOption(id)
-                            } else {
-                                Toast.makeText(
-                                    this@ViewSetActivity,
-                                    getString(R.string.edit_error),
-                                    Toast.LENGTH_SHORT
-                                ).show()
+                            R.id.delete_set -> {
+                                if (isUserOwner) {
+                                    handleDeleteSetOption(id)
+                                } else {
+                                    Toast.makeText(this@ViewSetActivity, getString(R.string.edit_error), Toast.LENGTH_SHORT).show()
+                                }
                             }
-                        } else if (itemId == R.id.add_to_folder) {
-                            if (this.isUserOwner) {
-                                handleAddToFolderOption(id)
-                            } else {
-                                Toast.makeText(
-                                    this@ViewSetActivity,
-                                    getString(R.string.edit_error),
-                                    Toast.LENGTH_SHORT
-                                ).show()
+                            R.id.add_to_folder -> {
+                                if (isUserOwner) {
+                                    handleAddToFolderOption(id)
+                                } else {
+                                    Toast.makeText(this@ViewSetActivity, getString(R.string.edit_error), Toast.LENGTH_SHORT).show()
+                                }
                             }
-                        } else if (itemId == R.id.reset) {
-                            if (this.isUserOwner) {
-                                handleResetOption(id)
-                            } else {
-                                Toast.makeText(
-                                    this@ViewSetActivity,
-                                    getString(R.string.edit_error),
-                                    Toast.LENGTH_SHORT
-                                ).show()
+                            R.id.reset -> {
+                                if (isUserOwner) {
+                                    handleResetOption(id)
+                                } else {
+                                    Toast.makeText(this@ViewSetActivity, getString(R.string.edit_error), Toast.LENGTH_SHORT).show()
+                                }
                             }
                         }
                     }
 
-                    override fun onSheetDismissed(
-                        bottomSheetMenuDialogFragment: BottomSheetMenuDialogFragment,
-                        o: Any?,
-                        i: Int
-                    ) {
+                    override fun onSheetDismissed(bottomSheetMenuDialogFragment: BottomSheetMenuDialogFragment, o: Any?, i: Int) {
+                        // Optional: Handle when the sheet is dismissed
                     }
                 })
                 .setCloseTitle(getString(R.string.close))
                 .setAutoExpand(true)
                 .setCancelable(true)
                 .show(supportFragmentManager)
-            return true
+            true
+        } else {
+            super.onOptionsItemSelected(item)
         }
-        return super.onOptionsItemSelected(item)
     }
 
     private fun handleEditOption(id: String?) {
@@ -376,14 +427,30 @@ class ViewSetActivity : AppCompatActivity() {
 
     private fun handleResetOption(id: String?) {
         if (isUserOwner) {
-            cardDAO = CardDAO(this@ViewSetActivity)
-            if (cardDAO.resetIsLearnedAndStatusCardByFlashCardId(id) > 0L) {
-                Toast.makeText(
-                    this@ViewSetActivity,
-                    getString(R.string.reset_success),
-                    Toast.LENGTH_SHORT
-                ).show()
-                setupCardData()
+            // Check if id is null before proceeding
+            if (id != null) {
+                // Launch a coroutine to handle the suspend function
+                CoroutineScope(Dispatchers.Main).launch {
+                    cardDAO = CardDAO(this@ViewSetActivity)
+
+                    // Call the suspend function to reset the cards
+                    val result = cardDAO!!.resetIsLearnedAndStatusCardByFlashCardId(id)
+
+                    if (result > 0L) {
+                        Toast.makeText(
+                            this@ViewSetActivity,
+                            getString(R.string.reset_success),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        setupCardData() // Refresh card data after resetting
+                    } else {
+                        Toast.makeText(
+                            this@ViewSetActivity,
+                            getString(R.string.reset_error),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
             } else {
                 Toast.makeText(
                     this@ViewSetActivity,
@@ -396,6 +463,7 @@ class ViewSetActivity : AppCompatActivity() {
                 .show()
         }
     }
+
 
     private fun showDeleteSetDialog(id: String?) {
         PopupDialog.getInstance(this@ViewSetActivity)
@@ -418,35 +486,55 @@ class ViewSetActivity : AppCompatActivity() {
     }
 
     private fun deleteSet(id: String?) {
-        val flashCardDAO = FlashCardDAO(this@ViewSetActivity)
-        if (flashCardDAO.deleteFlashcardAndCards(id!!)) {
-            PopupDialog.getInstance(this@ViewSetActivity)
-                .setStyle(Styles.SUCCESS)
-                .setHeading(getString(R.string.success))
-                .setDescription(getString(R.string.delete_set_success))
-                .setCancelable(false)
-                .setDismissButtonText(getString(R.string.ok))
-                .showDialog(object : OnDialogButtonClickListener() {
-                    override fun onDismissClicked(dialog: Dialog) {
-                        super.onDismissClicked(dialog)
-                        finish()
-                    }
-                })
-        } else {
+        // Check if ID is null to avoid crashes
+        if (id == null) {
             PopupDialog.getInstance(this@ViewSetActivity)
                 .setStyle(Styles.FAILED)
                 .setHeading(getString(R.string.error))
                 .setDescription(getString(R.string.delete_set_error))
                 .setCancelable(true)
-                .showDialog(object : OnDialogButtonClickListener() {
-                    override fun onPositiveClicked(dialog: Dialog) {
-                        super.onPositiveClicked(dialog)
-                    }
-                })
+                .showDialog(null)
+            return
+        }
+
+        // Launch a coroutine to handle the suspend function
+        CoroutineScope(Dispatchers.Main).launch {
+            val flashCardDAO = FlashCardDAO(this@ViewSetActivity)
+
+            // Call the suspend function to delete flashcard and its cards
+            val isDeleted = flashCardDAO.deleteFlashcardAndCards(id)
+
+            if (isDeleted) {
+                // If deletion is successful, show success dialog
+                PopupDialog.getInstance(this@ViewSetActivity)
+                    .setStyle(Styles.SUCCESS)
+                    .setHeading(getString(R.string.success))
+                    .setDescription(getString(R.string.delete_set_success))
+                    .setCancelable(false)
+                    .setDismissButtonText(getString(R.string.ok))
+                    .showDialog(object : OnDialogButtonClickListener() {
+                        override fun onDismissClicked(dialog: Dialog) {
+                            super.onDismissClicked(dialog)
+                            finish() // Close the activity after dismissal
+                        }
+                    })
+            } else {
+                // If deletion failed, show error dialog
+                PopupDialog.getInstance(this@ViewSetActivity)
+                    .setStyle(Styles.FAILED)
+                    .setHeading(getString(R.string.error))
+                    .setDescription(getString(R.string.delete_set_error))
+                    .setCancelable(true)
+                    .showDialog(object : OnDialogButtonClickListener() {
+                        override fun onPositiveClicked(dialog: Dialog) {
+                            super.onPositiveClicked(dialog)
+                        }
+                    })
+            }
         }
     }
 
-    private fun copyFlashCard() {
+    private suspend fun copyFlashCard() {
         val id = intent.getStringExtra("id")
         flashCardDAO = FlashCardDAO(this)
         val flashCard = flashCardDAO!!.getFlashCardById(id!!)
@@ -459,12 +547,12 @@ class ViewSetActivity : AppCompatActivity() {
             id
         )
         for (card in cards) {
-            card.setId(genUUID())
-            card.setFlashcard_id(flashCard.id!!)
-            card.setIsLearned(0)
-            card.setStatus(0)
-            card.setCreated_at(currentDate)
-            card.setUpdated_at(currentDate)
+            card.SetId(genUUID())
+            card.SetFlashcard_id(flashCard.id!!)
+            card.SetIsLearned(0)
+            card.SetStatus(0)
+            card.SetCreated_at(currentDate)
+            card.SetUpdated_at(currentDate)
             if (cardDAO.insertCard(card) < 0L) {
                 Toast.makeText(this, getString(R.string.review_error), Toast.LENGTH_SHORT).show()
             }
@@ -508,9 +596,9 @@ class ViewSetActivity : AppCompatActivity() {
         var learning = 0
         var learned = 0
         for (card in cards) {
-            if (card.getStatus() == 0) {
+            if (card.GetStatus() == 0) {
                 notLearned++
-            } else if (card.getStatus() == 1) {
+            } else if (card.GetStatus() == 1) {
                 learned++
             } else {
                 learning++

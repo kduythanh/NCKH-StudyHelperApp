@@ -2,29 +2,42 @@ package com.example.nlcs.data.dao
 
 import android.content.Context
 import android.util.Log
-import androidx.room.util.copy
 import com.example.nlcs.data.model.FlashCard
 import com.example.nlcs.data.model.Folder
+import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.auth
+import com.google.firebase.firestore.FieldPath
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 import kotlinx.coroutines.tasks.await
 
 class FolderDAO(CreateFolderActivity: Context) {
 
     private val db = FirebaseFirestore.getInstance()
+    private lateinit var firebaseAuth: FirebaseAuth
+
+    init {
+        // Initialize firebaseAuth
+        firebaseAuth = FirebaseAuth.getInstance()
+    }
+
 
     // Insert folder
 
-    suspend fun insertFolder(folder: Folder): Boolean {
+    fun insertFolder(folder: Folder): Boolean {
         val db = FirebaseFirestore.getInstance()
+        firebaseAuth = Firebase.auth
         return try {
             val folderData = hashMapOf(
-                "id" to folder.id,
-                "name" to folder.name,
-                "description" to folder.description,
-                "is_public" to false, // Assuming '0' in SQLite translates to 'false' in Firestore
-                "created_at" to folder.getCreated_at(),
-                "updated_at" to folder.getUpdated_at()
+                "id" to folder.fetchId(),
+                "name" to folder.fetchName(),
+                "description" to folder.fetchDescription(),
+                // "is_public" to 0, // Assuming '0' in SQLite translates to 'false' in Firestore
+                "created_at" to folder.fetchCreated_at(),
+                "updated_at" to folder.fetchUpdated_at(),
+                "user_id" to (folder.fetchUser_id() ?: firebaseAuth.currentUser?.uid ?: "")
             )
 
             // Insert the folder into Firestore in the "folders" collection
@@ -32,7 +45,7 @@ class FolderDAO(CreateFolderActivity: Context) {
                 db.collection("folders")
                     .document(it) // Assuming folder ID is unique and will be used as the document ID
                     .set(folderData)
-                    .await()
+                //.await()
             } // Await for asynchronous Firestore operation
 
             true // Return success
@@ -44,96 +57,134 @@ class FolderDAO(CreateFolderActivity: Context) {
 
 
     // Add flashcard to folder
-    fun addFlashCardToFolder(folderId: String, flashcardId: String): Boolean {
+    suspend fun addFlashCardToFolder(folder_id: String, flashcard_id: String): Long {
         val db = FirebaseFirestore.getInstance()
 
-        // Check if the record already exists
-        if (isFlashCardInFolder(folderId, flashcardId)) {
-            return false // Return false if the flashcard is already in the folder
+        // Check if the flashcard is already in the folder
+        if (isFlashCardInFolder(folder_id, flashcard_id)) {
+            return -1 // Flashcard is already in the folder, so return -1 (or handle accordingly)
         }
-
-        val flashCardFolderData = hashMapOf(
-            "folder_id" to folderId,
-            "flashcard_id" to flashcardId
-        )
 
         return try {
-            // Add a new document to the "folders" collection
-            db.collection("folders")
-                .add(flashCardFolderData)
-                //.await() // Await for the asynchronous Firestore operation to complete
+            // Create a map for the new flashcard entry
+            val flashcardData = hashMapOf(
+                "folder_id" to folder_id,
+                "flashcard_id" to flashcard_id
+            )
 
-            true // Return true if insertion was successful
+            // Add the flashcard to the collection
+            db.collection("folders_flashcards")
+                .add(flashcardData)
+                .await()
+
+            // Return success code (for Firestore, you can return 1 to indicate success)
+            1L
         } catch (e: Exception) {
-            Log.e("FolderDAO", "addFlashCardToFolder: ${e.message}")
-            false // Return false in case of error
+            Log.e("FolderDAO", "addFlashCardToFolder: $e")
+            // Return failure code (could return 0 or -1 to indicate an error)
+            0L
         }
     }
+
+
+    //Get all folder by userId
 
 
     // Get all flashcards by folder ID
-    suspend fun getAllFlashCardsByFolderId(folderId: String): List<FlashCard> {
+    fun getAllFlashCardByFolderId(folderId: String, callback: (ArrayList<FlashCard>) -> Unit) {
         val db = FirebaseFirestore.getInstance()
-        val flashCards = mutableListOf<FlashCard>()
+        val flashCards = ArrayList<FlashCard>()
 
-        return try {
-            // Query Firestore to get flashcards associated with the folder
-            val folderFlashcardsQuery = db.collection("folders_flashcards")
-                .whereEqualTo("folder_id", folderId)
-                .get()
-                .await() // Await the asynchronous Firestore operation
+        // Firestore query to retrieve flashcards that are in the specified folder
+        db.collection("folders_flashcards")
+            .whereEqualTo("folder_id", folderId)
+            .get()
+            .addOnSuccessListener { folderFlashcardsSnapshot ->
+                if (!folderFlashcardsSnapshot.isEmpty) {
+                    val flashCardIds =
+                        folderFlashcardsSnapshot.documents.map { it.getString("flashcard_id") }
 
-            for (document in folderFlashcardsQuery) {
-                val flashcardId = document.getString("flashcard_id") ?: continue
-
-                // Fetch the flashcard details
-                val flashCardDocument = db.collection("flashcards").document(flashcardId).get().await()
-
-                val flashCard = flashCardDocument.toObject(FlashCard::class.java)?.copy(
-                    id = flashCardDocument.id // Include the document ID
-                ) ?: continue
-
-                flashCards.add(flashCard)
+                    // Fetch flashcards by their IDs
+                    db.collection("flashcards")
+                        .whereIn(FieldPath.documentId(), flashCardIds)
+                        .get()
+                        .addOnSuccessListener { flashCardsSnapshot ->
+                            for (document in flashCardsSnapshot.documents) {
+                                val flashCard = FlashCard().apply {
+                                    SetId(document.getString("id") ?: "")
+                                    SetName(document.getString("name") ?: "")
+                                    SetDescription(document.getString("description") ?: "")
+                                    SetCreated_at(document.getString("created_at") ?: "")
+                                    SetUpdated_at(document.getString("updated_at") ?: "")
+                                    SetIs_public(document.getLong("is_public")?.toInt() ?: 0)
+                                    SetUser_id(firebaseAuth.currentUser?.uid ?: "")
+                                }
+                                flashCards.add(flashCard)
+                            }
+                            callback(flashCards)  // Return flashCards via the callback function
+                        }
+                        .addOnFailureListener { exception ->
+                            Log.e("FirestoreDAO", "Error fetching flashcards: $exception")
+                            callback(ArrayList())  // Return empty list on error
+                        }
+                } else {
+                    callback(ArrayList())  // Return empty list if no flashcards found
+                }
             }
-
-            flashCards
-        } catch (e: Exception) {
-            Log.e("FolderDAO", "getAllFlashCardsByFolderId: ${e.message}", e)
-            emptyList() // Return an empty list in case of error
-        }
+            .addOnFailureListener { exception ->
+                Log.e("FirestoreDAO", "Error fetching folder flashcards: $exception")
+                callback(ArrayList())  // Return empty list on error
+            }
     }
+
 
     // Get folder by ID
-    suspend fun getFolderById(folderId: String): Folder? {
-        val db = FirebaseFirestore.getInstance()
-        val folderRef = db.collection("folders").document(folderId)
-        var folder: Folder? = null
+    fun getFolderById(folderId: String, callback: (Folder?) -> Unit) {
+        val firestore = FirebaseFirestore.getInstance()
 
-        return try {
-            val documentSnapshot = folderRef.get().await() // Await the Firestore operation
-            if (documentSnapshot.exists()) {
-                folder = documentSnapshot.toObject(Folder::class.java)?.copy(
-                    id = documentSnapshot.id // Set the document ID
-                )
+        firestore.collection("folders").document(folderId).get()
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    val folder = document.toObject(Folder::class.java)?.apply {
+                        id = document.id
+                    }
+                    callback(folder)
+                } else {
+                    callback(null)
+                }
             }
-            folder
-        } catch (e: Exception) {
-            Log.e("FolderDAO", "getFolderById: ${e.message}", e)
-            null // Return null in case of an error
-        }
+            .addOnFailureListener { e ->
+                Log.e("FolderDAO", "getFolderById: Error fetching folder", e)
+                callback(null)
+            }
     }
+
 
     // Check if flashcard is in the folder
+
     suspend fun isFlashCardInFolder(folderId: String, flashcardId: String): Boolean {
-        return try {
-            val folderSnapshot = db.collection("folders").document(folderId).get().await()
-            val flashcards = folderSnapshot.get("flashcards") as List<String>
-            flashcards.contains(flashcardId)
+        val db = FirebaseFirestore.getInstance()
+        var result = false
+
+        try {
+            // Query to check if there is a flashcard with the given folderId and flashcardId
+            val querySnapshot = db.collection("folders_flashcards")
+                .whereEqualTo("folder_id", folderId)
+                .whereEqualTo("flashcard_id", flashcardId)
+                .get()
+                .await()
+
+            // If the query returns any documents, it means the flashcard is in the folder
+            if (!querySnapshot.isEmpty) {
+                result = true
+            }
         } catch (e: Exception) {
             Log.e("FolderDAO", "isFlashCardInFolder: $e")
-            false
         }
+
+        return result
     }
+
 
     // Delete folder
     fun deleteFolder(folderId: String): Boolean {
@@ -148,11 +199,30 @@ class FolderDAO(CreateFolderActivity: Context) {
 
     // Update folder
     fun updateFolder(folder: Folder): Boolean {
+        // Get Firestore instance
+        val db = FirebaseFirestore.getInstance()
+
+        // Create a map to hold the folder data
+        val folderData = mapOf(
+            "name" to folder.fetchName(),
+            "description" to folder.fetchDescription(),
+            "updated_at" to folder.fetchUpdated_at()
+        )
+
         return try {
-            folder.id?.let { db.collection("folders").document(it).set(folder) }
+            // Update the folder document in the "folders" collection by folder.id
+            folder.id?.let {
+                db.collection("folders")
+                    .document(it)
+                    .update(folderData)
+                //.await()
+            } // suspend function, awaits the operation to complete
+
+            // If the update is successful, return true
             true
         } catch (e: Exception) {
-            Log.e("FolderDAO", "updateFolder: $e")
+            // Log the error
+            Log.e("FolderDAO", "updateFolder: ${e.message}", e)
             false
         }
     }
@@ -170,38 +240,64 @@ class FolderDAO(CreateFolderActivity: Context) {
     }
 
     // Get all flashcards IDs by folder ID
-    suspend fun getAllFlashCardIdsByFolderId(folderId: String): List<String> {
-        return try {
-            val folderSnapshot = db.collection("folders").document(folderId).get().await()
-            folderSnapshot.get("flashcards") as List<String>
-        } catch (e: Exception) {
-            Log.e("FolderDAO", "getAllFlashCardIdsByFolderId: $e")
-            emptyList()
-        }
-    }
-
-    // Get all folders
-    suspend fun getAllFolders(): List<Folder> {
-        val db = FirebaseFirestore.getInstance()
-        val folders = mutableListOf<Folder>()
+    suspend fun getAllFlashCardIdByFolderId(folderId: String): ArrayList<String> {
+        val flashCards = ArrayList<String>()
+        val firestore = FirebaseFirestore.getInstance()
 
         try {
-            // Get all documents from the 'folders' collection, ordered by 'created_at'
-            val querySnapshot = db.collection("folders")
-                .orderBy("created_at")
+            // Query to get flashcards that belong to a specific folder
+            val querySnapshot = firestore.collection("folders_flashcards")
+                .whereEqualTo("folder_id", folderId)
                 .get()
-                .await()
+                .await() // Using coroutines for asynchronous Firestore operations
 
             for (document in querySnapshot.documents) {
-                val folder = document.toObject(Folder::class.java)?.apply {
-                    id = document.id // Set the document ID as the folder ID
+                val flashcardId = document.getString("flashcard_id")
+                if (flashcardId != null) {
+                    flashCards.add(flashcardId)
                 }
-                folder?.let { folders.add(it) }
             }
         } catch (e: Exception) {
-            Log.e("FirestoreDAO", "Error getting folders: $e")
+            Log.e("FolderDAO", "getAllFlashCardIdByFolderId: ${e.message}", e)
+        }
+
+        return flashCards
+    }
+
+
+    // Get all folders
+
+    suspend fun getAllFolderByUserId(userId: String): ArrayList<Folder> {
+        val folders = ArrayList<Folder>()
+        val db = FirebaseFirestore.getInstance()
+        firebaseAuth = Firebase.auth
+
+        try {
+            // Query Firestore to get folders where user_id matches and order by created_at in descending order
+            val querySnapshot = db.collection("folders")
+                .whereEqualTo("user_id", userId)
+                .orderBy("created_at")
+                .get()
+                .await() // Use coroutine to await the result
+
+            // Loop through documents in the query snapshot
+            for (document in querySnapshot.documents) {
+                val folder = Folder().apply {
+                    SetId(document.getString("id") ?: "")
+                    SetName(document.getString("name") ?: "")
+                    SetDescription(document.getString("description") ?: "")
+                    SetUser_id(firebaseAuth.currentUser?.uid ?: "")
+                    SetCreated_at(document.getString("created_at") ?: "")
+                    SetUpdated_at(document.getString("updated_at") ?: "")
+                }
+                folders.add(folder)
+            }
+
+        } catch (e: Exception) {
+            Log.e("FolderDAO", "getAllFolderByUserId: ${e.message}", e)
         }
 
         return folders
     }
+
 }

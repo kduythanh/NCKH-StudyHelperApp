@@ -22,6 +22,10 @@ import com.example.nlcs.data.dao.FlashCardDAO
 import com.example.nlcs.data.model.Card
 import com.example.nlcs.databinding.ActivityEditFlashCardBinding
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -53,43 +57,49 @@ class EditFlashCardActivity : AppCompatActivity() {
         }
 
         val flashCardId = intent.getStringExtra("flashcard_id")
-        val flashCard = flashCardId?.let { flashCardDAO.getFlashCardById(it) }
 
-        if (flashCard != null) {
-            binding.subjectEt.setText(flashCard.name)
-        }
-        if (flashCard != null) {
-            binding.descriptionEt.setText(flashCard.description)
-        }
-        if (flashCard != null) {
-            binding.privateSwitch.isChecked = flashCard.is_public == 1
-        }
+         CoroutineScope(Dispatchers.Main).launch {
+             val flashCard = flashCardId?.let { flashCardDAO.getFlashCardById(it) }
 
-        cards = cardDAO.getCardsByFlashCardId(flashCardId)
-        updateTotalCards()
-        cardAdapter = CardAdapter(this, cards)
-        val layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
-        binding.cardsLv.layoutManager = layoutManager
-        binding.cardsLv.adapter = cardAdapter
+             if (flashCard != null) {
+                 binding.subjectEt.setText(flashCard.name)
+             }
+             if (flashCard != null) {
+                 binding.descriptionEt.setText(flashCard.description)
+             }
+             if (flashCard != null) {
+                 binding.privateSwitch.isChecked = flashCard.is_public == 1
+             }
 
-        binding.addFab.setOnClickListener {
-            if (!checkTwoCardsEmpty()) {
-                val newCard = Card()
-                cards.add(newCard)
-                cardAdapter.notifyItemInserted(cards.size - 1)
+            cards = flashCardId?.let { cardDAO.getCardsByFlashCardId(it) }!!
+            updateTotalCards()
+            cardAdapter = CardAdapter(this@EditFlashCardActivity, cards)
+            val layoutManager = LinearLayoutManager(this@EditFlashCardActivity, LinearLayoutManager.VERTICAL, false)
+            binding.cardsLv.layoutManager = layoutManager
+            binding.cardsLv.adapter = cardAdapter
 
-                binding.cardsLv.scrollToPosition(cards.size - 1)
-                binding.cardsLv.post {
-                    val viewHolder =
-                        binding.cardsLv.findViewHolderForAdapterPosition(cards.size - 1)
-                    viewHolder?.itemView?.requestFocus()
+            binding.addFab.setOnClickListener {
+                if (!checkTwoCardsEmpty()) {
+                    val newCard = Card()
+                    cards.add(newCard)
+                    cardAdapter.notifyItemInserted(cards.size - 1)
+
+                    binding.cardsLv.scrollToPosition(cards.size - 1)
+                    binding.cardsLv.post {
+                        val viewHolder =
+                            binding.cardsLv.findViewHolderForAdapterPosition(cards.size - 1)
+                        viewHolder?.itemView?.requestFocus()
+                    }
+                    updateTotalCards()
+                } else {
+                    //Toast.makeText(this, "Please enter question and answer", Toast.LENGTH_SHORT).show()
                 }
-                updateTotalCards()
-            } else {
-                Toast.makeText(this, "Please enter question and answer", Toast.LENGTH_SHORT).show()
-            }
 
         }
+
+
+        }
+
         val callback = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
             override fun onMove(
                 recyclerView: RecyclerView,
@@ -101,52 +111,54 @@ class EditFlashCardActivity : AppCompatActivity() {
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val position = viewHolder.bindingAdapterPosition
-                if (position != RecyclerView.NO_POSITION) {
-                    // Your existing code
-                    val deletedItem = cards[position]
+                CoroutineScope(Dispatchers.Main).launch {
+                    if (position != RecyclerView.NO_POSITION) {
+                        // Your existing code
+                        val deletedItem = cards[position]
 
-                    // Removing item from recycler view
-                    cards.removeAt(position)
-                    updateTotalCards()
-                    if (deletedItem.id?.let { cardDAO.checkCardExist(it) }) {
-                        deletedItem.id?.let { listIdCard.add(it) }
-                    }
-                    cardAdapter.notifyItemRemoved(position)
+                        // Removing item from recycler view
+                        cards.removeAt(position)
+                        updateTotalCards()
+                        if (deletedItem.id?.let { cardDAO.checkCardExist(it) } == true) {
+                            deletedItem.id?.let { listIdCard.add(it) }
+                        }
+                        cardAdapter.notifyItemRemoved(position)
 
-                    // Showing Snack bar with an Undo option
-                    val snackbar = Snackbar.make(
-                        binding.root,
-                        "Item was removed from the list.",
-                        Snackbar.LENGTH_LONG
-                    )
-                    snackbar.setAction("UNDO") { _ ->
+                        // Showing Snack bar with an Undo option
+                        val snackbar = Snackbar.make(
+                            binding.root,
+                            "Item was removed from the list.",
+                            Snackbar.LENGTH_LONG
+                        )
+                        snackbar.setAction("UNDO") { _ ->
 
-                        // Check if the position is valid before adding the item back
-                        if (position <= cards.size) {
-                            cards.add(position, deletedItem)
-                            updateTotalCards()
+                            // Check if the position is valid before adding the item back
+                            if (position <= cards.size) {
+                                cards.add(position, deletedItem)
+                                updateTotalCards()
 
-                            if (listIdCard.contains(deletedItem.id)) {
-                                listIdCard.remove(deletedItem.id)
+                                if (listIdCard.contains(deletedItem.id)) {
+                                    listIdCard.remove(deletedItem.id)
+                                    Toast.makeText(
+                                        this@EditFlashCardActivity,
+                                        "Card deleted successfully" + deletedItem.id,
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+
+                                cardAdapter.notifyItemInserted(position)
+                            } else {
+                                // If the position isn't valid, show a message or handle the error appropriately
                                 Toast.makeText(
-                                    this@EditFlashCardActivity,
-                                    "Card deleted successfully" + deletedItem.id,
-                                    Toast.LENGTH_SHORT
+                                    applicationContext,
+                                    "Error restoring item",
+                                    Toast.LENGTH_LONG
                                 ).show()
                             }
-
-                            cardAdapter.notifyItemInserted(position)
-                        } else {
-                            // If the position isn't valid, show a message or handle the error appropriately
-                            Toast.makeText(
-                                applicationContext,
-                                "Error restoring item",
-                                Toast.LENGTH_LONG
-                            ).show()
                         }
+                        snackbar.setActionTextColor(Color.Yellow.toArgb())
+                        snackbar.show()
                     }
-                    snackbar.setActionTextColor(Color.Yellow.toArgb())
-                    snackbar.show()
                 }
                 // Backup of removed item for undo purpose
 
@@ -209,16 +221,20 @@ class EditFlashCardActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
+        return when (item.itemId) {
             R.id.done -> {
-                saveChange()
-                return true
+                // Launch a coroutine to call the suspend function
+                CoroutineScope(Dispatchers.Main).launch {
+                    saveChange()
+                }
+                true
             }
+            else -> super.onOptionsItemSelected(item)
         }
-        return super.onOptionsItemSelected(item)
     }
 
-    private fun saveChange() {
+
+    private suspend fun saveChange() {
         val subject = binding.subjectEt.text.toString()
         val description = binding.descriptionEt.text.toString()
 
@@ -235,24 +251,19 @@ class EditFlashCardActivity : AppCompatActivity() {
 
         val flashCardId = intent.getStringExtra("flashcard_id") ?: return
 
+        // Loop through the cards and ensure all have valid data
         for (card in cards) {
-            if (card.front == null) {
+            if (card.front.isNullOrEmpty() || card.back.isNullOrEmpty()) {
+                showToast("Please enter both question and answer")
+                updateCardView(cards.indexOf(card)) // Show which card needs editing
                 return
             }
-            if (card.back == null) {
-                return
-            }
-            if (card.front!!.isEmpty() || card.back!!.isEmpty()) {
-                showToast("Please enter question and answer")
-                updateCardView(cards.indexOf(card))
-                return
-            }
-
 
             card.updated_at = getCurrentDate()
             card.flashcard_id = flashCardId
 
-            if (card.id?.let { cardDAO.checkCardExist(it) }) {
+            // Sử dụng suspend fun checkCardExist để kiểm tra sự tồn tại của card_id
+            if (card.id?.let { cardDAO.checkCardExist(it) } == true) {
                 if (cardDAO.updateCardById(card) <= 0) {
                     showToast("Error updating card")
                     return
@@ -265,31 +276,33 @@ class EditFlashCardActivity : AppCompatActivity() {
                     return
                 }
             }
-
-            for (cardId in listIdCard) {
-                cardDAO.deleteCardById(cardId) >= 0
-
-
-            }
-
-            val flashCard = flashCardDAO.getFlashCardById(flashCardId)
-            if (flashCard != null) {
-                flashCard.name = subject
-            }
-            if (flashCard != null) {
-                flashCard.description = description
-            }
-            if (flashCard != null) {
-                flashCard.is_public = if (binding.privateSwitch.isChecked) 1 else 0
-            }
-            if (flashCard != null) {
-                flashCard.updated_at = getCurrentDate()
-            }
-            if (flashCard?.let { flashCardDAO.updateFlashCard(it) }!! <= 0) {
-                showToast("Error updating flashcard")
+        }
+    // Deleting extra cards from listIdCard
+        for (cardId in listIdCard) {
+            if (cardDAO.deleteCardById(cardId) < 0) {
+                showToast("Error deleting card")
                 return
             }
         }
+
+        // Now update the flashcard details
+        val flashCard = flashCardDAO.getFlashCardById(flashCardId)
+
+        flashCard?.let {
+            it.name = subject
+            it.description = description
+            it.is_public = if (binding.privateSwitch.isChecked) 1 else 0
+            it.updated_at = getCurrentDate()
+
+            if (flashCardDAO.updateFlashCard(it) <= 0) {
+                showToast("Error updating flashcard")
+                return
+            }
+        } ?: run {
+            showToast("Flashcard not found")
+            return
+        }
+
         showToast("Flashcard updated successfully")
         finish()
     }

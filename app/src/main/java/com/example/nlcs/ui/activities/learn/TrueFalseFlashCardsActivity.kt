@@ -13,6 +13,9 @@ import com.example.nlcs.databinding.DialogWrongBinding
 import com.saadahmedsoft.popupdialog.PopupDialog
 import com.saadahmedsoft.popupdialog.Styles
 import com.saadahmedsoft.popupdialog.listener.OnDialogButtonClickListener
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class TrueFalseFlashCardsActivity : AppCompatActivity() {
     private val binding by lazy { ActivityTrueFalseFlashCardsBinding.inflate(layoutInflater) }
@@ -21,79 +24,93 @@ class TrueFalseFlashCardsActivity : AppCompatActivity() {
     private var progress = 0
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(binding.root)
-        setSupportActionBar(binding.toolbar)
-        binding.toolbar.setNavigationOnClickListener {
-            onBackPressedDispatcher.onBackPressed()
+        CoroutineScope(Dispatchers.Main).launch {
+            setContentView(binding.root)
+            setSupportActionBar(binding.toolbar)
+            binding.toolbar.setNavigationOnClickListener {
+                onBackPressedDispatcher.onBackPressed()
+
+            }
+            setUpQuestion()
+            setUpProgressBar()
         }
 
-        setUpQuestion()
-        setUpProgressBar()
     }
 
-    private fun setUpProgressBar(): Int {
+    private suspend fun setUpProgressBar(): Int {
         val id = intent.getStringExtra("id")
-        cardList = cardDAO.getCardByIsLearned(id, 0)
+            cardList = id?.let { cardDAO.getCardByIsLearned(it, 0) } as ArrayList<Card>
+
         binding.timelineProgress.max = cardList.size
         return cardList.size
     }
 
-    private fun setUpQuestion() {
+    private suspend fun setUpQuestion() {
         val id = intent.getStringExtra("id")
-        cardList = cardDAO.getCardByIsLearned(id, 0)
-        val cardListAll = cardDAO.getAllCardByFlashCardId(id)
+        cardList = id?.let { cardDAO.getCardByIsLearned(it, 0) } as ArrayList<Card>
 
-        if (cardList.size == 0) {
+        if (cardList.isEmpty()) {
             finishQuiz()
+            return // Thêm return để thoát nếu không có câu hỏi
         }
 
-        if (cardList.isNotEmpty()) {
-            val randomCard = cardList.random()
-            cardListAll.remove(randomCard)
+        val randomCard = cardList.random()
+        val cardListAll = id?.let { cardDAO.getAllCardByFlashCardId(it) }
+        cardListAll?.remove(randomCard)
 
-            val incorrectAnswer = cardListAll.shuffled().take(1)
+        val incorrectAnswer = cardListAll?.shuffled()?.take(1)
 
-            val random = (0..1).random()
-            if (random == 0) {
-                binding.questionTv.text = randomCard.front
-                binding.answerTv.text = randomCard.back
-            } else {
-                binding.questionTv.text = randomCard.front
-                binding.answerTv.text = incorrectAnswer[0].back
+        val random = (0..1).random()
+        binding.questionTv.text = randomCard.front
+
+        if (random == 0) {
+            binding.answerTv.text = randomCard.back
+        } else {
+            binding.answerTv.text = incorrectAnswer?.get(0)?.back
+        }
+
+        binding.trueBtn.setOnClickListener {
+            CoroutineScope(Dispatchers.Main).launch {
+                handleAnswer(random, randomCard, incorrectAnswer, true)
             }
+        }
 
-            binding.trueBtn.setOnClickListener {
-                if (random == 0) {
-                    correctDialog(randomCard.back)
-                    cardDAO.updateIsLearnedCardById(randomCard.id, 1)
-                    setUpQuestion()
-                    progress++
-                    increaseProgress()
-                } else {
-                    wrongDialog(randomCard.back, randomCard.front, incorrectAnswer[0].back)
-                    setUpQuestion()
+        binding.falseBtn.setOnClickListener {
+            CoroutineScope(Dispatchers.Main).launch {
+                handleAnswer(random, randomCard, incorrectAnswer, false)
+            }
+        }
+    }
+
+    private suspend fun handleAnswer(random: Int, randomCard: Card, incorrectAnswer: List<Card>?, isTrue: Boolean) {
+        if ((isTrue && random == 0) || (!isTrue && random == 1)) {
+            randomCard.back?.let { correctAnswer ->
+                correctDialog(correctAnswer)
+                randomCard.id?.let { cardId ->
+                    val result = cardDAO.updateIsLearnedCardById(cardId, 1)
+                    if (result > 0) {
+                        progress++
+                        increaseProgress()
+                    }
                 }
             }
-            binding.falseBtn.setOnClickListener {
-                if (random == 1) {
-                    correctDialog(randomCard.back)
-                    cardDAO.updateIsLearnedCardById(randomCard.id, 1)
-                    setUpQuestion()
-                    progress++
-                    increaseProgress()
-                } else {
-                    wrongDialog(randomCard.back, randomCard.front, incorrectAnswer[0].back)
-                    setUpQuestion()
+        } else {
+            randomCard.back?.let { correctAnswer ->
+                randomCard.front?.let { question ->
+                    incorrectAnswer?.get(0)?.back?.let { wrongAnswer ->
+                        wrongDialog(correctAnswer, question, wrongAnswer)
+                    }
                 }
             }
         }
+        setUpQuestion()
     }
 
     private fun increaseProgress() {
         binding.timelineProgress.progress = progress
     }
 
-    private fun finishQuiz() { //1 quiz, 2 learn
+    private suspend fun finishQuiz() { //1 quiz, 2 learn
         binding.timelineProgress.progress = setUpProgressBar()
         runOnUiThread {
 
@@ -117,18 +134,30 @@ class TrueFalseFlashCardsActivity : AppCompatActivity() {
     }
 
     private fun correctDialog(answer: String) {
-        val dialog = AlertDialog.Builder(this)
+        // Tạo một AlertDialog.Builder
+        val dialogBuilder = AlertDialog.Builder(this)
+
+        // Sử dụng DialogCorrectBinding để tạo nội dung dialog
         val dialogBinding = DialogCorrectBinding.inflate(layoutInflater)
-        dialog.setView(dialogBinding.root)
-        dialog.setCancelable(true)
-        val builder = dialog.create()
+
+        // Gán giá trị cho TextView trong binding
         dialogBinding.questionTv.text = answer
+
+        // Thiết lập view cho dialog
+        dialogBuilder.setView(dialogBinding.root)
+
+        // Tạo dialog
+        val dialog = dialogBuilder.create()
+
+        // Thiết lập sự kiện khi dialog bị đóng
         dialog.setOnDismissListener {
+            // Có thể thêm hành động khi dialog bị đóng nếu cần
         }
 
-        builder.show()
-
+        // Hiển thị dialog
+        dialog.show()
     }
+
 
     private fun wrongDialog(answer: String, question: String, userAnswer: String) {
         val dialog = AlertDialog.Builder(this)

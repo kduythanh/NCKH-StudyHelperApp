@@ -27,9 +27,7 @@
         <activity
             android:name=".MainActivity"
             android:exported="false" />
-        <activity
-            android:name=".SplashActivity"
-            android:exported="true" />
+
 
         <activity
             android:name=".ui.activities.learn.TrueFalseFlashCardsActivity"
@@ -68,12 +66,17 @@
             android:name=".ui.activities.create.CreateSetActivity"
             android:exported="false"/>
         <activity
+            android:name=".ui.activities.search.ViewSearchActivity"
+            android:exported="false"/>
+        <activity
             android:name=".ui.activities.FlashcardActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustNothing"/>
-        <activity
-            android:name=".ui.activities.auth.AuthenticationActivity"
-            android:exported="true">
+
+            <activity
+                android:name=".SplashActivity"
+                android:exported="true" >
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

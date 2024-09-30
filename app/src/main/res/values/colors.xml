@@ -21,4 +21,20 @@
     <color name="green">#008000</color>
     <color name="green_light">#90EE90</color>
     <color name="green_dark">#006400</color>
+
+
+    <color name="grey">#999</color>"
+    <color name="brightRed">#FF0000</color>
+    <color name="primaryColor">#00acec</color>
+    <color name="secondaryColor">#1c57a5</color>
+    <color name="textColorPrimary">#FF000000</color>
+    <color name="textColorSecondary">#555</color>
+    <color name="textColorTertiary">#F8EFEC</color>
+
+    <color name="background_1">#a49dff</color>
+    <color name="background_2">#9dffd6</color>
+    <color name="background_3">#ff9da2</color>
+    <color name="background_4">#ff9dfb</color>
+    <color name="background_5">#f7ff9d</color>
+    <color name="background_6">#ffd89d</color>
 </resources>

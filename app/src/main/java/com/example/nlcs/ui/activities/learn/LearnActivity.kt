@@ -19,16 +19,20 @@ import com.example.nlcs.databinding.ActivityLearnBinding
 import com.google.android.gms.tasks.Task
 import com.google.firebase.firestore.QuerySnapshot
 import com.yuyakaido.android.cardstackview.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class LearnActivity : AppCompatActivity(), CardStackListener {
     private val binding: ActivityLearnBinding by lazy {
         ActivityLearnBinding.inflate(layoutInflater)
     }
     private val manager by lazy { CardStackLayoutManager(this, this) }
-    private val adapter by lazy { CardLeanAdapter(createCards()) }
+    private val adapter by lazy { CardLeanAdapter(emptyList()) } // Initialize with empty list
     private val cardDAO by lazy { CardDAO(this) }
 
     private lateinit var size: String
+    //private var size: Int = 0 // or any default value you need
 
 
     @SuppressLint("SetTextI18n", "NotifyDataSetChanged")
@@ -37,95 +41,184 @@ class LearnActivity : AppCompatActivity(), CardStackListener {
         setContentView(binding.root)
         setSupportActionBar(binding.toolbar)
 
-        if (createCards().isEmpty()) {
-            showHide()
-            Toast.makeText(this, "No card to learn", Toast.LENGTH_SHORT).show()
-        }
-
-        binding.toolbar.setNavigationOnClickListener {
-            onBackPressedDispatcher.onBackPressed()
-        }
-        getSize()
-        binding.cardsLeftTv.text = "Cards left: $size"
-
-        setupCardStackView()
-        setupButton()
-
-        binding.keepLearnBtn.setOnClickListener {
-            if (createCards().isEmpty()) {
-                Toast.makeText(this, "No card to learn", Toast.LENGTH_SHORT).show()
+        // Fetch initial cards
+        createCards { cards ->
+            if (cards.isEmpty()) {
+                showHide()
+                Toast.makeText(this@LearnActivity, "No card to learn", Toast.LENGTH_SHORT).show()
             } else {
-                showContainer()
-                binding.cardsLeftTv.text = "Cards left: ${size.toInt() - 1}"
-                adapter.setCards(createCards())
+                // Update UI with card size
+                getSize { size ->
+                    binding.cardsLeftTv.text = "Cards left: $size"
+                }
+                adapter.setCards(cards)
                 adapter.notifyDataSetChanged()
-                getSize()
-                binding.cardsLeftTv.text = "Cards left: $size"
+            }
+
+            binding.toolbar.setNavigationOnClickListener {
+                onBackPressedDispatcher.onBackPressed()
+            }
+
+            setupCardStackView()
+            setupButton()
+
+            // Handle "Keep Learning" button click
+            binding.keepLearnBtn.setOnClickListener {
+                createCards { updatedCards ->
+                    if (updatedCards.isEmpty()) {
+                        Toast.makeText(this@LearnActivity, "No card to learn", Toast.LENGTH_SHORT).show()
+                    } else {
+                        showContainer()
+                        getSize { size ->
+                            binding.cardsLeftTv.text = "Cards left: ${size - 1}"
+                        }
+                        adapter.setCards(updatedCards)
+                        adapter.notifyDataSetChanged()
+                    }
+                }
+            }
+
+            // Handle "Reset Learning" button click
+            binding.resetLearnBtn.setOnClickListener {
+                val flashcardId = intent.getStringExtra("id")
+                flashcardId?.let { id ->
+                    // Call the non-suspend `resetStatusCardByFlashCardId` function
+                    cardDAO.resetStatusCardByFlashCardId(id) { updatedCount ->
+                        if (updatedCount > 0) {
+                            // Fetch reset cards asynchronously after reset
+                            createCards { resetCards ->
+                                showContainer()
+                                adapter.setCards(resetCards)
+                                adapter.notifyDataSetChanged()
+                                getSize { size ->
+                                    binding.cardsLeftTv.text = "Cards left: $size"
+                                }
+                            }
+                        } else {
+                            Toast.makeText(this@LearnActivity, "Failed to reset card statuses", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
             }
         }
-
-        binding.resetLearnBtn.setOnClickListener {
-            intent.getStringExtra("id")?.let { it1 -> cardDAO.resetStatusCardByFlashCardId(it1) }
-            showContainer()
-            adapter.setCards(createCards())
-            adapter.notifyDataSetChanged()
-            getSize()
-            binding.cardsLeftTv.text = "Cards left: $size"
-        }
     }
+
+
+
+
+
 
     override fun onCardDragging(direction: Direction?, ratio: Float) {
         Log.d("CardStackView", "onCardDragging: d = $direction, r = $ratio")
     }
 
+    // Declare size as a nullable string and initialize it later
+    //private var size: String? = null
+
     @SuppressLint("SetTextI18n")
+
     override fun onCardSwiped(direction: Direction?) {
         val card = adapter.getCards()[manager.topPosition - 1]
+
+        // Ensure size is initialized
+        if (!::size.isInitialized) {
+            size = binding.cardsLeftTv.text.toString() // Initialize from UI or set a default value
+        }
+
         if (direction == Direction.Right) {
             val learnValue = binding.learnTv.text.toString().toInt() + 1
             binding.learnTv.text = learnValue.toString()
             card.status = 1
-            cardDAO.updateCardStatusById(card.id, card.status)
-            size = size.toInt().minus(1).toString()
-            binding.cardsLeftTv.text = "Cards left: ${size.toInt()}"
+
+            card.id?.let { cardId ->
+                cardDAO.updateCardStatusById(cardId, card.status) { result ->
+                    if (result == 1L) {
+                        Toast.makeText(this@LearnActivity, "Status updated successfully", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(this@LearnActivity, "Failed to update status", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+
+            // Safely update size
+            size = (size.toIntOrNull()?.minus(1) ?: 0).toString() // Use toIntOrNull for safety
+            binding.cardsLeftTv.text = "Cards left: $size"
         } else if (direction == Direction.Left) {
             val learnValue = binding.studyTv.text.toString().toInt() + 1
             binding.studyTv.text = learnValue.toString()
             card.status = 2
-            cardDAO.updateCardStatusById(card.id, card.status)
-            size = size.toInt().minus(1).toString()
-            binding.cardsLeftTv.text = "Cards left: ${size.toInt()}"
+
+            card.id?.let { cardId ->
+                cardDAO.updateCardStatusById(cardId, card.status) { result ->
+                    if (result == 1L) {
+                        Toast.makeText(this@LearnActivity, "Status updated successfully", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(this@LearnActivity, "Failed to update status", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+
+            // Safely update size
+            size = (size.toIntOrNull()?.minus(1) ?: 0).toString() // Use toIntOrNull for safety
+            binding.cardsLeftTv.text = "Cards left: $size"
         }
+
         if (manager.topPosition == adapter.getCount()) {
-            showHide()
+            showHide() // Hide UI when all cards are swiped
         }
-
-
     }
+
 
     @SuppressLint("SetTextI18n")
     override fun onCardRewound() {
         Log.d("CardStackView", "onCardRewound: ${manager.topPosition}")
+
+        // Ensure size is initialized
+        if (!::size.isInitialized) {
+            size = binding.cardsLeftTv.text.toString() // Initialize from UI or set a default value
+        }
+
         if (manager.topPosition < adapter.itemCount) {
             val card = adapter.getCards()[manager.topPosition]
+
             if (card.status == 1) {
                 card.status = 0
-                card.id?.let { cardDAO.updateCardStatusById(it, card.status) }
+                card.id?.let { cardId ->
+                    cardDAO.updateCardStatusById(cardId, card.status) { result ->
+                        if (result == 1L) {
+                            Log.d("CardDAO", "Card with ID: $cardId updated successfully")
+                        } else {
+                            Log.e("CardDAO", "Failed to update card with ID: $cardId")
+                            Toast.makeText(this@LearnActivity, "Failed to update status", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
                 if (binding.learnTv.text.toString().toInt() > 0) {
                     binding.learnTv.text = (binding.learnTv.text.toString().toInt() - 1).toString()
                 }
             } else if (card.status == 2) {
                 card.status = 0
-                card.id?.let { cardDAO.updateCardStatusById(it, card.status) }
+                card.id?.let { cardId ->
+                    cardDAO.updateCardStatusById(cardId, card.status) { result ->
+                        if (result == 1L) {
+                            Log.d("CardDAO", "Card with ID: $cardId updated successfully")
+                        } else {
+                            Log.e("CardDAO", "Failed to update card with ID: $cardId")
+                            Toast.makeText(this@LearnActivity, "Failed to update status", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
                 if (binding.studyTv.text.toString().toInt() > 0) {
                     binding.studyTv.text = (binding.studyTv.text.toString().toInt() - 1).toString()
                 }
             }
         } else {
-            Toast.makeText(this, "No card to rewind", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this@LearnActivity, "No card to rewind", Toast.LENGTH_SHORT).show()
         }
-        size = size.toInt().plus(1).toString()
-        binding.cardsLeftTv.text = "Cards left: ${size.toInt()}"
+
+        // Safely update the size
+        size = (size.toIntOrNull()?.plus(1) ?: 1).toString() // Use toIntOrNull for safety
+        binding.cardsLeftTv.text = "Cards left: $size"
     }
 
     override fun onCardCanceled() {
@@ -175,10 +268,27 @@ class LearnActivity : AppCompatActivity(), CardStackListener {
         initialize()
     }
 
-    private fun createCards(): Any {
-        val id: String? = intent.getStringExtra("id")
-        return id?.let { cardDAO.getAllCardByStatus(it) } ?: emptyList()
+    private fun createCards(onCardsLoaded: (List<Card>) -> Unit) {
+        val id = intent.getStringExtra("id")
+
+        // Kiểm tra nếu id null hoặc rỗng
+        if (id == null || id.isEmpty()) {
+            Log.e("createCards", "Flashcard ID is null or empty")
+            onCardsLoaded(emptyList()) // Return empty list if ID is invalid
+            return
+        } else {
+            Log.d("createCards", "Flashcard ID: $id")
+        }
+
+        // Fetch cards asynchronously using Firestore query
+        cardDAO.getAllCardByStatus(id) { cards ->
+            // Gọi lại hàm `onCardsLoaded` với danh sách các card đã lấy được
+            onCardsLoaded(cards)
+        }
     }
+
+
+
 
 
     private fun initialize() {
@@ -206,15 +316,15 @@ class LearnActivity : AppCompatActivity(), CardStackListener {
         val learn = binding.learnTv.visibility == View.VISIBLE
         val cardSlack = binding.cardStackView.visibility == View.VISIBLE
         val button = binding.buttonContainer.visibility == View.VISIBLE
-
-        if (learn && cardSlack && button) {
-            binding.leanLl.visibility = View.GONE
-            binding.cardStackView.visibility = View.GONE
-            binding.buttonContainer.visibility = View.GONE
-            binding.reviewContainer.visibility = View.VISIBLE
-            preview()
+        CoroutineScope(Dispatchers.Main).launch {
+            if (learn && cardSlack && button) {
+                binding.leanLl.visibility = View.GONE
+                binding.cardStackView.visibility = View.GONE
+                binding.buttonContainer.visibility = View.GONE
+                binding.reviewContainer.visibility = View.VISIBLE
+                preview()
+            }
         }
-
 
     }
 
@@ -229,7 +339,7 @@ class LearnActivity : AppCompatActivity(), CardStackListener {
         }
     }
 
-    private fun preview() {
+    private suspend fun preview() {
         binding.knowNumberTv.text = getCardStatus(1).toString()
         binding.stillLearnNumberTv.text = getCardStatus(2).toString()
         binding.termsLeftNumberTv.text = getCardStatus(0).toString()
@@ -241,15 +351,23 @@ class LearnActivity : AppCompatActivity(), CardStackListener {
         binding.reviewProgress.setValueAnimated(sum, 1000)
     }
 
-    private fun getSize(): Int {
-        size = createCards().size.toString()
-        return size.toInt()
+    private fun getSize(onSizeCalculated: (Int) -> Unit) {
+        // Gọi hàm createCards để lấy danh sách các card
+        createCards { cards ->
+            // Sau khi lấy được danh sách card, gọi lại callback để trả về kích thước
+            val size = cards.size
+            onSizeCalculated(size)
+        }
     }
 
-    private fun getCardStatus(status: Int): Task<QuerySnapshot>? {
-        val id = intent.getStringExtra("id")
-        return id?.let { cardDAO.getCardByStatus(it, status) }
+
+
+    private suspend fun getCardStatus(status: Int): Int {
+        val id = intent.getStringExtra("id") ?: return 0 // Return 0 if id is null
+        return cardDAO.getCardByStatus(id, status) // Call the DAO method
     }
+
+
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(com.example.nlcs.R.menu.menu_tick, menu)
@@ -264,4 +382,6 @@ class LearnActivity : AppCompatActivity(), CardStackListener {
     }
 
 }
+
+
 

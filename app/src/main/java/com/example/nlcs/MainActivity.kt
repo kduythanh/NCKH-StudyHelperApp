@@ -12,7 +12,7 @@ import com.example.nlcs.databinding.ActivityMainBinding
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
-
+import com.example.nlcs.ui.activities.FlashcardActivity
 
 class MainActivity : AppCompatActivity() {
 

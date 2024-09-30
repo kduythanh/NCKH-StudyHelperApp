@@ -4,11 +4,15 @@ import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.nlcs.adapter.flashcard.SetAllAdapter
 import com.example.nlcs.data.dao.FlashCardDAO
 import com.example.nlcs.data.model.FlashCard
 import com.example.nlcs.databinding.ActivityViewSearchBinding
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.util.Locale
 
 class ViewSearchActivity : AppCompatActivity() {
@@ -19,6 +23,8 @@ class ViewSearchActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Initialize View Binding synchronously
         binding = ActivityViewSearchBinding.inflate(layoutInflater)
         setContentView(binding!!.root)
 
@@ -26,6 +32,7 @@ class ViewSearchActivity : AppCompatActivity() {
         setupData()
         setupSets()
         setupSearchView()
+
     }
 
     private fun setupBackButton() {
@@ -38,18 +45,17 @@ class ViewSearchActivity : AppCompatActivity() {
         flashCardDAO = FlashCardDAO(this)
     }
 
-    private suspend fun setupSets() {
-        val flashCards = flashCardDAO?.getAllFlashCardPublic() ?: emptyList()
+    private fun setupSets() {
+        flashCards = flashCardDAO?.getAllFlashCardPublic()
+        setAllAdapter = flashCards?.let { SetAllAdapter(this, it) }
 
-        // Initialize adapter and set it to RecyclerView
-        setAllAdapter = SetAllAdapter(this, flashCards)
-        binding?.setsRv?.apply {
-            layoutManager = LinearLayoutManager(this@ViewSearchActivity)
-            adapter = setAllAdapter
-        }
+        // Set up RecyclerView
+        binding?.setsRv?.layoutManager = LinearLayoutManager(this)
+        binding?.setsRv?.adapter = setAllAdapter
 
-        // Show or hide the container based on flashCards content
-        binding?.setsCl?.visibility = if (flashCards.isEmpty()) View.GONE else View.VISIBLE
+        // Set visibility based on flashCards list
+        binding?.setsCl?.visibility   = if (flashCards?.isEmpty() == true) View.GONE else View.VISIBLE
+
     }
 
 
@@ -69,7 +75,7 @@ class ViewSearchActivity : AppCompatActivity() {
     private fun handleSearchQuery(newText: String) {
         val filteredFlashCards = ArrayList<FlashCard>()
         for (flashCard in flashCards!!) {
-            if (flashCard.name!!.lowercase(Locale.getDefault())
+            if (flashCard.GetName()!!.lowercase(Locale.getDefault())
                     .contains(newText.lowercase(Locale.getDefault()))
             ) {
                 filteredFlashCards.add(flashCard)
