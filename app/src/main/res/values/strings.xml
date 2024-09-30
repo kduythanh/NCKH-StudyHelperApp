@@ -32,11 +32,15 @@
     <string name="open_nav">Mở Navigation Drawer</string>
     <string name="close_nav">Đóng Navigation Drawer</string>
 
-    <string name="FlashCardsDesc">Flash Cards</string>
-    <string name="FlashCards">Flash cards</string>
+    <string name="UserImageDesc">User Image</string>
+    <string name="Hello">Xin chào,</string>
+    <string name="UserName">-Tên người dùng-</string>
 
-    <string name="MindMapDesc">Mind Map</string>
-    <string name="MindMap">Mind map</string>
+    <string name="FlashCardsDesc">Flashcards</string>
+    <string name="FlashCards">Flashcards</string>
+
+    <string name="MindMapDesc">Mindmap</string>
+    <string name="MindMap">Mindmap</string>
 
     <string name="FocusDesc">Focus Mode</string>
     <string name="Focus">Hẹn giờ tập trung</string>
@@ -47,81 +51,20 @@
     <string name="NoteDesc">Note</string>
     <string name="Note">Ghi chú</string>
 
-<!--    <string name="ReminderDesc">Reminder</string>-->
-<!--    <string name="Reminder">Nhắc nhở</string>-->
-
-<!--    <string name="UserImageDesc">User Image</string>-->
-<!--    <string name="Hello">Xin chào,</string>-->
-<!--    <string name="UserName">-Tên người dùng-</string>-->
-
-    <string name="AddButton">Nút Add</string>
-    <string name="Done">Hoàn Thành</string>
-
-    <string name="TextBox">Hộp Thoại</string>
-    <string name="Arrow">Mũi Tên</string>
-    <string name="SquareTextBox">Hộp thoại vuông</string>
-    <string name="CircleTextBox">Hộp thoại tròn</string>
-    <string name="TriangleTextBox">Hộp thoại tam giác</string>
-    <string name="LineTextBox">Hộp thoại nhánh cây</string>
-    <string name="StraightArrow">Mũi tên thẳng</string>
-    <string name="CurveArrow">Mũi tên cong</string>
-
-    <string name="MindMapTitleTextView">Tạo sơ đồ mới</string>
-    <string name="ChangeMindMapTitleTextView">Đổi tên sơ đồ</string>
-    <string name="InputMindMapTitleEditText">Nhập tên</string>
-<!--    <string name="CancelButton">Hủy bỏ</string>-->
-<!--    <string name="ConfirmButton">Xác nhận</string>-->
-
-<!--    <string name="TitlePlaceHolder">Title</string>-->
-    <string name="MindMapItemEditButtonDescription">Chỉnh sửa tiêu đề sơ đồ tư duy</string>
-    <string name="MindMapItemDeleteButtonDescription">Xóa sơ đồ tư duy</string>
-
-    <string name="AddTextBoxButton">Add Text Box</string>
-    <string name="MainIdea">Ý tưởng chính</string>
-
-    <string name="DeleteChild">Delete Child node</string>
-    <string name="AddChild">Add Child node</string>
-    <string name="CopyText">Copy Text"</string>
-
     <string name="ReminderDesc">Reminder</string>
     <string name="Reminder">Nhắc nhở</string>
-    <string name="ChangeReminderTitleTextView">Sửa nhắc nhở</string>
-    <string name="ReminderTitleTextView">Tạo nhắc nhở mới</string>
-    <string name="selectTime">Chọn giờ:</string>
-    <string name="selectDate">Chọn ngày:</string>
-    <string name="InputReminderNameEditText">Nhập tên</string>
-    <string name="ReminderItemEditButtonDescription">Chỉnh sửa nhắc nhở</string>
-    <string name="ReminderItemDeleteButtonDescription">Xóa nhắc nhở</string>
-    <string name="CancelButton">Hủy bỏ</string>
-    <string name="ConfirmButton">Xác nhận</string>
+    <string name="ReminderTitleTextView">Tạo sự kiện/nhắc nhở mới</string>
+    <string name="editReminderTitleTextView">Sửa thông tin sự kiện/nhắc nhở</string>
     <string name="ReminderAddButton">Thêm nhắc nhở</string>
-    <string name="EditReminderTitleTextView">Sửa thông tin nhắc nhở</string>
-    <string name="TitlePlaceHolder">Tên Reminder</string>
-    <string name="DateTime">Ngày tháng năm</string>
-
-    <string name="UserImageDesc">User Image</string>
-    <string name="Hello">Xin chào,</string>
-    <string name="UserName">-Tên người dùng-</string>
-    <string name="Exit">Thoát</string>
-    <string name="AddReminder">Thêm nhắc nhở</string>
-    <string name="reminderEventTitle">Event Title</string>
-    <string name="reminderDateAndTime">Date and Time</string>
-    <string name="reminderEditButton">Edit</string>
-    <string name="reminderDeleteButton">Delete</string>
-    <string name="title_hint">Tên nhắc nhở</string>
-    <string name="title">Tên nhắc nhở</string>
-    <string name="start_time">Thời gian bắt đầu</string>
-    <string name="start_time_hint">dd/mm/yyyy hh:mm</string>
-    <string name="end_time_hint">dd/mm/yyyy hh:mm</string>
-    <string name="end_time">Thời gian kết thúc</string>
-    <string name="save_reminder">Lưu nhắc nhở</string>
-    <string name="start_date">Ngày bắt đầu</string>
-    <string name="end_date">Ngày kết thúc</string>
+    <string name="reminderEditButton">Sửa nhắc nhở</string>
+    <string name="reminderDeleteButton">Xóa nhắc nhở</string>
     <string name="previous_week">Tuần trước</string>
     <string name="next_week">Tuần sau</string>
     <string name="week_navigation_text">Tuần trước - Tuần sau</string>
-    <string name="editReminderTitleTextView">Sửa thông tin sự kiện</string>
+    <string name="reminderEventTitle">Tên sự kiện/nhắc nhở</string>
+    <string name="reminderDateAndTime">Ngày, giờ diễn ra</string>
     <string name="exit_description">Thoát</string>
+
     <string name="participantsEmails">Email các thành viên (phân tách bằng dấu phẩy)</string>
     <string name="endTime">Giờ kết thúc (hh:mm)</string>
     <string name="endDate">Ngày kết thúc (dd/mm/yyyy)</string>
@@ -130,6 +73,7 @@
     <string name="eventTitle">Tên sự kiện/nhắc nhở</string>
     <string name="cancelEventButton">Hủy bỏ</string>
     <string name="saveEventButton">Lưu</string>
+
     <string name="editEventTitle">Tên sự kiện/nhắc nhở</string>
     <string name="editStartDate">Ngày bắt đầu (dd/mm/yyyy)</string>
     <string name="editStartTime">Giờ bắt đầu (hh:mm)</string>

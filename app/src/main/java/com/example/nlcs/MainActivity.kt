@@ -46,20 +46,12 @@ class MainActivity : AppCompatActivity() {
         // Update NavigationView header with user email
         updateNavHeader()
 
-//<<<<<<< Updated upstream
-//=======
-
-//        binding.card2.setOnClickListener{
-//            val intent = Intent(this, MindMapMenuActivity::class.java)
-//            startActivity(intent)
-//        }
-
         binding.card6.setOnClickListener {
             val intent = Intent(this, ReminderMenuActivityAPI::class.java)
             startActivity(intent)
         }
 
-//>>>>>>> Stashed changes
+        // Stashed changes
         binding.navigationView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId){
                 R.id.nav_logout -> {
@@ -85,16 +77,6 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         })
-
-        // Test Click listener for log out button
-//        binding.logOutTestButton.setOnClickListener {
-//            firebaseAuth.signOut()
-//            val intent = Intent(this, LogInActivity::class.java)
-//            startActivity(intent)
-//            Toast.makeText(this, "Logged Out", Toast.LENGTH_SHORT).show()
-//            finish()
-//        }
-
     }
     private fun updateNavHeader() {
         val headerView = binding.navigationView.getHeaderView(0)
@@ -105,7 +87,4 @@ class MainActivity : AppCompatActivity() {
             emailTextView.text = currentUser.email // Set the email in the TextView
         }
     }
-//    private fun isCurrentActivity(activityClass: Class<*>): Boolean {
-//        return activityClass == this::class.java
-//    }
 }

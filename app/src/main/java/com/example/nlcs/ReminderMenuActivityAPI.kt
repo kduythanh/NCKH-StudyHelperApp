@@ -3,9 +3,11 @@ package com.example.nlcs
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -51,6 +53,7 @@ class ReminderMenuActivityAPI : AppCompatActivity() {
     private lateinit var nextWeekButton: ImageButton
     private lateinit var addButton: FloatingActionButton
     private lateinit var exitButton: ImageButton
+    private lateinit var noEventsTextView: TextView
     private var currentWeekStartDate: JavaCalendar = JavaCalendar.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -61,6 +64,7 @@ class ReminderMenuActivityAPI : AppCompatActivity() {
             .requestScopes(Scope(CalendarScopes.CALENDAR))
             .build()
         googleSignInClient = GoogleSignIn.getClient(this, gso)
+        noEventsTextView = findViewById(R.id.noEventsTextView)
         exitButton = findViewById(R.id.exitButton) // Xử lý nút thoát khỏi chức năng
         exitButton.setOnClickListener { finish() }
         recyclerView = findViewById(R.id.recyclerView) // Cấu hình RecyclerView
@@ -239,6 +243,11 @@ class ReminderMenuActivityAPI : AppCompatActivity() {
     // Lấy danh sách sự kiện từ Google Calendar
     private fun fetchCalendarEvents(startDate: Date, endDate: Date) {
         CoroutineScope(Dispatchers.IO).launch {
+            val calendar = JavaCalendar.getInstance().apply {
+                time = endDate
+                add(JavaCalendar.DAY_OF_MONTH, -1) // Lùi lại 1 ngày
+            }
+            val adjustedEndDate = calendar.time
             val transport: HttpTransport = GoogleNetHttpTransport.newTrustedTransport()
             val jsonFactory: JsonFactory = JacksonFactory.getDefaultInstance()
             val calendarService = Calendar.Builder(transport, jsonFactory, credential)
@@ -247,6 +256,7 @@ class ReminderMenuActivityAPI : AppCompatActivity() {
             // Chuyển đổi startDate và endDate thành định dạng DateTime (ISO 8601)
             val timeMin = DateTime(startDate)
             val timeMax = DateTime(endDate)
+
             Log.d("CalendarEvents", "Fetching events from: $timeMin to $timeMax")
             val events = try {
                 val eventsResponse: Events = calendarService.events().list("primary")
@@ -278,8 +288,19 @@ class ReminderMenuActivityAPI : AppCompatActivity() {
                 val adapter = EventsAdapter(events, this@ReminderMenuActivityAPI)
                 recyclerView.adapter = adapter
                 swipeRefreshLayout.isRefreshing = false // Tắt animation refresh của swipeRefreshLayout
+                // Kiếm tra nếu không có sự kiện nào
+                if (events.isEmpty()) {
+                    noEventsTextView.text = "Không tìm thấy sự kiện nào từ ngày\n${startDate.toFormattedString()} đến ngày ${adjustedEndDate.toFormattedString()}"
+                } else {
+                    noEventsTextView.text = "Các sự kiện diễn ra từ ngày\n${startDate.toFormattedString()} đến ngày ${adjustedEndDate.toFormattedString()}"
+                }
             }
         }
+    }
+    // Hàm chuyển đổi Date thành chuỗi định dạng mong muốn
+    private fun Date.toFormattedString(): String {
+        val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+        return sdf.format(this)
     }
     // Thêm sự kiện vào Google Calendar
     private fun addReminder(summary: String, startTime: DateTime, endTime: DateTime, attendeesEmails: List<String>) {

@@ -48,9 +48,6 @@ android {
 }
 
 dependencies {
-//    implementation(libs.play.services.auth)
-//    implementation(libs.google.api.client.android)
-//    implementation(libs.google.api.services.calendar)
     implementation(libs.androidx.webkit)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
@@ -64,8 +61,8 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-    implementation("com.google.api-client:google-api-client-android:1.33.2")
-    implementation("com.google.apis:google-api-services-calendar:v3-rev20240906-2.0.0")
-    implementation("com.google.android.gms:play-services-auth:20.4.0")
+    implementation(libs.google.api.client.android)
+    implementation(libs.google.api.services.calendar)
+    implementation(libs.play.services.auth)
     implementation(libs.google.http.client.jackson2)
 }

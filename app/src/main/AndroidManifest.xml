@@ -47,24 +47,6 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ReminderMenuActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-        <activity
-            android:name=".ReminderMenuActivityWebView"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-        <activity
             android:name=".ReminderMenuActivityAPI"
             android:exported="true">
             <intent-filter>
