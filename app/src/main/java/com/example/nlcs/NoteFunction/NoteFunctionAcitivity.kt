@@ -72,9 +72,9 @@ class NoteFunctionActivity : AppCompatActivity() {
 
         // Set up RecyclerView layout and adapter
         binding.RecycleView.layoutManager = LinearLayoutManager(this)
-        binding.RecycleView.addItemDecoration(
-            DividerItemDecoration(this, DividerItemDecoration.VERTICAL)
-        )
+//        binding.RecycleView.addItemDecoration(
+//            DividerItemDecoration(this, DividerItemDecoration.VERTICAL)
+//        )
 
         // Initialize the adapter with an empty list
         myAdapter = MyAdapter(this, arrayListOf())

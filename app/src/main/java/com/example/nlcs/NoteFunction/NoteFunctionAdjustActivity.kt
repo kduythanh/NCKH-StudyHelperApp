@@ -27,7 +27,7 @@ class NoteFunctionAdjustActivity : AppCompatActivity() {
         setContentView(binding.root)
         setSupportActionBar(binding.toolbar.root)
 
-        binding.toolbar.title.text = "Chỉnh sửa nội dung ghi chú"
+        binding.toolbar.title.text = "Sửa nội dung ghi chú"
         binding.toolbar.AddMessage.text = "Sửa"
 
         val message = intent.extras?.get("Message") as? Message
@@ -68,6 +68,7 @@ class NoteFunctionAdjustActivity : AppCompatActivity() {
                                 putExtra(NoteFunctionActivity.KEY, NoteFunctionActivity.TYPE_EDIT)
                             }
                             setResult(Activity.RESULT_OK, intent)
+                            Toast.makeText(this, "Cập nhật ghi chú thành công!", Toast.LENGTH_SHORT).show()
                             finish()
                         }
                         .addOnFailureListener { e ->

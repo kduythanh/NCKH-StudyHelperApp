@@ -9,14 +9,14 @@
     tools:context=".NoteFunction.NoteFunctionAddActivity">
 
     <!-- ImageView to display the logo centered in the background with reduced opacity -->
-    <ImageView
-        android:id="@+id/backgroundImage"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:alpha="0.1"
-        android:scaleType="centerInside"
-        android:src="@drawable/ic_ctu_logo" /> <!-- 10% opacity -->
+<!--    <ImageView-->
+<!--        android:id="@+id/backgroundImage"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_gravity="center"-->
+<!--        android:alpha="0.1"-->
+<!--        android:scaleType="centerInside"-->
+<!--        android:src="@drawable/ic_ctu_logo" /> &lt;!&ndash; 10% opacity &ndash;&gt;-->
 
     <!-- Your content stacked above the image -->
     <LinearLayout
@@ -28,16 +28,10 @@
             android:id="@+id/toolbar"
             layout="@layout/functionmess_toolbar" />
 
-        <View
-            android:id="@+id/Divider"
-            android:layout_width="match_parent"
-            android:layout_height="2dp"
-            android:background="@color/black" />
-
         <EditText
             android:id="@+id/edtTitle"
             android:layout_width="370dp"
-            android:layout_height="40dp"
+            android:layout_height="48dp"
             android:layout_gravity="center"
             android:layout_marginTop="20dp"
             android:background="@drawable/nodefunction_backgroundedt"
@@ -49,14 +43,16 @@
         <EditText
             android:id="@+id/edtContent"
             android:layout_width="370dp"
-            android:layout_height="139dp"
+            android:layout_height="300dp"
             android:layout_gravity="center"
             android:layout_marginTop="20dp"
             android:background="@drawable/nodefunction_backgroundedt"
             android:gravity="start"
             android:hint="Nhập nội dung"
             android:inputType="textMultiLine|textCapSentences"
+            android:overScrollMode="ifContentScrolls"
             android:padding="8dp"
+            android:scrollbars="vertical"
             android:textSize="20sp" />
     </LinearLayout>
 </FrameLayout>

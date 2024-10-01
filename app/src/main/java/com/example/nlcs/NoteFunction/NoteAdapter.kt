@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.nlcs.R
@@ -49,7 +50,20 @@ class MyAdapter(
 
         // Handle delete click
         holder.ivTrashCan.setOnClickListener {
-            removeItem(item)
+            // Show confirmation dialog
+            AlertDialog.Builder(context)
+                .setTitle("Xác nhận xóa")
+                .setMessage("Bạn có chắc chắn muốn xóa ghi chú này?")
+                .setPositiveButton("Xóa") { dialog, _ ->
+                    // Call removeItem when user confirms deletion
+                    removeItem(item)
+                    dialog.dismiss()
+                }
+                .setNegativeButton("Hủy") { dialog, _ ->
+                    dialog.dismiss() // Dismiss the dialog when user cancels
+                }
+                .create()
+                .show()
         }
     }
 
@@ -82,6 +96,7 @@ class MyAdapter(
                 .document(it)
                 .delete()
                 .addOnSuccessListener {
+                    Toast.makeText(context, "Xóa ghi chú thành công!", Toast.LENGTH_SHORT).show()
                     Log.d("Firestore", "DocumentSnapshot successfully deleted!")
                     // Remove from the local lists and update UI
                     fullList.remove(message)

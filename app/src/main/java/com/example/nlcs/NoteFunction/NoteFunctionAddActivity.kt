@@ -80,6 +80,7 @@ class NoteFunctionAddActivity : AppCompatActivity() {
                                 putExtra(NoteFunctionActivity.KEY, NoteFunctionActivity.TYPE_ADD)
                             }
                             setResult(Activity.RESULT_OK, intent)
+                            Toast.makeText(this, "Thêm ghi chú mới thành công!", Toast.LENGTH_SHORT).show()
                             finish()
                         }
                         .addOnFailureListener { e ->
