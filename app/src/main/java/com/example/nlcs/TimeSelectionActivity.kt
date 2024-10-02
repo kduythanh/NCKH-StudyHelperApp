@@ -48,7 +48,7 @@ class TimeSelectionActivity : AppCompatActivity() {
         // Set up toolbar
         setSupportActionBar(binding.toolbarTimeSelection)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.title = "Quay lại"
+        supportActionBar?.title = ""
         binding.toolbarTimeSelection.setNavigationOnClickListener {
             onBackPressed()
         }

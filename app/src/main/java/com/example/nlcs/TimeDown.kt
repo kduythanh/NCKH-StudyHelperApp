@@ -96,7 +96,7 @@ class TimeDown : AppCompatActivity() {
 
         if(supportActionBar != null) {
             supportActionBar?.setDisplayHomeAsUpEnabled(true)
-            supportActionBar?.title = "Quay lại" // Quay lại trang cài đặc đếm giờ
+            supportActionBar?.title = "" // Quay lại trang cài đặc đếm giờ
         }
         binding?.toolbarTimeDown?.setNavigationOnClickListener {
             onBackPressed()

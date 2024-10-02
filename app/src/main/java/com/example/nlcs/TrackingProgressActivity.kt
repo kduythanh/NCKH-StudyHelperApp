@@ -56,7 +56,7 @@ class TrackingProgressActivity : AppCompatActivity() {
         // Set up toolbar
         setSupportActionBar(binding.toolbarStatistics)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.title = "Quay lại"
+        supportActionBar?.title = ""
         binding.toolbarStatistics.setNavigationOnClickListener {
             onBackPressed()
         }

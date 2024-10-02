@@ -57,7 +57,7 @@ class StatisticsActivity : AppCompatActivity() {
         // Set up toolbar
         setSupportActionBar(binding.toolbarStatistics)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.title = "Về trang chủ"
+        supportActionBar?.title = ""
 
         binding.toolbarStatistics.setNavigationOnClickListener {
             onBackPressed()

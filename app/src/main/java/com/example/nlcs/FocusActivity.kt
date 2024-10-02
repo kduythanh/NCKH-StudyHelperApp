@@ -94,7 +94,7 @@ class FocusActivity : AppCompatActivity() {
 
         if(supportActionBar != null) {
             supportActionBar?.setDisplayHomeAsUpEnabled(true)
-            supportActionBar?.title = "Về trang chủ"  // Trở về trang chủ
+            supportActionBar?.title = ""  // Trở về trang chủ
         }
         binding?.toolbarFocusMode?.setNavigationOnClickListener {
             onBackPressed()

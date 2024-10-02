@@ -13,12 +13,26 @@
         android:id="@+id/toolbarFocusMode"
         android:layout_width="0dp"
         android:layout_height="?android:attr/actionBarSize"
-        android:background="@color/light_green"
+        android:background="@color/background_3"
         android:theme="@style/ToolBarTheme"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:titleTextColor="@color/colorPrimary" />
+        app:titleTextColor="@color/colorPrimary" >
+
+        <!-- Thêm TextView để hiển thị tiêu đề -->
+        <TextView
+            android:id="@+id/toolbar_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="Hẹn giờ tập trung"
+            android:textSize="25sp"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:gravity="center" />
+
+    </androidx.appcompat.widget.Toolbar>
 
     <ImageView
         android:id="@+id/myImageView"
