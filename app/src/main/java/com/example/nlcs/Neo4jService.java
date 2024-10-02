@@ -30,11 +30,11 @@ public class Neo4jService {
     }
 
     // Create a master node upon creating a new mind map item in menu
-    public void createNode(final String title, final String userId, final String mindMapID, final float x, final float y) {
+    public void createNode(final String title, final String mindMapID, final float x, final float y) {
         try (Session session = driver.session()) {
             session.writeTransaction((TransactionWork<Void>) tx -> {
-                tx.run("CREATE (n:MindMap {nodeID: apoc.create.uuid(), title: $title, userId: $userId, mindMapID: $mindMapID, x: $x, y: $y, creationTime: timestamp()})",
-                        parameters("title", title, "userId", userId, "mindMapID", mindMapID, "x", x, "y", y));
+                tx.run("CREATE (n:MindMap {nodeID: apoc.create.uuid(), title: $title, mindMapID: $mindMapID, x: $x, y: $y, creationTime: timestamp()})",
+                        parameters("title", title, "mindMapID", mindMapID, "x", x, "y", y));
                 return null;
             });
         }
@@ -91,17 +91,17 @@ public class Neo4jService {
     }
 
     // Add a child node to a parent node via context menu
-    public Map<String, Object> addChildNode(final String parentNodeID, final String childTitle, final String userId, final String mindMapID, final float x, final float y) {
+    public Map<String, Object> addChildNode(final String parentNodeID, final String childTitle, final String mindMapID, final float x, final float y) {
         Map<String, Object> childNode;
         try (Session session = driver.session()) {
             childNode = session.writeTransaction(tx -> {
                 String query = "MATCH (parent:MindMap {nodeID: $parentNodeID}) " +
-                        "CREATE (child:MindMap {nodeID: apoc.create.uuid(), title: $childTitle, userId: $userId, mindMapID: $mindMapID, x: $x, y: $y, creationTime: timestamp()}) " +
+                        "CREATE (child:MindMap {nodeID: apoc.create.uuid(), title: $childTitle, mindMapID: $mindMapID, x: $x, y: $y, creationTime: timestamp()}) " +
                         "CREATE (parent)-[:HAS_CHILD]->(child) " +
                         "RETURN child";
 
                 Result result = tx.run(query,
-                        parameters("parentNodeID", parentNodeID, "childTitle", childTitle, "userId", userId, "mindMapID", mindMapID, "x", x, "y", y));
+                        parameters("parentNodeID", parentNodeID, "childTitle", childTitle, "mindMapID", mindMapID, "x", x, "y", y));
                 if (result.hasNext()) {
                     return result.single().get("child").asMap();
                 }

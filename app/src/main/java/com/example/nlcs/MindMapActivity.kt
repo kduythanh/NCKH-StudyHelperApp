@@ -18,7 +18,6 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import com.example.nlcs.databinding.ActivityMindMapBinding
-import com.google.firebase.auth.FirebaseAuth
 
 class MindMapActivity : AppCompatActivity() {
 
@@ -58,6 +57,7 @@ class MindMapActivity : AppCompatActivity() {
         // Set up the done button click listener
         binding.doneButton.setOnClickListener {
             updateAllNodesTitles()
+            finish()
         }
     }
 
@@ -222,10 +222,9 @@ class MindMapActivity : AppCompatActivity() {
 
         // Set up click listeners for each icon in the context menu
         contextMenuView.findViewById<ImageView>(R.id.addChildIcon).setOnClickListener {
-            // Get parentNodeID, childTitle, userID, and mindMapID
+            // Get parentNodeID, childTitle and mindMapID
             val parentNodeID = view.getTag(R.id.node_id_tag) as? String
             val childTitle = "Nút con"
-            val userID = FirebaseAuth.getInstance().currentUser?.uid
             val mindMapID = intent.getStringExtra("mindMapID") ?: return@setOnClickListener
 
             Thread {
@@ -233,12 +232,11 @@ class MindMapActivity : AppCompatActivity() {
                 val parentX = (position["x"] as Float).toFloat()
                 val parentY = (position["y"] as Float).toFloat()
 
-                val newChildNode = neo4jService.addChildNode(parentNodeID, childTitle, userID, mindMapID, parentX, parentY + 120f)
+                val newChildNode = neo4jService.addChildNode(parentNodeID, childTitle, mindMapID, parentX, parentY + 250f)
                 if (newChildNode != null) {
                     runOnUiThread {
                         // Display the new child node in the UI
                         addChildNodeToView(newChildNode, parentNodeID)
-                        Toast.makeText(this, "Thêm nút con thành công!", Toast.LENGTH_SHORT).show()
                     }
                 } else {
                     runOnUiThread {
@@ -291,6 +289,7 @@ class MindMapActivity : AppCompatActivity() {
             val nodeText = (view as RelativeLayout).findViewById<EditText>(R.id.MindMapNode).text. toString()
             val clipboard = getSystemService(CLIPBOARD_SERVICE) as android.content.ClipboardManager
             val clip = android.content.ClipData.newPlainText("Copied Text", nodeText)
+            Toast.makeText(this, "Đã sao chép văn bản!", Toast.LENGTH_SHORT).show()
             clipboard.setPrimaryClip(clip)
             popupWindow.dismiss()
         }
@@ -299,7 +298,7 @@ class MindMapActivity : AppCompatActivity() {
         popupWindow.elevation = 10f
         val location = IntArray(2)
         view.getLocationOnScreen(location)
-        popupWindow.showAtLocation(view, Gravity.NO_GRAVITY, location[0] - 80, location[1] - 100)
+        popupWindow.showAtLocation(view, Gravity.NO_GRAVITY, location[0] - 80, location[1] - 150)
     }
 
     // Add a newly added child node to view
@@ -419,7 +418,6 @@ class MindMapActivity : AppCompatActivity() {
         Thread {
             neo4jService.deleteLeafNode(nodeID)
             runOnUiThread {
-                Toast.makeText(this, "Xóa nút lá thành công!", Toast.LENGTH_SHORT).show()
 
                 // Remove the node view from the layout
                 val parentLayout = binding.zoomableView.findViewById<RelativeLayout>(R.id.mindMapContent)
@@ -455,8 +453,6 @@ class MindMapActivity : AppCompatActivity() {
         Thread {
             neo4jService.deleteBranch(nodeID)
             runOnUiThread {
-                Toast.makeText(this, "Xóa nhánh thành công!", Toast.LENGTH_SHORT).show()
-
                 // Remove the branch node and its descendants from the view
                 val parentLayout = binding.zoomableView.findViewById<RelativeLayout>(R.id.mindMapContent)
 

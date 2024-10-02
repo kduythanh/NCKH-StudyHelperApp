@@ -110,7 +110,7 @@ class MindMapMenuActivity : AppCompatActivity(), MindMapListener {
                     val x = binding.mindMapMenuRecycleView.height.toFloat() / 2f
 
                     val neo4jService = Neo4jService(neo4jUri, neo4jUser, neo4jPassword)
-                    neo4jService.createNode("Nút chính", userId, mindMapId, x , y)
+                    neo4jService.createNode("Nút chính", mindMapId, x , y)
                     neo4jService.close()
                 }
 

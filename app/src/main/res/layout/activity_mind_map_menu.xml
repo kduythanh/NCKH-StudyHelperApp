@@ -21,7 +21,6 @@
             android:background="@color/background_2"
             app:title="@string/MindMap"
             app:titleTextColor="@color/black"
-            app:titleMarginStart="92dp"
             android:theme="@style/ThemeOverlay.AppCompat.DayNight.ActionBar"
             app:navigationIcon="@drawable/ic_back_arrow"
             android:layout_alignParentTop="true"/>
