@@ -47,12 +47,16 @@ class MainActivity : AppCompatActivity() {
         // Update NavigationView header with user email
         updateNavHeader()
 
+        // Stashed changes
+        binding.card1.setOnClickListener{
+            val intent = Intent(this, FlashcardActivity::class.java)
+            startActivity(intent)
+        }
         binding.card6.setOnClickListener {
             val intent = Intent(this, ReminderMenuActivityAPI::class.java)
             startActivity(intent)
         }
 
-        // Stashed changes
         binding.navigationView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId){
                 R.id.nav_logout -> {
@@ -73,6 +77,8 @@ class MainActivity : AppCompatActivity() {
                 else -> false
             }
         }
+
+        // new line for test
         onBackPressedDispatcher.addCallback(this, object: OnBackPressedCallback(true){
             override fun handleOnBackPressed(){
                 if(drawerLayout.isDrawerOpen(GravityCompat.START)){
@@ -119,5 +125,7 @@ class MainActivity : AppCompatActivity() {
         // Xóa trạng thái đã chọn của tất cả các mục trong NavigationView
         binding.navigationView.menu.setGroupCheckable(0, false, true)
     }
-
+    private fun isCurrentActivity(activityClass: Class<*>): Boolean {
+        return activityClass == this::class.java
+    }
 }

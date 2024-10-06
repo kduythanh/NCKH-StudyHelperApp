@@ -23,6 +23,9 @@
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version"/>
         <activity
+            android:name=".MainActivity2"
+            android:exported="false" />
+        <activity
             android:name=".FocusActivity"
             android:exported="false" />
         <activity
@@ -36,6 +39,22 @@
             android:exported="false" />
         <activity
             android:name=".MainActivity"
+            android:exported="false" />
+        <activity
+            android:name=".AddCardsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".CreateDeck"
+            android:exported="false" />
+
+        <activity
+            android:name=".FlashcardActivity"
+            android:exported="false" />
+        <activity
+            android:name=".PublicDecks"
+            android:exported="false" />
+        <activity
+            android:name=".ViewCard"
             android:exported="false" />
         <activity
             android:name=".SplashActivity"
