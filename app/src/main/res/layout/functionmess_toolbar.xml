@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.appcompat.widget.Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
+xmlns:app="http://schemas.android.com/apk/res-auto"
+xmlns:tools="http://schemas.android.com/tools"
+android:id="@+id/Mess_toolbar"
+android:layout_width="match_parent"
+android:layout_height="wrap_content"
+android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+android:background="@color/background_5"
+app:contentInsetEnd="10dp"
+app:layout_collapseMode="pin"
+app:titleMarginStart="0dp"
+app:contentInsetLeft="0dp"
+app:contentInsetRight="0dp"
+app:contentInsetStart="0dp">
+
+<RelativeLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="8dp">
+
+    <ImageView
+        android:id="@+id/BackArrow"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_centerVertical="true"
+        android:src="@drawable/ic_back_arrow"
+        />
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:textColor="@color/black"
+        android:fontFamily="@font/roboto_bold"
+        android:textSize="25sp"
+        android:gravity="center"
+        tools:text="Quản lý tin nhắn" />
+
+    <TextView
+        android:id="@+id/AddMessage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:text="Thêm"
+        android:textColor="#007AFF"
+        android:textSize="20sp" />
+</RelativeLayout>
+
+
+</androidx.appcompat.widget.Toolbar>
