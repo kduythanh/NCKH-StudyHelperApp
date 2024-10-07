@@ -40,21 +40,25 @@ class SetsAdapter(
         val flashCard: FlashCard = sets[position]
         val cardDAO = CardDAO(context)
 
-        // Launch a coroutine to fetch the card count asynchronously
-        CoroutineScope(Dispatchers.Main).launch {
-            val count = flashCard.GetId()?.let { cardDAO.countCardByFlashCardId(flashCard.GetId()!!) }
+        holder.binding.setNameTv.text = flashCard.GetName()
+        holder.binding.createdDateTv.text = flashCard.GetCreated_at()
 
-            holder.binding.setNameTv.text = flashCard.GetName()
-            holder.binding.termCountTv.text = "$count terms"
-            holder.binding.createdDateTv.text = flashCard.GetCreated_at()
-
-            holder.itemView.setOnClickListener {
-                val intent = Intent(context, ViewSetActivity::class.java)
-                intent.putExtra("id", flashCard.GetId())
-                context.startActivity(intent)
+        // Fetch the card count asynchronously
+        flashCard.GetId()?.let { id ->
+            cardDAO.countCardByFlashCardId(id) { count ->
+                holder.binding.termCountTv.text = "$count terms"
             }
+        } ?: run {
+            holder.binding.termCountTv.text = "0 terms"
+        }
+
+        holder.itemView.setOnClickListener {
+            val intent = Intent(context, ViewSetActivity::class.java)
+            intent.putExtra("id", flashCard.GetId())
+            context.startActivity(intent)
         }
     }
+
 
 
 

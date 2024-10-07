@@ -13,8 +13,4 @@ class UserSharePreferences(context: FragmentActivity) {
         sharedPreferences.edit().clear().apply()
     }
 
-    companion object {
-        //create variables
-        const val KEY_CLASS_ID: String = "class_id"
-    }
 }

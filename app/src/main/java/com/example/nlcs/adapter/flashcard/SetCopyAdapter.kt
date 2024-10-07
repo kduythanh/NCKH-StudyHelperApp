@@ -31,23 +31,20 @@ class SetCopyAdapter(private val context: Context, private val sets: ArrayList<F
 
     @SuppressLint("SetTextI18n")
     override fun onBindViewHolder(holder: SetViewHolder, position: Int) {
-        val flashCard: FlashCard = sets[position]
+        val set: FlashCard = sets[position]
+        holder.binding.setNameTv.text = set.name
 
-        holder.binding.setNameTv.text = flashCard.GetName()
-        holder.binding.createdDateTv.text = flashCard.GetCreated_at()
+        val cardDAO = CardDAO(context)
 
-        // Launch a coroutine to count the cards asynchronously
-        holder.itemView.setOnClickListener {
-            // Launch a coroutine to handle the count retrieval
-            CoroutineScope(Dispatchers.Main).launch {
-                val count = flashCard.GetId()?.let { it1 -> cardDAO?.countCardByFlashCardId(it1) }
-                holder.binding.termCountTv.text = "$count terms"
-            }
+        // Call the asynchronous function to count the cards
+        cardDAO.countCardByFlashCardId(set.GetId()!!) { count ->
+            // Update the UI with the number of terms after the query completes
+            holder.binding.termCountTv.text = "$count terms"
+        }
 
-            // Start the ViewSetActivity
-            val intent = Intent(context, ViewSetActivity::class.java).apply {
-                putExtra("id", flashCard.GetId())
-            }
+        holder.itemView.setOnClickListener { v: View? ->
+            val intent = Intent(context, ViewSetActivity::class.java)
+            intent.putExtra("id", set.GetId())
             context.startActivity(intent)
         }
     }

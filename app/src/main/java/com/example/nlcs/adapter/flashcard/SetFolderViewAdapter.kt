@@ -33,19 +33,24 @@ class SetFolderViewAdapter(
     override fun onBindViewHolder(holder: SetFolderViewHolder, position: Int) {
         val flashcard = flashcardList[position]
         val folderDAO = FolderDAO(holder.itemView.context)
+        val cardDAO = CardDAO(holder.itemView.context)
 
         holder.binding.setNameTv.text = flashcard.name
 
-        // Launch a coroutine to count cards and update UI
-        CoroutineScope(Dispatchers.Main).launch {
-            val cardDAO = CardDAO(holder.itemView.context)
-            val count = flashcard.id?.let { cardDAO.countCardByFlashCardId(flashcard.id!!) } ?: 0
-            holder.binding.termCountTv.text = "$count terms"
+        // Use the asynchronous function to count cards
+        flashcard.id?.let { id ->
+            cardDAO.countCardByFlashCardId(id) { count ->
+                holder.binding.termCountTv.text = "$count terms"
+            }
+        } ?: run {
+            holder.binding.termCountTv.text = "0 terms"
+        }
 
+        CoroutineScope(Dispatchers.Main).launch {
             if (isSelect) {
-                val isInFolder = flashcard.id?.let { folderDAO.isFlashCardInFolder(folderId,
-                    flashcard.id!!
-                ) }
+                val isInFolder = flashcard.id?.let {
+                    folderDAO.isFlashCardInFolder(folderId, it)
+                }
                 holder.binding.setFolderItem.background = AppCompatResources.getDrawable(
                     holder.itemView.context,
                     if (isInFolder == true) {
@@ -60,19 +65,21 @@ class SetFolderViewAdapter(
         holder.binding.setFolderItem.setOnClickListener {
             CoroutineScope(Dispatchers.Main).launch {
                 if (isSelect) {
-                    val isInFolder = flashcard.id?.let { folderDAO.isFlashCardInFolder(folderId,
-                        flashcard.id!!
-                    ) }
+                    val isInFolder = flashcard.id?.let {
+                        folderDAO.isFlashCardInFolder(folderId, it)
+                    }
                     if (isInFolder == true) {
-                        flashcard.id?.let { folderDAO.removeFlashCardFromFolder(folderId,
-                            flashcard.id!!
-                        ) }
+                        flashcard.id?.let {
+                            folderDAO.removeFlashCardFromFolder(folderId, it)
+                        }
                         holder.binding.setFolderItem.background = AppCompatResources.getDrawable(
                             holder.itemView.context,
                             R.drawable.background_unselect
                         )
                     } else {
-                        flashcard.id?.let { folderDAO.addFlashCardToFolder(folderId, flashcard.id!!) }
+                        flashcard.id?.let {
+                            folderDAO.addFlashCardToFolder(folderId, it)
+                        }
                         holder.binding.setFolderItem.background = AppCompatResources.getDrawable(
                             holder.itemView.context,
                             R.drawable.background_select
@@ -87,6 +94,7 @@ class SetFolderViewAdapter(
             }
         }
     }
+
 
 
 

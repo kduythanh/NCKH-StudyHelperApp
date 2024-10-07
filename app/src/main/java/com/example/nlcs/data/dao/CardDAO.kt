@@ -43,22 +43,21 @@ class CardDAO(context: Context) {
 
 
     // Count cards by flashcard_id
-    suspend fun countCardByFlashCardId(flashcardId: String): Int {
+    fun countCardByFlashCardId(flashcardId: String, callback: (Int) -> Unit) {
         val db = FirebaseFirestore.getInstance()
 
-        return try {
-            // Query Firestore to count the number of cards with the given flashcard ID
-            val querySnapshot = db.collection("cards")
-                .whereEqualTo("flashcard_id", flashcardId)
-                .get()
-                .await()
-
-            // Return the number of documents (cards) found
-            querySnapshot.size()
-        } catch (e: Exception) {
-            Log.e("CardDAO", "countCardByFlashCardId: ${e.message}", e)
-            0 // Return 0 if an error occurs
-        }
+        // Query Firestore to count the number of cards with the given flashcard ID
+        db.collection("cards")
+            .whereEqualTo("flashcard_id", flashcardId)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                // Return the number of documents (cards) found
+                callback(querySnapshot.size())
+            }
+            .addOnFailureListener { e ->
+                Log.e("CardDAO", "countCardByFlashCardId: ${e.message}", e)
+                callback(0) // Return 0 if an error occurs
+            }
     }
 
 

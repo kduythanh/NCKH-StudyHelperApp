@@ -6,10 +6,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.nlcs.R
 import com.example.nlcs.adapter.flashcard.SetCopyAdapter
 import com.example.nlcs.data.dao.FlashCardDAO
 import com.example.nlcs.data.model.FlashCard
@@ -36,6 +38,7 @@ class StudySetsFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         flashCardDAO = FlashCardDAO(requireActivity())
+
     }
 
     override fun onCreateView(
@@ -49,10 +52,11 @@ class StudySetsFragment : Fragment() {
     @SuppressLint("NotifyDataSetChanged")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        // Use lifecycleScope instead of creating a new CoroutineScope
-        viewLifecycleOwner.lifecycleScope.launch {
+        CoroutineScope(Dispatchers.Main).launch {
             setupView()
         }
+
+
     }
 
     private suspend fun setupView() {

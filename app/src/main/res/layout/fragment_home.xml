@@ -23,11 +23,23 @@
                 android:id="@+id/logo_notification_cl"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@color/celestial_blue"
+                android:background="@color/background_1"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
-
+                <ImageButton
+                    android:id="@+id/exitButton"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_marginStart="10dp"
+                    android:background="?attr/selectableItemBackground"
+                    android:contentDescription="Exit button"
+                    android:src="@drawable/ic_exit"
+                    app:layout_collapseMode="pin"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:tint="@android:color/white" />
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/app_name_tv"
                     android:layout_width="wrap_content"
@@ -39,8 +51,11 @@
                     android:textSize="30sp"
                     android:textStyle="bold"
                     app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"/>
+                    app:layout_constraintStart_toEndOf="@+id/exitButton"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                </com.google.android.material.textview.MaterialTextView>
+
 
                 <ImageView
                     android:id="@+id/notification_iv"
@@ -59,7 +74,7 @@
                 android:id="@+id/search_cl"
                 android:layout_width="match_parent"
                 android:layout_height="100dp"
-                android:background="@color/celestial_blue"
+                android:background="@color/background_1"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/logo_notification_cl">

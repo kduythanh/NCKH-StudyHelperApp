@@ -6,10 +6,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.nlcs.MainActivity
+import com.example.nlcs.R
 import com.example.nlcs.ui.activities.search.ViewSearchActivity
 import com.example.nlcs.adapter.flashcard.SetsAdapter
 import com.example.nlcs.adapter.folder.FolderAdapter
@@ -33,6 +36,8 @@ class HomeFragment : Fragment() {
     private var flashCardDAO: FlashCardDAO? = null
     private var folderDAO: FolderDAO? = null
     private lateinit var firebaseAuth: FirebaseAuth
+    private lateinit var exitButton: ImageButton
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,9 +51,25 @@ class HomeFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        // Inflate layout using ViewBinding
         binding = FragmentHomeBinding.inflate(inflater, container, false)
+
+        // Tìm exitButton thông qua binding.root
+        exitButton = binding!!.root.findViewById(R.id.exitButton)
+
+        // Thiết lập sự kiện khi nhấn nút exit
+        exitButton.setOnClickListener {
+            // Chuyển hướng về MainActivity
+            val intent = Intent(requireActivity(), MainActivity::class.java)
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+            startActivity(intent)
+            requireActivity().finish() // Kết thúc Activity hiện tại
+        }
+
+        // Trả về view từ binding
         return binding!!.root
     }
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

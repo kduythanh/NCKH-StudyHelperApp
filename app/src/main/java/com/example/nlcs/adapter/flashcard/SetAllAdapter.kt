@@ -27,21 +27,24 @@ class SetAllAdapter(private val context: Context, private val sets: ArrayList<Fl
 
     @SuppressLint("SetTextI18n")
     override fun onBindViewHolder(holder: SetsViewHolder, position: Int) {
-       CoroutineScope(Dispatchers.Main).launch {
-           val set: FlashCard = sets[position]
-           val cardDAO = CardDAO(context)
-           val count: Int = cardDAO.countCardByFlashCardId(set.GetId()!!)
+        val set: FlashCard = sets[position]
+        val cardDAO = CardDAO(context)
 
-           holder.binding.setNameTv.text = set.name
-           holder.binding.termCountTv.text = "$count terms"
+        holder.binding.setNameTv.text = set.name
 
-           holder.itemView.setOnClickListener { v: View? ->
-               val intent = Intent(context, ViewSetActivity::class.java)
-               intent.putExtra("id", set.GetId())
-               context.startActivity(intent)
-           }
-       }
+        // Call the asynchronous function to count the cards
+        cardDAO.countCardByFlashCardId(set.GetId()!!) { count ->
+            // Update the UI with the number of terms after the query completes
+            holder.binding.termCountTv.text = "$count terms"
+        }
+
+        holder.itemView.setOnClickListener { v: View? ->
+            val intent = Intent(context, ViewSetActivity::class.java)
+            intent.putExtra("id", set.GetId())
+            context.startActivity(intent)
+        }
     }
+
 
     override fun getItemCount(): Int {
         return sets.size

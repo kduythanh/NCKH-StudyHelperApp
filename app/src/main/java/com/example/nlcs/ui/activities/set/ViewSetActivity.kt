@@ -118,19 +118,24 @@ class ViewSetActivity : AppCompatActivity() {
 
     @SuppressLint("SetTextI18n")
     private fun setupUserDetails() {
-        val id = intent.getStringExtra("id")
+        val id = intent.getStringExtra("id") ?: return // Safely handle null id
         CoroutineScope(Dispatchers.Main).launch {
             flashCardDAO = FlashCardDAO(this@ViewSetActivity)
-            binding!!.descriptionTv.setText(flashCardDAO!!.getFlashCardById(id!!)?.GetDescription()
-                 )
+
+            // Set flashcard description
+            val flashCardDescription = flashCardDAO?.getFlashCardById(id)?.GetDescription()
+            binding?.descriptionTv?.setText(flashCardDescription)
+
+            // Set flashcard name
+            val flashCardName = flashCardDAO?.getFlashCardById(id)?.GetName()
+            binding?.setNameTv?.setText(flashCardName)
+
+            // Set up cardDAO and fetch card count asynchronously
             cardDAO = CardDAO(this@ViewSetActivity)
-            binding!!.termCountTv.text =
-                cardDAO!!.countCardByFlashCardId(intent.getStringExtra("id")!!)
-                    .toString() + " " + getString(R.string.term)
-            flashCardDAO = FlashCardDAO(this@ViewSetActivity)
-            binding!!.setNameTv.setText(
-                flashCardDAO!!.getFlashCardById(intent.getStringExtra("id")!!)?.GetName()
-            )
+            cardDAO?.countCardByFlashCardId(id) { count ->
+                // Update UI after the card count is fetched
+                binding?.termCountTv?.text = "$count ${getString(R.string.term)}"
+            }
         }
     }
 
@@ -148,26 +153,25 @@ class ViewSetActivity : AppCompatActivity() {
 
     private fun setupLearnClickListener() {
         binding?.learnCl?.setOnClickListener {
-            // Make sure we are within the lifecycle scope to launch coroutines
-            cardDAO = CardDAO(this@ViewSetActivity) // Replace `YourActivityName` with your actual activity name
+            // Initialize cardDAO
+            cardDAO = CardDAO(this@ViewSetActivity)
 
-            // Launch a coroutine on the main thread
-            CoroutineScope(Dispatchers.Main).launch {
-                // Check if the user is not the owner
-                if (!isUserOwner) {
-                    showLearnErrorDialog()
-                    return@launch
-                }
+            // Check if the user is not the owner
+            if (!isUserOwner) {
+                showLearnErrorDialog()
+                return@setOnClickListener
+            }
 
-                // Safely get the ID from the intent
-                val flashcardId = intent.getStringExtra("id") ?: return@launch
+            // Safely get the ID from the intent
+            val flashcardId = intent.getStringExtra("id") ?: return@setOnClickListener
 
-                // Call the suspend function in a coroutine context
-                val cardCount = cardDAO?.countCardByFlashCardId(flashcardId) ?: 0
-
+            // Fetch the card count asynchronously using the callback function
+            cardDAO?.countCardByFlashCardId(flashcardId) { cardCount ->
+                // Check if the card count is less than 4
                 if (cardCount < 4) {
                     showReviewErrorDialog()
                 } else {
+                    // Start the QuizActivity if there are enough cards
                     val quizIntent = Intent(this@ViewSetActivity, QuizActivity::class.java)
                     quizIntent.putExtra("id", flashcardId)
                     startActivity(quizIntent)
@@ -606,13 +610,13 @@ class ViewSetActivity : AppCompatActivity() {
         }
 
         if (isUserOwner) {
-            binding!!.notLearnTv.text = "Not learned: $notLearned"
-            binding!!.isLearningTv.text = "Learning: $learning"
-            binding!!.learnedTv.text = "Learned: $learned"
+            binding!!.notLearnTv.text = "Chưa học: $notLearned"
+            binding!!.isLearningTv.text = "Đang học: $learning"
+            binding!!.learnedTv.text = "Đã học: $learned"
         } else {
-            binding!!.notLearnTv.text = "Not learned: " + cards.size
-            binding!!.isLearningTv.text = "Learning: " + 0
-            binding!!.learnedTv.text = "Learned: " + 0
+            binding!!.notLearnTv.text = "Chưa học: " + cards.size
+            binding!!.isLearningTv.text = "Đang học: " + 0
+            binding!!.learnedTv.text = "Đã học: " + 0
             binding!!.notLearnTv.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0)
             binding!!.isLearningTv.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0)
             binding!!.learnedTv.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0)

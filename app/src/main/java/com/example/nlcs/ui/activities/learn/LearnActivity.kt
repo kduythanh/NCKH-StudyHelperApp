@@ -95,7 +95,7 @@ class LearnActivity : AppCompatActivity(), CardStackListener {
                                 }
                             }
                         } else {
-                            Toast.makeText(this@LearnActivity, "Failed to reset card statuses", Toast.LENGTH_SHORT).show()
+                          //  Toast.makeText(this@LearnActivity, "Failed to reset card statuses", Toast.LENGTH_SHORT).show()
                         }
                     }
                 }
@@ -117,12 +117,15 @@ class LearnActivity : AppCompatActivity(), CardStackListener {
 
     @SuppressLint("SetTextI18n")
 
+
     override fun onCardSwiped(direction: Direction?) {
         val card = adapter.getCards()[manager.topPosition - 1]
 
-        // Ensure size is initialized
+        // Đảm bảo size đã được khởi tạo
         if (!::size.isInitialized) {
-            size = binding.cardsLeftTv.text.toString() // Initialize from UI or set a default value
+            getSize { calculatedSize ->
+                size = calculatedSize.toString() // Khởi tạo lại nếu chưa có
+            }
         }
 
         if (direction == Direction.Right) {
@@ -132,41 +135,34 @@ class LearnActivity : AppCompatActivity(), CardStackListener {
 
             card.id?.let { cardId ->
                 cardDAO.updateCardStatusById(cardId, card.status) { result ->
-                    if (result == 1L) {
-                        Toast.makeText(this@LearnActivity, "Status updated successfully", Toast.LENGTH_SHORT).show()
-                    } else {
-                        Toast.makeText(this@LearnActivity, "Failed to update status", Toast.LENGTH_SHORT).show()
-                    }
+                    // Xử lý cập nhật trạng thái card
                 }
             }
 
-            // Safely update size
-            size = (size.toIntOrNull()?.minus(1) ?: 0).toString() // Use toIntOrNull for safety
+            // Cập nhật size một cách an toàn
+            size = (size.toIntOrNull()?.minus(1)?.coerceAtLeast(0) ?: 0).toString()
             binding.cardsLeftTv.text = "Cards left: $size"
         } else if (direction == Direction.Left) {
-            val learnValue = binding.studyTv.text.toString().toInt() + 1
-            binding.studyTv.text = learnValue.toString()
+            val studyValue = binding.studyTv.text.toString().toInt() + 1
+            binding.studyTv.text = studyValue.toString()
             card.status = 2
 
             card.id?.let { cardId ->
                 cardDAO.updateCardStatusById(cardId, card.status) { result ->
-                    if (result == 1L) {
-                        Toast.makeText(this@LearnActivity, "Status updated successfully", Toast.LENGTH_SHORT).show()
-                    } else {
-                        Toast.makeText(this@LearnActivity, "Failed to update status", Toast.LENGTH_SHORT).show()
-                    }
+                    // Xử lý cập nhật trạng thái card
                 }
             }
 
-            // Safely update size
-            size = (size.toIntOrNull()?.minus(1) ?: 0).toString() // Use toIntOrNull for safety
+            // Cập nhật size một cách an toàn
+            size = (size.toIntOrNull()?.minus(1)?.coerceAtLeast(0) ?: 0).toString()
             binding.cardsLeftTv.text = "Cards left: $size"
         }
 
         if (manager.topPosition == adapter.getCount()) {
-            showHide() // Hide UI when all cards are swiped
+            showHide() // Ẩn UI khi tất cả các card đã bị swipe
         }
     }
+
 
 
     @SuppressLint("SetTextI18n")
@@ -352,11 +348,11 @@ class LearnActivity : AppCompatActivity(), CardStackListener {
     }
 
     private fun getSize(onSizeCalculated: (Int) -> Unit) {
-        // Gọi hàm createCards để lấy danh sách các card
         createCards { cards ->
-            // Sau khi lấy được danh sách card, gọi lại callback để trả về kích thước
-            val size = cards.size
-            onSizeCalculated(size)
+            val sizeInt = cards.size // Tính toán số lượng card
+            onSizeCalculated(sizeInt)
+            size = sizeInt.toString() // Gán giá trị cho biến size
+            binding.cardsLeftTv.text = "Cards left: $size" // Hiển thị lên UI
         }
     }
 

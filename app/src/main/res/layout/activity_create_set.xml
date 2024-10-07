@@ -62,7 +62,7 @@
     <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Total Cards: 0"
+            android:text="Tổng số thẻ: 0"
             android:id="@+id/total_cards_tv"
             android:textSize="@dimen/_16sp"
             android:textStyle="bold"
