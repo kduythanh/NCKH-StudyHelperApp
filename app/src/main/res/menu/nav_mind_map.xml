@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group
+        android:checkableBehavior="single">
+
+
+        <item
+            android:id="@+id/textBox"
+            android:title="@string/TextBox"
+            android:enabled="false" />
+
+        <item
+            android:id="@+id/square"
+            android:icon="@drawable/ic_square"
+            android:title="@string/SquareTextBox"/>
+
+        <item
+            android:id="@+id/circle"
+            android:icon="@drawable/ic_circle"
+            android:title="@string/CircleTextBox"/>
+
+        <item
+            android:id="@+id/triangle"
+            android:icon="@drawable/ic_triangle"
+            android:title="@string/TriangleTextBox"/>
+
+        <item
+            android:id="@+id/line"
+            android:icon="@drawable/ic_line"
+            android:title="@string/LineTextBox"/>
+    </group>
+
+    <item android:title="">
+        <menu>
+            <group android:checkableBehavior="single">
+                <item
+                    android:id="@+id/arrow"
+                    android:title="@string/StraightArrow"
+                    android:enabled="false" />
+
+                <item
+                    android:id="@+id/straigtArrow"
+                    android:icon="@drawable/ic_arrow"
+                    android:title="@string/CurveArrow"/>
+
+                <item
+                    android:id="@+id/curveArrow"
+                    android:icon="@drawable/ic_curve_arrow"
+                    android:title="Mũi tên cong"/>
+            </group>
+        </menu>
+    </item>
+
+</menu>

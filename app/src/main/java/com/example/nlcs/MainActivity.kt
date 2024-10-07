@@ -7,6 +7,7 @@ import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import com.example.nlcs.NoteFunction.NoteFunctionActivity
@@ -28,6 +29,8 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+
         // Initialize Firebase Auth
         firebaseAuth = Firebase.auth
 
@@ -47,46 +50,51 @@ class MainActivity : AppCompatActivity() {
         }
 
         updateNavHeader()
-
-        // Set click listener for the Flash card
-//        binding.card1.setOnClickListener {
-//            val intent = Intent(this, FlashCardActivity::class.java)
-//            startActivity(intent)
-//        }
-//
-//        // Set click listener for the Mind map
-//        binding.card2.setOnClickListener {
-//            val intent = Intent(this, MindMapActivity::class.java)
-//            startActivity(intent)
-//        }
-
+        
+        binding.card2.setOnClickListener{
+            val intent = Intent(this, MindMapMenuActivity::class.java)
+            startActivity(intent)
+        }
+        
         // Set click listener for the Focus card
         binding.card3.setOnClickListener {
             val intent = Intent(this, FocusActivity::class.java)
             startActivity(intent)
         }
 
-        // Set click listener for the Statistics
-//        binding.card4.setOnClickListener {
-//            val intent = Intent(this, StatisticsActivity::class.java)
-//            startActivity(intent)
-//        }
-//
-        // Set click listener for the Focus card
+        // Set click listener for the Note card
         binding.card5.setOnClickListener {
             val intent = Intent(this, NoteFunctionActivity::class.java)
             startActivity(intent)
         }
-//
-//        // Set click listener for the Reminder
-//        binding.card6.setOnClickListener {
-//            val intent = Intent(this, ReminderActivity::class.java)
-//            startActivity(intent)
-//        }
-
-
+        
         binding.navigationView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
+              
+        
+        binding.navigationView.setNavigationItemSelectedListener { menuItem ->
+            when (menuItem.itemId){
+                R.id.nav_home -> {
+                    if (!isCurrentActivity(MainActivity::class.java)) {
+                        startActivity(Intent(this, MainActivity::class.java))
+                    }
+                    drawerLayout.closeDrawer(GravityCompat.START)
+                    true
+                }
+                R.id.nav_user_profile -> {
+                    if (!isCurrentActivity(MainActivity::class.java)) {
+                        startActivity(Intent(this, MainActivity::class.java))
+                    }
+                    drawerLayout.closeDrawer(GravityCompat.START)
+                    true
+                }
+                R.id.nav_setting -> {
+                    if (!isCurrentActivity(MainActivity::class.java)) {
+                        startActivity(Intent(this, MainActivity::class.java))
+                    }
+                    drawerLayout.closeDrawer(GravityCompat.START)
+                    true
+                }
                 R.id.nav_logout -> {
                     drawerLayout.closeDrawer(GravityCompat.START)
                     firebaseAuth.signOut()
@@ -100,9 +108,10 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+
+        onBackPressedDispatcher.addCallback(this, object: OnBackPressedCallback(true) {
+            override fun handleOnBackPressed(){
+                if(drawerLayout.isDrawerOpen(GravityCompat.START)){
                     drawerLayout.closeDrawer(GravityCompat.START)
                 } else {
                     finish()
@@ -110,6 +119,7 @@ class MainActivity : AppCompatActivity() {
             }
         })
     }
+}
 
     private fun updateNavHeader() {
         val headerView = binding.navigationView.getHeaderView(0)
@@ -117,7 +127,11 @@ class MainActivity : AppCompatActivity() {
 
         val currentUser = firebaseAuth.currentUser
         if (currentUser != null) {
-            emailTextView.text = currentUser.email
+            emailTextView.text = currentUser.email // Set the email in the TextView
         }
+    }
+
+    private fun isCurrentActivity(activityClass: Class<*>): Boolean {
+        return activityClass == this::class.java
     }
 }
