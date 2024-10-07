@@ -23,9 +23,9 @@ class LineDrawingView @JvmOverloads constructor(
 
     // Neo4j service and database connection
     private var neo4jService: Neo4jService
-    private val neo4jUri = "bolt+s://f4454805.databases.neo4j.io"
+    private val neo4jUri = "bolt+s://25190e75.databases.neo4j.io"
     private val neo4jUser = "neo4j"
-    private val neo4jPassword = "T79xAI8tRj6QzvCfiqDMBAlxb4pabJ1UBh_H7qIqlaQ"
+    private val neo4jPassword = "j_j-RCzouI3et4G2bvF0RTW83eXCws-aoQJstrQgUts"
 
     init {
         neo4jService = Neo4jService(neo4jUri, neo4jUser, neo4jPassword)

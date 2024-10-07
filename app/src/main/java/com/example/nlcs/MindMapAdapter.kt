@@ -162,7 +162,7 @@ class MindMapAdapter(
                 }
 
                 // Delete the mind map from Neo4j
-                val neo4jService = Neo4jService("bolt+s://f4454805.databases.neo4j.io", "neo4j", "T79xAI8tRj6QzvCfiqDMBAlxb4pabJ1UBh_H7qIqlaQ")
+                val neo4jService = Neo4jService("bolt+s://25190e75.databases.neo4j.io", "neo4j", "j_j-RCzouI3et4G2bvF0RTW83eXCws-aoQJstrQgUts")
                 neo4jService.deleteAllNodes(mindMapID)
                 neo4jService.close()
             }
