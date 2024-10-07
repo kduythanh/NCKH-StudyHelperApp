@@ -9,8 +9,10 @@ import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import com.example.nlcs.NoteFunction.NoteFunctionActivity
 import com.example.nlcs.databinding.ActivityMainBinding
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
@@ -27,6 +29,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
 
         // Initialize Firebase Auth
         firebaseAuth = Firebase.auth
@@ -48,6 +52,15 @@ class MainActivity : AppCompatActivity() {
         updateNavHeader()
 
         // Stashed changes
+        binding.card2.setOnClickListener{
+            val intent = Intent(this, MindMapMenuActivity::class.java)
+            startActivity(intent)
+        }
+
+        binding.card5.setOnClickListener{
+            val intent = Intent(this, NoteFunctionActivity::class.java)
+            startActivity(intent)
+        }
         binding.card6.setOnClickListener {
             val intent = Intent(this, ReminderMenuActivityAPI::class.java)
             startActivity(intent)
@@ -74,7 +87,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // new line for test
         onBackPressedDispatcher.addCallback(this, object: OnBackPressedCallback(true){
             override fun handleOnBackPressed(){
                 if(drawerLayout.isDrawerOpen(GravityCompat.START)){

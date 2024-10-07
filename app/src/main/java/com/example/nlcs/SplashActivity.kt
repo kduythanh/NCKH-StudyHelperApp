@@ -7,6 +7,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.HandlerCompat
 import com.example.nlcs.databinding.ActivitySplashBinding
 import com.google.firebase.Firebase
@@ -45,10 +46,7 @@ class SplashActivity : AppCompatActivity() {
                 startActivity(intent)
             }
             finish()
-        }, 1000)
-
-
-
+        }, 800)
     }
 
 }
