@@ -19,7 +19,7 @@
                 android:layout_height="wrap_content"
                 android:background="@color/white_gray"
                 android:elevation="@dimen/_8ssp"
-                app:title="Set"
+                app:title="Học phần"
                 android:overScrollMode="never"
                 app:navigationIcon="@drawable/ic_arrow_back"
                 android:id="@+id/toolbar"/>

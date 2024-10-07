@@ -49,7 +49,7 @@ class LearnActivity : AppCompatActivity(), CardStackListener {
             } else {
                 // Update UI with card size
                 getSize { size ->
-                    binding.cardsLeftTv.text = "Cards left: $size"
+                    binding.cardsLeftTv.text = "Số thẻ còn lại: $size"
                 }
                 adapter.setCards(cards)
                 adapter.notifyDataSetChanged()
@@ -70,7 +70,7 @@ class LearnActivity : AppCompatActivity(), CardStackListener {
                     } else {
                         showContainer()
                         getSize { size ->
-                            binding.cardsLeftTv.text = "Cards left: ${size - 1}"
+                            binding.cardsLeftTv.text = "Số thẻ còn lại: ${size - 1}"
                         }
                         adapter.setCards(updatedCards)
                         adapter.notifyDataSetChanged()
@@ -91,7 +91,7 @@ class LearnActivity : AppCompatActivity(), CardStackListener {
                                 adapter.setCards(resetCards)
                                 adapter.notifyDataSetChanged()
                                 getSize { size ->
-                                    binding.cardsLeftTv.text = "Cards left: $size"
+                                    binding.cardsLeftTv.text = "Số thẻ còn lại: $size"
                                 }
                             }
                         } else {
@@ -141,7 +141,7 @@ class LearnActivity : AppCompatActivity(), CardStackListener {
 
             // Cập nhật size một cách an toàn
             size = (size.toIntOrNull()?.minus(1)?.coerceAtLeast(0) ?: 0).toString()
-            binding.cardsLeftTv.text = "Cards left: $size"
+            binding.cardsLeftTv.text = "Số thẻ còn lại: $size"
         } else if (direction == Direction.Left) {
             val studyValue = binding.studyTv.text.toString().toInt() + 1
             binding.studyTv.text = studyValue.toString()
@@ -155,7 +155,7 @@ class LearnActivity : AppCompatActivity(), CardStackListener {
 
             // Cập nhật size một cách an toàn
             size = (size.toIntOrNull()?.minus(1)?.coerceAtLeast(0) ?: 0).toString()
-            binding.cardsLeftTv.text = "Cards left: $size"
+            binding.cardsLeftTv.text = "Số thẻ còn lại: $size"
         }
 
         if (manager.topPosition == adapter.getCount()) {
@@ -214,7 +214,7 @@ class LearnActivity : AppCompatActivity(), CardStackListener {
 
         // Safely update the size
         size = (size.toIntOrNull()?.plus(1) ?: 1).toString() // Use toIntOrNull for safety
-        binding.cardsLeftTv.text = "Cards left: $size"
+        binding.cardsLeftTv.text = "Số thẻ còn lại: $size"
     }
 
     override fun onCardCanceled() {

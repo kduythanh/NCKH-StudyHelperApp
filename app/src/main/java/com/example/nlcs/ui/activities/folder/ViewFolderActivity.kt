@@ -127,7 +127,7 @@ class ViewFolderActivity : AppCompatActivity(), BottomSheetListener {
             BottomSheetMenuDialogFragment.Builder(
                 context = this,
                 sheet = R.menu.folder_menu,
-                title = "Folder Menu",
+                title = "Menu",
                 listener = this
             ).show(supportFragmentManager, "Menu")
         }
@@ -179,7 +179,7 @@ class ViewFolderActivity : AppCompatActivity(), BottomSheetListener {
         // Show a confirmation dialog
         PopupDialog.getInstance(this)
             .setStyle(Styles.STANDARD)
-            .setHeading("Delete Folder")
+            .setHeading("Xóa thư mục")
             .setDescription("Are you sure you want to delete this folder?")
             .setPopupDialogIcon(R.drawable.ic_delete)
             .setCancelable(true)

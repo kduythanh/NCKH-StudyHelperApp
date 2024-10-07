@@ -81,7 +81,7 @@
     <string name="search">Học phần,...</string>
     <string name="set_name">Tên học phần </string>
     <string name="_1_term">thuật ngữ </string>
-    <string name="user_name">user name</string>
+    <string name="user_name"> </string>
     <string name="_12_07_2023">12/07/2023</string>
     <string name="sets">Học phần</string>
     <string name="view_all">Xem tất cả</string>
@@ -89,13 +89,12 @@
     <string name="name_profile">hadao1204</string>
     <string name="settings">Cài đặt </string>
     <string name="term">thuật ngữ </string>
-    <string name="avatar">avatar</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="number_set">Số lượng thẻ  </string>
     <string name="flashcards">Flashcards</string>
     <string name="flashcards_description">Xem lại các thuật ngữ và định nghĩa</string>
     <string name="learn">Học</string>
-    <string name="review">You\'re doing great!\n Keep focusing on \n your tough terms</string>
+    <string name="review">Bạn làm rất tốt!\nHãy tập trung vào\ncác thuật ngữ khó.</string>
     <string name="know">Đã học</string>
     <string name="still_learning">Vẫn đang học</string>
     <string name="terms_left">Thuật ngữ còn lại</string>
@@ -177,5 +176,5 @@
     <string name="like">Like</string>
     <string name="private_text">Private</string>
     <string name="total_cards_0">Tổng số thẻ: 0</string>
-    <string name="add_flash_card">Add flashcard</string>
+    <string name="add_flash_card">Thêm học phần</string>
 </resources>

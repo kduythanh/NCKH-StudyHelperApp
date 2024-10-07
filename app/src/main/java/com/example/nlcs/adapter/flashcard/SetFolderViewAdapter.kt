@@ -40,10 +40,10 @@ class SetFolderViewAdapter(
         // Use the asynchronous function to count cards
         flashcard.id?.let { id ->
             cardDAO.countCardByFlashCardId(id) { count ->
-                holder.binding.termCountTv.text = "$count terms"
+                holder.binding.termCountTv.text = "$count thẻ "
             }
         } ?: run {
-            holder.binding.termCountTv.text = "0 terms"
+            holder.binding.termCountTv.text = "0 thẻ"
         }
 
         CoroutineScope(Dispatchers.Main).launch {

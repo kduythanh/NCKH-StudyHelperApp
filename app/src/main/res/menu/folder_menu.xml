@@ -3,15 +3,15 @@
 
     <item
             android:id="@+id/add_set"
-            android:title="Add Flashcard"
+            android:title="Thêm học phần"
             android:icon="@drawable/ic_add"/>
     <item
             android:id="@+id/edit_folder"
-            android:title="Edit Folder"
+            android:title="Chỉnh sửa thư mục"
             android:icon="@drawable/ic_edit"/>
     <item
             android:id="@+id/delete_folder"
-            android:title="Delete Folder"
+            android:title="Xóa thư mục"
             android:icon="@drawable/ic_delete"/>
 
 </menu>

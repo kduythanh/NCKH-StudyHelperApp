@@ -39,7 +39,7 @@ class SetCopyAdapter(private val context: Context, private val sets: ArrayList<F
         // Call the asynchronous function to count the cards
         cardDAO.countCardByFlashCardId(set.GetId()!!) { count ->
             // Update the UI with the number of terms after the query completes
-            holder.binding.termCountTv.text = "$count terms"
+            holder.binding.termCountTv.text = "$count thẻ "
         }
 
         holder.itemView.setOnClickListener { v: View? ->
