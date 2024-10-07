@@ -7,6 +7,7 @@ import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import com.example.nlcs.NoteFunction.NoteFunctionActivity
@@ -22,11 +23,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var firebaseAuth: FirebaseAuth
     private lateinit var drawerLayout: DrawerLayout
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
 
         // Initialize Firebase Auth
         firebaseAuth = Firebase.auth
@@ -38,55 +40,28 @@ class MainActivity : AppCompatActivity() {
         drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
 
-        binding.toolbar.setNavigationOnClickListener {
-            if (drawerLayout.isDrawerOpen(binding.navigationView)) {
+        binding.toolbar.setNavigationOnClickListener{
+            if(drawerLayout.isDrawerOpen(binding.navigationView)){
                 drawerLayout.closeDrawer(binding.navigationView)
-            } else {
+            }else{
                 drawerLayout.openDrawer(binding.navigationView)
             }
         }
 
         updateNavHeader()
 
-        // Set click listener for the Flash card
-//        binding.card1.setOnClickListener {
-//            val intent = Intent(this, FlashCardActivity::class.java)
-//            startActivity(intent)
-//        }
-//
-//        // Set click listener for the Mind map
-//        binding.card2.setOnClickListener {
-//            val intent = Intent(this, MindMapActivity::class.java)
-//            startActivity(intent)
-//        }
-
-        // Set click listener for the Focus card
-        binding.card3.setOnClickListener {
-            val intent = Intent(this, FocusActivity::class.java)
+        binding.card2.setOnClickListener{
+            val intent = Intent(this, MindMapMenuActivity::class.java)
             startActivity(intent)
         }
 
-        // Set click listener for the Statistics
-//        binding.card4.setOnClickListener {
-//            val intent = Intent(this, StatisticsActivity::class.java)
-//            startActivity(intent)
-//        }
-//
-        // Set click listener for the Focus card
-        binding.card5.setOnClickListener {
+        binding.card5.setOnClickListener{
             val intent = Intent(this, NoteFunctionActivity::class.java)
             startActivity(intent)
         }
-//
-//        // Set click listener for the Reminder
-//        binding.card6.setOnClickListener {
-//            val intent = Intent(this, ReminderActivity::class.java)
-//            startActivity(intent)
-//        }
-
 
         binding.navigationView.setNavigationItemSelectedListener { menuItem ->
-            when (menuItem.itemId) {
+            when (menuItem.itemId){
                 R.id.nav_logout -> {
                     drawerLayout.closeDrawer(GravityCompat.START)
                     firebaseAuth.signOut()
@@ -100,15 +75,17 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+
+        onBackPressedDispatcher.addCallback(this, object: OnBackPressedCallback(true){
+            override fun handleOnBackPressed(){
+                if(drawerLayout.isDrawerOpen(GravityCompat.START)){
                     drawerLayout.closeDrawer(GravityCompat.START)
-                } else {
+                }else{
                     finish()
                 }
             }
         })
+
     }
 
     private fun updateNavHeader() {
@@ -117,7 +94,11 @@ class MainActivity : AppCompatActivity() {
 
         val currentUser = firebaseAuth.currentUser
         if (currentUser != null) {
-            emailTextView.text = currentUser.email
+            emailTextView.text = currentUser.email // Set the email in the TextView
         }
+    }
+
+    private fun isCurrentActivity(activityClass: Class<*>): Boolean {
+        return activityClass == this::class.java
     }
 }
