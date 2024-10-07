@@ -48,10 +48,6 @@ class MainActivity : AppCompatActivity() {
         updateNavHeader()
 
         // Stashed changes
-        binding.card1.setOnClickListener{
-            val intent = Intent(this, FlashcardActivity::class.java)
-            startActivity(intent)
-        }
         binding.card6.setOnClickListener {
             val intent = Intent(this, ReminderMenuActivityAPI::class.java)
             startActivity(intent)

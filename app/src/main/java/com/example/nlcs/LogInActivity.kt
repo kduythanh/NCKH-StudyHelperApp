@@ -28,7 +28,6 @@ class LogInActivity : AppCompatActivity() {
         // Initialize Firebase Auth
         firebaseAuth = Firebase.auth
 
-
         // Click listeners for login button
         binding.LogInButton.setOnClickListener {
             loginUser()
