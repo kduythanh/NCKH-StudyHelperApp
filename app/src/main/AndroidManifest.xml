@@ -3,7 +3,13 @@
     xmlns:tools="http://schemas.android.com/tools">
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-
+  
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.GET_ACCOUNTS"/>
+    <uses-permission android:name="android.permission.MANAGE_ACCOUNTS"/>
+    <uses-permission android:name="android.permission.USE_CREDENTIALS"/>
+    <uses-permission android:name="android.permission.VIBRATE"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -13,7 +19,15 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.NCKH"
+        android:enableOnBackInvokedCallback="true"
         tools:targetApi="31">
+        <receiver android:name=".NotificationService"/>
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version"/>
+        <activity
+            android:name=".MainActivity2"
+            android:exported="false" />
         <activity
             android:name=".NoteFunction.NoteFunctionAdjustActivity"
             android:exported="false" />
@@ -48,7 +62,41 @@
             android:exported="false"
             />
         <activity
+            android:name=".AddCardsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".CreateDeck"
+            android:exported="false" />
+
+        <activity
+            android:name=".FlashcardActivity"
+            android:exported="false" />
+        <activity
+            android:name=".PublicDecks"
+            android:exported="false" />
+        <activity
+            android:name=".ViewCard"
+            android:exported="false" />
+        <activity
             android:name=".SplashActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".ReminderMenuActivityAPI"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".ChangePasswordActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
