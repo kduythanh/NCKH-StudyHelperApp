@@ -2,7 +2,6 @@ package com.example.nlcs
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.util.Patterns
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -10,8 +9,6 @@ import androidx.appcompat.app.AppCompatDelegate
 import com.example.nlcs.databinding.ActivityLogInBinding
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
-import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.auth
 import android.content.Context
 
@@ -83,34 +80,25 @@ class LogInActivity : AppCompatActivity() {
         firebaseAuth.signInWithEmailAndPassword(mail, passwd).addOnCompleteListener(this){ task ->
             if(task.isSuccessful){
                 if(firebaseAuth.currentUser?.isEmailVerified == true){
-                    Toast.makeText(this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show()
                     val intent = Intent(this, MainActivity::class.java)
                     startActivity(intent)
                 }else{
-                    Toast.makeText(this, "Email chưa được xác nhận, vui lòng vào hộp thư để kiểm tra lại!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Email not verified, please verify your email!", Toast.LENGTH_SHORT).show()
                 }
             }else{
-                // Xử lý thông báo lỗi cho tài khoản không tồn tại và mật khẩu không chính xác
-                val errorMessage = when (task.exception) {
-                    is FirebaseAuthInvalidUserException -> "Tài khoản không tồn tại, vui lòng nhập lại!"
-                    is FirebaseAuthInvalidCredentialsException -> "Tài khoản hoặc mật khẩu không chính xác, vui lòng nhập lại!"
-                    else -> task.exception?.localizedMessage ?: "Đã xảy ra lỗi, vui lòng thử lại!"
-                }
-                Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
-                // Ghi log thông tin chi tiết
-                Log.e("LoginError", "Error: ${task.exception?.message}")
+                Toast.makeText(this, task.exception?.localizedMessage, Toast.LENGTH_SHORT).show()
             }
         }
     }
 
     private fun validateAccount(mail: String, passwd: String): Boolean{
         if(!Patterns.EMAIL_ADDRESS.matcher(mail).matches()){
-            binding.LogInEmailEditText.error = "Định dạng email không hợp lệ, vui lòng nhập lại!"
+            binding.LogInEmailEditText.error = "Invalid email format"
             return false
         }
 
         if(passwd.length < 6){
-            binding.LogInPasswordEditText.error = "Mật khẩu phải có ít nhất 6 ký tự, vui lòng nhập lại!"
+            binding.LogInPasswordEditText.error = "Password must be at least 6 characters"
             return false
         }
         return true
