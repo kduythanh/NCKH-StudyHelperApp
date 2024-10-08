@@ -1,15 +1,17 @@
-package com.example.nlcs
+package com.example.nlcs.NoteFunction
 
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.example.nlcs.databinding.ActivityMindmapBinding
+import com.example.nlcs.R
+import com.example.nlcs.UsageTracker
+import com.example.nlcs.databinding.ActivityNoteBinding
 
-class MindMapActivity : AppCompatActivity() {
+class NoteFunctionActivity : AppCompatActivity() {
 
-    private var binding: ActivityMindmapBinding? = null
+    private var binding: ActivityNoteBinding? = null
     // Declare usageTracker to use UsageTracker class
     private lateinit var usageTracker: UsageTracker
     // Setting saving time start at 0
@@ -23,16 +25,16 @@ class MindMapActivity : AppCompatActivity() {
 
         enableEdgeToEdge()
 
-        binding = ActivityMindmapBinding.inflate(layoutInflater)
+        binding = ActivityNoteBinding.inflate(layoutInflater)
         setContentView(binding?.root)
 
         // Set up Toolbar
-        setSupportActionBar(binding?.toolbarMindMap)
+        setSupportActionBar(binding?.toolbarNote)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.title = "Về trang chủ"  // Tùy chỉnh tiêu đề
 
         // back to main menu
-        binding?.toolbarMindMap?.setNavigationOnClickListener {
+        binding?.toolbarNote?.setNavigationOnClickListener {
             onBackPressed()
         }
 
@@ -52,19 +54,20 @@ class MindMapActivity : AppCompatActivity() {
 
     }
 
+
     override fun onPause() {
         super.onPause()
 
-        // Tính toán thời gian sử dụng Sơ đồ tư duy
+        // Tính toán thời gian sử dụng Ghi chú
         val endTime = System.currentTimeMillis()
         val durationInMillis = endTime - startTime
         val durationInSeconds = (durationInMillis / 1000).toInt() // Chuyển đổi thời gian từ milliseconds sang giây
 
         // Kiểm tra nếu thời gian sử dụng hợp lệ (lớn hơn 0 giây) thì lưu vào UsageTracker
         if (durationInSeconds > 0) {
-            usageTracker.addUsageTime("Sơ đồ tư duy", durationInSeconds)
+            usageTracker.addUsageTime("Ghi chú", durationInSeconds)
         } else {
-            usageTracker.addUsageTime("Sơ đồ tư duy", 0)
+            usageTracker.addUsageTime("Ghi chú", 0)
         }
     }
 

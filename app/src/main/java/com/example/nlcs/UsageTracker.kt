@@ -237,34 +237,6 @@ class UsageTracker(context: Context) {
         }
     }
 
-    // Hàm tính tổng thời gian sử dụng của một ngày cụ thể
-    fun getTotalUsageForSpecificDay(date: String, callback: (Int) -> Unit) {
-        val currentUser = FirebaseAuth.getInstance().currentUser
-        val userId = currentUser?.uid
-
-        if (userId != null) {
-            db.collection("usage_times")
-                .whereEqualTo("userId", userId)
-                .whereEqualTo("date", date)
-                .get()
-                .addOnSuccessListener { querySnapshot ->
-                    var totalSeconds = 0
-                    for (document in querySnapshot.documents) {
-                        val usageSeconds = document.getLong("total_usage_seconds")?.toInt() ?: 0
-                        totalSeconds += usageSeconds
-                    }
-                    callback(totalSeconds)
-                }
-                .addOnFailureListener { e ->
-                    Log.e("UsageTracker", "Lỗi khi lấy dữ liệu sử dụng cho ngày $date: ${e.message}")
-                    callback(0)
-                }
-        } else {
-            Log.w("UsageTracker", "Người dùng chưa đăng nhập, không thể lấy dữ liệu sử dụng.")
-            callback(0)
-        }
-    }
-
 
     // Hàm lấy tổng thời gian sử dụng trong tuần hiện tại
     fun getWeeklyUsage(callback: (Map<String, Int>) -> Unit) {
@@ -314,46 +286,6 @@ class UsageTracker(context: Context) {
         } else {
             Log.w("getWeeklyUsage", "Người dùng chưa đăng nhập.")
             callback(emptyMap())  // Trả về Map rỗng nếu người dùng chưa đăng nhập
-        }
-    }
-
-
-    // Hàm thống kê thời gian sử dụng theo tháng (12 tháng trong năm)
-    fun getMonthlyUsage(callback: (Map<String, Int>) -> Unit) {
-        val currentUser = FirebaseAuth.getInstance().currentUser
-        val userId = currentUser?.uid
-
-        if (userId != null) {
-            val dateFormat = SimpleDateFormat("MM-yyyy", Locale.getDefault())
-            val calendar = Calendar.getInstance()
-
-            // Lấy danh sách 12 tháng trong năm
-            val months = mutableListOf<String>()
-            for (i in 0..11) {
-                months.add(dateFormat.format(calendar.time))
-                calendar.add(Calendar.MONTH, -1)  // Lùi về 1 tháng
-            }
-
-            db.collection("usage_times")
-                .whereEqualTo("userId", userId)
-                .whereIn("date", months)
-                .get()
-                .addOnSuccessListener { querySnapshot ->
-                    val usageData = mutableMapOf<String, Int>()
-                    for (document in querySnapshot.documents) {
-                        val month = document.getString("date")?.substring(3) ?: continue
-                        val usageSeconds = document.getLong("total_usage_seconds")?.toInt() ?: 0
-                        usageData[month] = usageData.getOrDefault(month, 0) + usageSeconds
-                    }
-                    callback(usageData)
-                }
-                .addOnFailureListener { e ->
-                    Log.e("UsageTracker", "Lỗi khi lấy dữ liệu sử dụng cho tháng: ${e.message}")
-                    callback(emptyMap())
-                }
-        } else {
-            Log.w("UsageTracker", "Người dùng chưa đăng nhập, không thể lấy dữ liệu sử dụng.")
-            callback(emptyMap())
         }
     }
 

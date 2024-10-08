@@ -27,11 +27,11 @@
             android:name=".FlashCardActivity"
             android:exported="false" />
         <activity
-            android:name=".ReminderActivity"
+            android:name=".ReminderMenuActivityAPI"
             android:exported="false" />
 
         <activity
-            android:name=".MindMapActivity"
+            android:name=".MindMapMenuActivity"
             android:exported="false" />
         <activity
             android:name=".ForgotPasswordActivity"
@@ -49,7 +49,7 @@
             android:name=".StatisticsActivity"
             android:exported="false" />
         <activity
-            android:name=".NoteActivity"
+            android:name=".NoteFunction.NoteFunctionActivity"
             android:exported="false" />
         <activity
             android:name=".MainActivity"

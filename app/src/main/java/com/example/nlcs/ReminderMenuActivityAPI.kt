@@ -8,7 +8,7 @@ import androidx.core.view.WindowInsetsCompat
 import com.example.nlcs.databinding.ActivityReminderBinding
 
 
-class ReminderActivity: AppCompatActivity() {
+class ReminderMenuActivityAPI: AppCompatActivity() {
     private var binding: ActivityReminderBinding? = null
     // Declare usageTracker to use UsageTracker class
     private lateinit var usageTracker: UsageTracker

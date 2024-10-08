@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import com.example.nlcs.NoteFunction.NoteFunctionActivity
 import com.example.nlcs.databinding.ActivityMainBinding
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
@@ -58,7 +59,7 @@ class MainActivity : AppCompatActivity() {
 
         // Set click listener for the Mind map
         binding.card2.setOnClickListener {
-            val intent = Intent(this, MindMapActivity::class.java)
+            val intent = Intent(this, MindMapMenuActivity::class.java)
             startActivity(intent)
         }
 
@@ -76,13 +77,13 @@ class MainActivity : AppCompatActivity() {
 
         // Set click listener for the Focus card
         binding.card5.setOnClickListener {
-            val intent = Intent(this, NoteActivity::class.java)
+            val intent = Intent(this, NoteFunctionActivity::class.java)
             startActivity(intent)
         }
 
         // Set click listener for the Reminder
         binding.card6.setOnClickListener {
-            val intent = Intent(this, ReminderActivity::class.java)
+            val intent = Intent(this, ReminderMenuActivityAPI::class.java)
             startActivity(intent)
         }
 

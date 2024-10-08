@@ -5,11 +5,11 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.example.nlcs.databinding.ActivityNoteBinding
+import com.example.nlcs.databinding.ActivityMindmapBinding
 
-class NoteActivity : AppCompatActivity() {
+class MindMapMenuActivity : AppCompatActivity() {
 
-    private var binding: ActivityNoteBinding? = null
+    private var binding: ActivityMindmapBinding? = null
     // Declare usageTracker to use UsageTracker class
     private lateinit var usageTracker: UsageTracker
     // Setting saving time start at 0
@@ -23,16 +23,16 @@ class NoteActivity : AppCompatActivity() {
 
         enableEdgeToEdge()
 
-        binding = ActivityNoteBinding.inflate(layoutInflater)
+        binding = ActivityMindmapBinding.inflate(layoutInflater)
         setContentView(binding?.root)
 
         // Set up Toolbar
-        setSupportActionBar(binding?.toolbarNote)
+        setSupportActionBar(binding?.toolbarMindMap)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.title = "Về trang chủ"  // Tùy chỉnh tiêu đề
 
         // back to main menu
-        binding?.toolbarNote?.setNavigationOnClickListener {
+        binding?.toolbarMindMap?.setNavigationOnClickListener {
             onBackPressed()
         }
 
@@ -52,20 +52,19 @@ class NoteActivity : AppCompatActivity() {
 
     }
 
-
     override fun onPause() {
         super.onPause()
 
-        // Tính toán thời gian sử dụng Ghi chú
+        // Tính toán thời gian sử dụng Sơ đồ tư duy
         val endTime = System.currentTimeMillis()
         val durationInMillis = endTime - startTime
         val durationInSeconds = (durationInMillis / 1000).toInt() // Chuyển đổi thời gian từ milliseconds sang giây
 
         // Kiểm tra nếu thời gian sử dụng hợp lệ (lớn hơn 0 giây) thì lưu vào UsageTracker
         if (durationInSeconds > 0) {
-            usageTracker.addUsageTime("Ghi chú", durationInSeconds)
+            usageTracker.addUsageTime("Sơ đồ tư duy", durationInSeconds)
         } else {
-            usageTracker.addUsageTime("Ghi chú", 0)
+            usageTracker.addUsageTime("Sơ đồ tư duy", 0)
         }
     }
 
