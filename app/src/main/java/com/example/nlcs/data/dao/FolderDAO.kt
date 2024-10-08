@@ -228,16 +228,36 @@ class FolderDAO(CreateFolderActivity: Context) {
     }
 
     // Remove flashcard from folder
-    fun removeFlashCardFromFolder(folderId: String, flashcardId: String): Boolean {
+    suspend fun removeFlashCardFromFolder(folderId: String, flashcardId: String): Boolean {
+        val firestore = FirebaseFirestore.getInstance()
+
         return try {
-            val folderRef = db.collection("folders").document(folderId)
-            folderRef.update("flashcards", FieldValue.arrayRemove(flashcardId))
-            true
+            // Query the "folders_flashcards" collection to find the document where folder_id and flashcard_id match
+            val folderFlashcardRef = firestore.collection("folders_flashcards")
+                .whereEqualTo("folder_id", folderId)
+                .whereEqualTo("flashcard_id", flashcardId)
+                .get()
+                .await()
+
+            if (folderFlashcardRef.isEmpty) {
+                Log.d("FolderDAO", "No matching document found.")
+                false
+            } else {
+                // Assuming only one document should match
+                val documentId = folderFlashcardRef.documents.first().id
+                firestore.collection("folders_flashcards")
+                    .document(documentId)
+                    .delete()
+                    .await()
+                Log.d("FolderDAO", "Flashcard removed successfully from folder.")
+                true
+            }
         } catch (e: Exception) {
             Log.e("FolderDAO", "removeFlashCardFromFolder: $e")
             false
         }
     }
+
 
     // Get all flashcards IDs by folder ID
     suspend fun getAllFlashCardIdByFolderId(folderId: String): ArrayList<String> {

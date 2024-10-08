@@ -68,7 +68,7 @@
     <string name="library">Thư viện</string>
     <string name="profile">Profile</string>
     <string name="add">Thêm</string>
-    <string name="create_set">Tạo bộ thẻ </string>
+    <string name="create_set">Tạo học phần </string>
     <string name="done">Xong</string>
     <string name="custom_set">Bộ tùy chỉnh</string>
     <string name="create_folder">Tạo thư mục </string>
@@ -137,8 +137,7 @@
     <string name="review_success">Tạo thành công!</string>
     <string name="view">View</string>
     <string name="edit_error">No permisson</string>
-    <string name="here_s_how_to_get_started">Đây là cách để bắt đầu</string>
-    <string name="create_your_own_set">Tạo bộ của riêng bạn</string>
+    <string name="create_your_own_set">Tạo học phần của riêng bạn</string>
     <string name="finish">Chúc mừng!</string>
     <string name="finish_quiz">Bạn đã hoàn thành</string>
     <string name="reset_error">Đặt lại lỗi!</string>

@@ -46,10 +46,10 @@ class SetsAdapter(
         // Fetch the card count asynchronously
         flashCard.GetId()?.let { id ->
             cardDAO.countCardByFlashCardId(id) { count ->
-                holder.binding.termCountTv.text = "$count thẻ"
+                holder.binding.termCountTv.text = "$count thuật ngữ"
             }
         } ?: run {
-            holder.binding.termCountTv.text = "0 thẻ"
+            holder.binding.termCountTv.text = "0 thuật ngữ"
         }
 
         holder.itemView.setOnClickListener {

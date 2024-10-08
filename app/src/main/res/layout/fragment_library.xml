@@ -11,7 +11,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
-        android:text="Library"
+        android:text="Thư viện"
         android:textSize="@dimen/_25ssp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"

@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.nlcs.R
 import com.example.nlcs.adapter.folder.FolderSelectAdapter
@@ -74,11 +75,15 @@ class AddToFolderActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == R.id.done) {
-            onBackPressedDispatcher.onBackPressed()
+        when (item.itemId) {
+            R.id.done -> {
+                onBackPressedDispatcher.onBackPressed()
+                Toast.makeText(this, "Đã thêm vào thư mục\n", Toast.LENGTH_SHORT).show()
+            }
         }
         return super.onOptionsItemSelected(item)
     }
+
 
     override fun onResume() {
         super.onResume()

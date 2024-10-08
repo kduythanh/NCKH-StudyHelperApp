@@ -126,19 +126,19 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/search_cl"> <!-- Corrected Constraint -->
 
-                <TextView
-                    android:id="@+id/get_started_tv"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginHorizontal="@dimen/_16dp"
-                    android:layout_marginTop="@dimen/_16dp"
-                    android:layout_marginBottom="@dimen/_16dp"
-                    android:text="@string/here_s_how_to_get_started"
-                    android:textColor="@color/gray"
-                    android:textSize="@dimen/_20ssp"
-                    android:textStyle="bold"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"/>
+<!--                <TextView-->
+<!--                    android:id="@+id/get_started_tv"-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:layout_marginHorizontal="@dimen/_16dp"-->
+<!--                    android:layout_marginTop="@dimen/_16dp"-->
+<!--                    android:layout_marginBottom="@dimen/_16dp"-->
+<!--                    android:text=""-->
+<!--                    android:textColor="@color/gray"-->
+<!--                    android:textSize="@dimen/_20ssp"-->
+<!--                    android:textStyle="bold"-->
+<!--                    app:layout_constraintStart_toStartOf="parent"-->
+<!--                    app:layout_constraintTop_toTopOf="parent"/>-->
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:id="@+id/create_sets_cl"
@@ -151,7 +151,7 @@
                     android:paddingStart="18dp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/get_started_tv">
+                    app:layout_constraintTop_toTopOf="parent">
 
                     <ImageView
                         android:id="@+id/plus_iv"

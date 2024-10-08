@@ -31,27 +31,46 @@ class FolderSelectAdapter(
         val folderDAO = FolderDAO(holder.itemView.context)
         holder.binding.folderNameTv.text = folder.name
         updateBackground(holder, folder, folderDAO)
+
         holder.binding.folderCv.setOnClickListener {
+            // Launch a coroutine to handle suspend functions
             CoroutineScope(Dispatchers.Main).launch {
-                if (folder.id?.let { it1 -> folderDAO.isFlashCardInFolder(it1, flashcardId) } == true) {
-                    folder.id?.let { it1 -> folderDAO.removeFlashCardFromFolder(it1, flashcardId) }
-                    Toast.makeText(
-                        holder.itemView.context,
-                        "Removed from ${folder.name}",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                // Check if the flashcard is in the folder using the suspend function
+                val isInFolder =
+                    folder.id?.let { it1 -> folderDAO.isFlashCardInFolder(it1, flashcardId) }
+
+                if (isInFolder == true) {
+                    // If the flashcard is in the folder, remove it using the suspend function
+                    val removed =
+                        folder.id?.let { it1 -> folderDAO.removeFlashCardFromFolder(it1, flashcardId) }
+                    if (removed == true) {
+                        //Toast.makeText(
+                       //     holder.itemView.context,
+                            ///"Removed from ${folder.name}",
+                          //  Toast.LENGTH_SHORT
+                       // ).show()
+                    } else {
+                        Toast.makeText(
+                            holder.itemView.context,
+                            "Failed to remove from ${folder.name}",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 } else {
+                    // If the flashcard is not in the folder, add it (assuming addFlashCardToFolder is not suspend)
                     folder.id?.let { it1 -> folderDAO.addFlashCardToFolder(it1, flashcardId) }
-                    Toast.makeText(
-                        holder.itemView.context,
-                        "Added to ${folder.name}",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                   // Toast.makeText(
+                      //  holder.itemView.context,
+                     //   "Added to ${folder.name}",
+                     //   Toast.LENGTH_SHORT
+                  //  ).show()
                 }
+                // Update the background after the operation
+                updateBackground(holder, folder, folderDAO)
             }
-            updateBackground(holder, folder, folderDAO)
         }
     }
+
 
     private fun updateBackground(holder: FolderSelectViewHolder, folder: Folder, folderDAO: FolderDAO) {
 

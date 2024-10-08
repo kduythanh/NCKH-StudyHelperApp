@@ -16,7 +16,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:navigationIcon="@drawable/ic_arrow_back"
-        app:title="Create Folder" />
+        app:title="Tạo thư mục" />
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/folder_til"

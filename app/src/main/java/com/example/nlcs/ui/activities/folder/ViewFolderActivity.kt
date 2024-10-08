@@ -69,7 +69,7 @@ class ViewFolderActivity : AppCompatActivity(), BottomSheetListener {
 
                 // Fetch flashcards asynchronously and update the flashcard count
                 folderDAO.getAllFlashCardByFolderId(id) { flashCards ->
-                    binding.termCountTv.text = "${flashCards.size} flashcards"
+                    binding.termCountTv.text = "${flashCards.size} Học phần"
                 }
             }
         } else {
