@@ -48,10 +48,6 @@ class MainActivity : AppCompatActivity() {
         updateNavHeader()
 
         // Stashed changes
-        binding.card1.setOnClickListener{
-            val intent = Intent(this, FlashcardActivity::class.java)
-            startActivity(intent)
-        }
         binding.card6.setOnClickListener {
             val intent = Intent(this, ReminderMenuActivityAPI::class.java)
             startActivity(intent)
@@ -95,7 +91,7 @@ class MainActivity : AppCompatActivity() {
         builder.setTitle("Xác nhận đăng xuất")
         builder.setMessage("Bạn có chắc chắn muốn đăng xuất khỏi tài khoản?")
 
-        builder.setPositiveButton("Có") { dialog: DialogInterface, which: Int ->
+        builder.setPositiveButton("Có") { _: DialogInterface, _: Int ->
             // Thực hiện đăng xuất
             firebaseAuth.signOut()
             val intent = Intent(this, LogInActivity::class.java)
@@ -104,7 +100,7 @@ class MainActivity : AppCompatActivity() {
             finish()
         }
 
-        builder.setNegativeButton("Không") { dialog: DialogInterface, which: Int ->
+        builder.setNegativeButton("Không") { dialog: DialogInterface, _: Int ->
             dialog.dismiss() // Đóng hộp thoại
         }
 
@@ -124,8 +120,5 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         // Xóa trạng thái đã chọn của tất cả các mục trong NavigationView
         binding.navigationView.menu.setGroupCheckable(0, false, true)
-    }
-    private fun isCurrentActivity(activityClass: Class<*>): Boolean {
-        return activityClass == this::class.java
     }
 }

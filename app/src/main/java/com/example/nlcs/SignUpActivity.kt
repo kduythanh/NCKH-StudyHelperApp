@@ -51,7 +51,7 @@ class SignUpActivity : AppCompatActivity() {
     private fun createAccountFirebase(mail: String, passwd: String){
         firebaseAuth.createUserWithEmailAndPassword(mail, passwd).addOnCompleteListener(this){ task ->
             if(task.isSuccessful){
-                Toast.makeText(this, "Account created", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Tài khoản đã được tạo thành công!", Toast.LENGTH_SHORT).show()
                 // Send verification email
                 firebaseAuth.currentUser?.sendEmailVerification()
                 firebaseAuth.signOut()
@@ -66,17 +66,17 @@ class SignUpActivity : AppCompatActivity() {
     private fun validateAccount(mail: String, passwd: String, confirmPasswd: String): Boolean{
 
         if(!Patterns.EMAIL_ADDRESS.matcher(mail).matches()){
-            binding.signUpEmailEditText.error = "Invalid email format"
+            binding.signUpEmailEditText.error = "Định dạng email không đúng!"
             return false
         }
 
         if(passwd.length < 6){
-            binding.signUpPasswordEditText.error = "Password must be at least 6 characters"
+            binding.signUpPasswordEditText.error = "Mật khẩu phải có ít nhất 6 ký tự!"
             return false
         }
 
         if(passwd != confirmPasswd){
-            binding.signUpConfirmPasswordEditText.error = "Passwords do not match"
+            binding.signUpConfirmPasswordEditText.error = "Mật khẩu không khớp với mật khẩu đã nhập ở trên!"
             return false
         }
         return true

@@ -7,7 +7,6 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationCompat
 import com.google.api.services.calendar.model.EventDateTime
-import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
@@ -20,15 +19,13 @@ class NotificationService(private val context: Context) {
     }
 
     private fun createNotificationChannel() {
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                channelId,
-                "Event Reminders",
-                NotificationManager.IMPORTANCE_HIGH
-            )
-            val notificationManager = context.getSystemService(NotificationManager::class.java)
-            notificationManager.createNotificationChannel(channel)
-        }
+        val channel = NotificationChannel(
+            channelId,
+            "Event Reminders",
+            NotificationManager.IMPORTANCE_HIGH
+        )
+        val notificationManager = context.getSystemService(NotificationManager::class.java)
+        notificationManager.createNotificationChannel(channel)
     }
 
     fun sendNotification(eventTitle: String, eventStartTime: EventDateTime) {

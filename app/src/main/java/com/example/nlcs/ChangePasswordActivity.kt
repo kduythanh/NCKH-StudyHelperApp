@@ -10,7 +10,6 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.nlcs.databinding.ActivityChangePasswordBinding
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
 
 class ChangePasswordActivity : AppCompatActivity() {
 
@@ -20,7 +19,6 @@ class ChangePasswordActivity : AppCompatActivity() {
     private lateinit var buttonChangePassword: Button
     private lateinit var exitButton: ImageButton
     private lateinit var auth: FirebaseAuth
-    private lateinit var firestore: FirebaseFirestore
     private lateinit var firebaseAuth: FirebaseAuth
     private lateinit var binding: ActivityChangePasswordBinding
 
@@ -35,7 +33,6 @@ class ChangePasswordActivity : AppCompatActivity() {
         buttonChangePassword = findViewById(R.id.buttonChangePassword)
         exitButton = findViewById(R.id.exitButton)
         auth = FirebaseAuth.getInstance()
-        firestore = FirebaseFirestore.getInstance()
 
         binding.buttonChangePassword.setOnClickListener {
             Log.d("ChangePassword", "Đã bấm nút Đổi mật khẩu")

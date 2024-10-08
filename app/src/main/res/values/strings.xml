@@ -24,10 +24,13 @@
     <string name="resetPasswordButton">ĐẶT LẠI MẬT KHẨU</string>
     <string name="backButton">QUAY VỀ</string>
 
+    <string name="changePassword">Đổi mật khẩu</string>
+    <string name="currentPassword">Mật khẩu hiện tại</string>
+    <string name="newPassword">Mật khẩu mới</string>
+    <string name="confirmNewPassword">Xác nhận mật khẩu mới</string>
+    <string name="changePasswordConfirmButton">ĐỔI MẬT KHẨU</string>
+
     <string name="logout">Đăng xuất</string>
-    <string name="setting">Cài đặt</string>
-    <string name="userProfile">Thông tin người dùng</string>
-    <string name="home">Trang chủ</string>
 
     <string name="open_nav">Mở Navigation Drawer</string>
     <string name="close_nav">Đóng Navigation Drawer</string>
@@ -79,34 +82,6 @@
     <string name="editStartTime">Giờ bắt đầu (hh:mm)</string>
     <string name="editEndDate">Ngày kết thúc (dd/mm/yyyy)</string>
     <string name="editEndTime">Giờ kết thúc (hh:mm)</string>
-
-    <string name="AddButton">Nút Add</string>
-    <string name="Done">Hoàn Thành</string>
-
-    <string name="TextBox">Hộp Thoại</string>
-    <string name="Arrow">Mũi Tên</string>
-    <string name="SquareTextBox">Hộp thoại vuông</string>
-    <string name="CircleTextBox">Hộp thoại tròn</string>
-    <string name="TriangleTextBox">Hộp thoại tam giác</string>
-    <string name="LineTextBox">Hộp thoại nhánh cây</string>
-    <string name="StraightArrow">Mũi tên thẳng</string>
-    <string name="CurveArrow">Mũi tên cong</string>
-
-    <string name="MindMapTitleTextView">Tạo sơ đồ mới</string>
-    <string name="ChangeMindMapTitleTextView">Đổi tên sơ đồ</string>
-    <string name="InputMindMapTitleEditText">Nhập tên</string>
-    <string name="CancelButton">Hủy bỏ</string>
-    <string name="ConfirmButton">Xác nhận</string>
-
-    <string name="TitlePlaceHolder">Title</string>
-    <string name="MindMapItemEditButtonDescription">Chỉnh sửa tiêu đề sơ đồ tư duy</string>
-    <string name="MindMapItemDeleteButtonDescription">Xóa sơ đồ tư duy</string>
-
-    <string name="AddTextBoxButton">Add Text Box</string>
-    <string name="MainIdea">Ý tưởng chính</string>
-
-    <string name="DeleteChild">Delete Child node</string>
-    <string name="AddChild">Add Child node</string>
-    <string name="CopyText">Copy Text"</string>
+    <string name="menu">Menu</string>
 
 </resources>

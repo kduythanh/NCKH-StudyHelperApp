@@ -1,19 +1,14 @@
 package com.example.nlcs
 
-import android.animation.AnimatorInflater
-import android.animation.AnimatorSet
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
-import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.HandlerCompat
 import com.example.nlcs.databinding.ActivitySplashBinding
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
-import android.widget.Button
-import android.widget.TextView
 
 
 @SuppressLint("CustomSplashScreen")

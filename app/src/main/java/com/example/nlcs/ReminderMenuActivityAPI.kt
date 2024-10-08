@@ -1,19 +1,21 @@
 package com.example.nlcs
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.Scope
@@ -27,7 +29,6 @@ import com.google.api.services.calendar.Calendar
 import com.google.api.services.calendar.CalendarScopes
 import com.google.api.services.calendar.model.Event
 import com.google.api.services.calendar.model.EventDateTime
-import com.google.api.client.json.jackson2.JacksonFactory
 import com.google.api.services.calendar.model.Events
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -37,6 +38,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.api.client.json.gson.GsonFactory
 import com.google.api.services.calendar.model.EventAttendee
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -54,7 +56,9 @@ class ReminderMenuActivityAPI : AppCompatActivity() {
     private lateinit var addButton: FloatingActionButton
     private lateinit var exitButton: ImageButton
     private lateinit var noEventsTextView: TextView
+    private lateinit var signInLauncher: ActivityResultLauncher<Intent>
     private var currentWeekStartDate: JavaCalendar = JavaCalendar.getInstance()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,6 +68,14 @@ class ReminderMenuActivityAPI : AppCompatActivity() {
             .requestScopes(Scope(CalendarScopes.CALENDAR))
             .build()
         googleSignInClient = GoogleSignIn.getClient(this, gso)
+        // Khởi tạo signInLauncher
+        signInLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                val data: Intent? = result.data
+                val task = GoogleSignIn.getSignedInAccountFromIntent(data)
+                handleSignInResult(task)
+            }
+        }
         noEventsTextView = findViewById(R.id.noEventsTextView)
         exitButton = findViewById(R.id.exitButton) // Xử lý nút thoát khỏi chức năng
         exitButton.setOnClickListener { finish() }
@@ -212,7 +224,7 @@ class ReminderMenuActivityAPI : AppCompatActivity() {
     // Sign in
     private fun signIn() {
         val signInIntent = googleSignInClient.signInIntent
-        startActivityForResult(signInIntent, REQUEST_CODE_SIGN_IN)
+        signInLauncher.launch(signInIntent)
     }
     // Sign out
     private fun signOut() {
@@ -249,7 +261,7 @@ class ReminderMenuActivityAPI : AppCompatActivity() {
             }
             val adjustedEndDate = calendar.time
             val transport: HttpTransport = GoogleNetHttpTransport.newTrustedTransport()
-            val jsonFactory: JsonFactory = JacksonFactory.getDefaultInstance()
+            val jsonFactory: JsonFactory = GsonFactory()
             val calendarService = Calendar.Builder(transport, jsonFactory, credential)
                 .setApplicationName("Reminder App")
                 .build()
@@ -277,7 +289,7 @@ class ReminderMenuActivityAPI : AppCompatActivity() {
 
             events.forEach { event ->
                 val start = event.start.dateTime?.value ?: event.start.date.value
-                if (start != null && start in currentTime..thirtyMinutesLater) {
+                if (start in currentTime..thirtyMinutesLater) {
                     // Gửi thông báo
                     NotificationService(this@ReminderMenuActivityAPI).sendNotification(event.summary, event.start)
                 }
@@ -306,7 +318,7 @@ class ReminderMenuActivityAPI : AppCompatActivity() {
     private fun addReminder(summary: String, startTime: DateTime, endTime: DateTime, attendeesEmails: List<String>) {
         CoroutineScope(Dispatchers.IO).launch {
             val transport: HttpTransport = GoogleNetHttpTransport.newTrustedTransport()
-            val jsonFactory: JsonFactory = JacksonFactory.getDefaultInstance()
+            val jsonFactory: JsonFactory = GsonFactory()
             val calendarService = Calendar.Builder(transport, jsonFactory, credential)
                 .setApplicationName("Reminder App")
                 .build()
@@ -340,7 +352,7 @@ class ReminderMenuActivityAPI : AppCompatActivity() {
     private fun updateReminder(eventId: String, newSummary: String, newStartDateTime: DateTime, newEndDateTime: DateTime, newAttendeesEmails: List<String>) {
         CoroutineScope(Dispatchers.IO).launch {
             val transport: HttpTransport = GoogleNetHttpTransport.newTrustedTransport()
-            val jsonFactory: JsonFactory = JacksonFactory.getDefaultInstance()
+            val jsonFactory: JsonFactory = GsonFactory()
             val calendarService = Calendar.Builder(transport, jsonFactory, credential)
                 .setApplicationName("Reminder App")
                 .build()
@@ -370,7 +382,7 @@ class ReminderMenuActivityAPI : AppCompatActivity() {
     private fun deleteReminder(eventId: String) {
         CoroutineScope(Dispatchers.IO).launch {
             val transport: HttpTransport = GoogleNetHttpTransport.newTrustedTransport()
-            val jsonFactory: JsonFactory = JacksonFactory.getDefaultInstance()
+            val jsonFactory: JsonFactory = GsonFactory()
             val calendarService = Calendar.Builder(transport, jsonFactory, credential)
                 .setApplicationName("Reminder App")
                 .build()
