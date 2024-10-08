@@ -115,32 +115,51 @@ class ReminderMenuActivityAPI : AppCompatActivity() {
         val dialogBuilder = AlertDialog.Builder(this)
             .setView(dialogView)
         val dialog = dialogBuilder.create()
+
         dialog.setOnShowListener {
             val saveButton = dialog.findViewById<Button>(R.id.saveEventButton)
             val cancelButton = dialog.findViewById<Button>(R.id.cancelEventButton)
+
             saveButton?.setOnClickListener {
                 val eventTitle = dialog.findViewById<EditText>(R.id.eventTitle)?.text.toString()
-                val startDate = dialog.findViewById<EditText>(R.id.startDate)?.text.toString()
-                val startTime = dialog.findViewById<EditText>(R.id.startTime)?.text.toString()
-                val endDate = dialog.findViewById<EditText>(R.id.endDate)?.text.toString()
-                val endTime = dialog.findViewById<EditText>(R.id.endTime)?.text.toString()
+
+                // Lấy dữ liệu từ các EditText cho ngày bắt đầu
+                val startDay = dialog.findViewById<EditText>(R.id.startDayInput)?.text.toString()
+                val startMonth = dialog.findViewById<EditText>(R.id.startMonthInput)?.text.toString()
+                val startYear = dialog.findViewById<EditText>(R.id.startYearInput)?.text.toString()
+                val startHour = dialog.findViewById<EditText>(R.id.startHourInput)?.text.toString()
+                val startMinute = dialog.findViewById<EditText>(R.id.startMinuteInput)?.text.toString()
+
+                // Lấy dữ liệu từ các EditText cho ngày kết thúc
+                val endDay = dialog.findViewById<EditText>(R.id.endDayInput)?.text.toString()
+                val endMonth = dialog.findViewById<EditText>(R.id.endMonthInput)?.text.toString()
+                val endYear = dialog.findViewById<EditText>(R.id.endYearInput)?.text.toString()
+                val endHour = dialog.findViewById<EditText>(R.id.endHourInput)?.text.toString()
+                val endMinute = dialog.findViewById<EditText>(R.id.endMinuteInput)?.text.toString()
+
                 val participantsEmails = dialog.findViewById<EditText>(R.id.participantsEmails)?.text.toString()
-                if (validateEventInput(eventTitle, startDate, startTime, endDate, endTime, participantsEmails)) {
-                    val startDateTime = parseDateTime(startDate, startTime)
-                    val endDateTime = parseDateTime(endDate, endTime)
+
+                // Xác thực đầu vào
+                if (validateEventInput(eventTitle, startDay, startMonth, startYear, startHour, startMinute, endDay, endMonth, endYear, endHour, endMinute, participantsEmails)) {
+                    // Chuyển đổi ngày giờ thành định dạng cần thiết
+                    val startDateTime = parseDateTime(startDay, startMonth, startYear, startHour, startMinute)
+                    val endDateTime = parseDateTime(endDay, endMonth, endYear, endHour, endMinute)
                     val emailList = parseEmails(participantsEmails) // Hàm tách email thành danh sách
+
                     addReminder(eventTitle, startDateTime, endDateTime, emailList)
                     dialog.dismiss()
                 } else {
                     Toast.makeText(this, "Vui lòng nhập đầy đủ thông tin sự kiện và email hợp lệ!", Toast.LENGTH_SHORT).show()
                 }
             }
+
             cancelButton?.setOnClickListener {
                 dialog.dismiss()
             }
         }
         dialog.show()
     }
+
     // Hàm phân tách địa chỉ email
     private fun parseEmails(emails: String): List<String> {
         return emails.split(",")           // Tách các email theo dấu phẩy
@@ -150,35 +169,71 @@ class ReminderMenuActivityAPI : AppCompatActivity() {
     // Hiển thị menu chỉnh sửa thông tin sự kiện
     fun showEditEventDialog(eventId: String, currentTitle: String, currentStartDate: DateTime, currentEndDate: DateTime, participantsEmails: String) {
         val dialogView = layoutInflater.inflate(R.layout.edit_event_layout, null)
-        val dialogBuilder = AlertDialog.Builder(this)
-            .setView(dialogView)
+        val dialogBuilder = AlertDialog.Builder(this).setView(dialogView)
         val dialog = dialogBuilder.create()
+
         dialog.setOnShowListener {
             val titleEditText = dialog.findViewById<EditText>(R.id.eventTitleEditText)
-            val startDateEditText = dialog.findViewById<EditText>(R.id.startDateEditText)
-            val startTimeEditText = dialog.findViewById<EditText>(R.id.startTimeEditText)
-            val endDateEditText = dialog.findViewById<EditText>(R.id.endDateEditText)
-            val endTimeEditText = dialog.findViewById<EditText>(R.id.endTimeEditText)
+            val startDayEditText = dialog.findViewById<EditText>(R.id.startDayInputEditText)
+            val startMonthEditText = dialog.findViewById<EditText>(R.id.startMonthInputEditText)
+            val startYearEditText = dialog.findViewById<EditText>(R.id.startYearInputEditText)
+            val startHourEditText = dialog.findViewById<EditText>(R.id.startHourInputEditText)
+            val startMinuteEditText = dialog.findViewById<EditText>(R.id.startMinuteInputEditText)
+
+            val endDayEditText = dialog.findViewById<EditText>(R.id.endDayInputEditText)
+            val endMonthEditText = dialog.findViewById<EditText>(R.id.endMonthInputEditText)
+            val endYearEditText = dialog.findViewById<EditText>(R.id.endYearInputEditText)
+            val endHourEditText = dialog.findViewById<EditText>(R.id.endHourInputEditText)
+            val endMinuteEditText = dialog.findViewById<EditText>(R.id.endMinuteInputEditText)
+
             val participantsEmailsEditText = dialog.findViewById<EditText>(R.id.participantsEmailsEditText)
             val saveButton = dialog.findViewById<Button>(R.id.saveEditedEventButton)
             val cancelButton = dialog.findViewById<Button>(R.id.cancelEditedEventButton)
+
             // Thiết lập dữ liệu hiện tại cho các trường
             titleEditText?.setText(currentTitle)
-            startDateEditText?.setText(formatDate(currentStartDate))
-            startTimeEditText?.setText(formatTime(currentStartDate))
-            endDateEditText?.setText(formatDate(currentEndDate))
-            endTimeEditText?.setText(formatTime(currentEndDate))
+
+            // Lấy thông tin từ currentStartDate
+            val startCalendar = JavaCalendar.getInstance()
+            startCalendar.timeInMillis = currentStartDate.value
+
+            startDayEditText?.setText(startCalendar.get(JavaCalendar.DAY_OF_MONTH).toString())
+            startMonthEditText?.setText((startCalendar.get(JavaCalendar.MONTH) + 1).toString()) // Tháng bắt đầu từ 0
+            startYearEditText?.setText(startCalendar.get(JavaCalendar.YEAR).toString())
+            startHourEditText?.setText(startCalendar.get(JavaCalendar.HOUR_OF_DAY).toString())
+            startMinuteEditText?.setText(startCalendar.get(JavaCalendar.MINUTE).toString())
+
+            // Lấy thông tin từ currentEndDate
+            val endCalendar = JavaCalendar.getInstance()
+            endCalendar.timeInMillis = currentEndDate.value
+
+            endDayEditText?.setText(endCalendar.get(JavaCalendar.DAY_OF_MONTH).toString())
+            endMonthEditText?.setText((endCalendar.get(JavaCalendar.MONTH) + 1).toString())
+            endYearEditText?.setText(endCalendar.get(JavaCalendar.YEAR).toString())
+            endHourEditText?.setText(endCalendar.get(JavaCalendar.HOUR_OF_DAY).toString())
+            endMinuteEditText?.setText(endCalendar.get(JavaCalendar.MINUTE).toString())
+
             participantsEmailsEditText?.setText(participantsEmails)
+
             saveButton?.setOnClickListener {
                 val newTitle = titleEditText?.text.toString()
-                val newStartDate = startDateEditText?.text.toString()
-                val newStartTime = startTimeEditText?.text.toString()
-                val newEndDate = endDateEditText?.text.toString()
-                val newEndTime = endTimeEditText?.text.toString()
+                val newStartDay = startDayEditText?.text.toString()
+                val newStartMonth = startMonthEditText?.text.toString()
+                val newStartYear = startYearEditText?.text.toString()
+                val newStartHour = startHourEditText?.text.toString()
+                val newStartMinute = startMinuteEditText?.text.toString()
+
+                val newEndDay = endDayEditText?.text.toString()
+                val newEndMonth = endMonthEditText?.text.toString()
+                val newEndYear = endYearEditText?.text.toString()
+                val newEndHour = endHourEditText?.text.toString()
+                val newEndMinute = endMinuteEditText?.text.toString()
+
                 val newParticipantsEmails = participantsEmailsEditText?.text.toString()
-                if (validateEventInput(newTitle, newStartDate, newStartTime, newEndDate, newEndTime, newParticipantsEmails)) {
-                    val newStartDateTime = parseDateTime(newStartDate, newStartTime)
-                    val newEndDateTime = parseDateTime(newEndDate, newEndTime)
+
+                if (validateEventInput(newTitle, newStartDay, newStartMonth, newStartYear, newStartHour, newStartMinute, newEndDay, newEndMonth, newEndYear, newEndHour, newEndMinute, newParticipantsEmails)) {
+                    val newStartDateTime = parseDateTime(newStartDay, newStartMonth, newStartYear, newStartHour, newStartMinute)
+                    val newEndDateTime = parseDateTime(newEndDay, newEndMonth, newEndYear, newEndHour, newEndMinute)
                     val newEmailList = parseEmails(newParticipantsEmails)
                     updateReminder(eventId, newTitle, newStartDateTime, newEndDateTime, newEmailList)
                     dialog.dismiss()
@@ -186,39 +241,83 @@ class ReminderMenuActivityAPI : AppCompatActivity() {
                     Toast.makeText(this, "Vui lòng nhập đầy đủ thông tin sự kiện và email hợp lệ!", Toast.LENGTH_SHORT).show()
                 }
             }
+
             cancelButton?.setOnClickListener {
                 dialog.dismiss()
             }
         }
+
         dialog.show()
     }
-    // Hàm này sẽ format DateTime thành String để hiển thị ngày
-    private fun formatDate(dateTime: DateTime): String {
-        val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-        val date = Date(dateTime.value)
-        return dateFormat.format(date)
-    }
-    // Hàm này sẽ format DateTime thành String để hiển thị giờ
-    private fun formatTime(dateTime: DateTime): String {
-        val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
-        val date = Date(dateTime.value)
-        return timeFormat.format(date)
-    }
-    // Kiểm tra ngày nhập vào đã hợp lệ chưa
-    private fun validateEventInput(title: String, startDate: String, startTime: String, endDate: String, endTime: String, participantsEmails: String): Boolean {
+    // Kiểm tra sự kiện nhập vào đã hợp lệ chưa
+    private fun validateEventInput(
+        title: String, startDay: String, startMonth: String, startYear: String, startHour: String, startMinute: String,
+        endDay: String, endMonth: String, endYear: String, endHour: String, endMinute: String, participantsEmails: String
+    ): Boolean {
         val emailPattern = android.util.Patterns.EMAIL_ADDRESS
+
+        // Kiểm tra tính hợp lệ của các phần ngày tháng giờ
+        val isStartDateValid = isValidDate(startDay, startMonth, startYear, startHour, startMinute)
+        val isEndDateValid = isValidDate(endDay, endMonth, endYear, endHour, endMinute)
+
+        // Kiểm tra xem ngày bắt đầu có trước ngày kết thúc không
+        val isDateRangeValid = isStartDateValid && isEndDateValid && compareDates(startDay, startMonth, startYear, startHour, startMinute,
+            endDay, endMonth, endYear, endHour, endMinute)
+
+        // Kiểm tra tính hợp lệ của email
         val emailsValid = if (participantsEmails.isNotEmpty()) {
             participantsEmails.split(",").all { emailPattern.matcher(it.trim()).matches() }
         } else { true }
-        return title.isNotEmpty() && startDate.isNotEmpty() && startTime.isNotEmpty() && endDate.isNotEmpty() && endTime.isNotEmpty() && emailsValid
+
+        return title.isNotEmpty() && isDateRangeValid && emailsValid
+    }
+    // Kiểm tra ngày nhập vào đã hợp lệ chưa
+    private fun isValidDate(day: String, month: String, year: String, hour: String, minute: String): Boolean {
+        val dayInt = day.toIntOrNull() ?: return false
+        val monthInt = month.toIntOrNull() ?: return false
+        val yearInt = year.toIntOrNull() ?: return false
+        val hourInt = hour.toIntOrNull() ?: return false
+        val minuteInt = minute.toIntOrNull() ?: return false
+
+        // Kiểm tra tháng hợp lệ
+        if (monthInt < 1 || monthInt > 12) return false
+
+        // Kiểm tra ngày hợp lệ
+        val calendar = JavaCalendar.getInstance()
+        calendar.set(yearInt, monthInt - 1, dayInt)
+
+        // Kiểm tra ngày trong tháng
+        if (dayInt != calendar.get(JavaCalendar.DAY_OF_MONTH)) return false
+
+        // Kiểm tra giờ hợp lệ
+        if (hourInt < 0 || hourInt > 23) return false
+
+        // Kiểm tra phút hợp lệ
+        if (minuteInt < 0 || minuteInt > 59) return false
+
+        return true
+    }
+    private fun compareDates(startDay: String, startMonth: String, startYear: String, startHour: String, startMinute: String,
+                             endDay: String, endMonth: String, endYear: String, endHour: String, endMinute: String): Boolean {
+        // Chuyển đổi sang số
+        val startCalendar = JavaCalendar.getInstance()
+        startCalendar.set(startYear.toInt(), startMonth.toInt() - 1, startDay.toInt(), startHour.toInt(), startMinute.toInt())
+
+        val endCalendar = JavaCalendar.getInstance()
+        endCalendar.set(endYear.toInt(), endMonth.toInt() - 1, endDay.toInt(), endHour.toInt(), endMinute.toInt())
+
+        return startCalendar.timeInMillis <= endCalendar.timeInMillis
     }
     // Chuyển đổi định dạng ngày tháng năm theo quy định
-    private fun parseDateTime(date: String, time: String): DateTime {
-        val inputFormat = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()) // Định dạng ngày/giờ theo định dạng của người dùng
-        val outputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault()) // Định dạng ngày/giờ theo chuẩn ISO 8601
+    private fun parseDateTime(day: String, month: String, year: String, hour: String, minute: String): DateTime {
+        // Đảm bảo các phần nhập vào được định dạng chính xác
+        val formattedDate = String.format("%02d/%02d/%04d %02d:%02d", day.toInt(), month.toInt(), year.toInt(), hour.toInt(), minute.toInt())
+
+        val inputFormat = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
+        val outputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault())
         outputFormat.timeZone = TimeZone.getTimeZone("UTC")
-        val dateTimeString = "$date $time"
-        val dateTime = inputFormat.parse(dateTimeString) ?: throw IllegalArgumentException("Invalid date/time format")
+
+        val dateTime = inputFormat.parse(formattedDate) ?: throw IllegalArgumentException("Invalid date/time format")
         return DateTime(outputFormat.format(dateTime))
     }
     // Sign in

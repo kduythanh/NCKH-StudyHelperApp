@@ -46,61 +46,208 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:orientation="horizontal">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Ngày bắt đầu"
+                android:textSize="20sp"
+                android:fontFamily="@font/roboto_bold"
+                android:textColor="@color/black">
+            </TextView>
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:id="@+id/startDate">
 
             <EditText
-                android:id="@+id/startDate"
-                android:layout_width="match_parent"
+                android:id="@+id/startDayInput"
+                android:layout_width="50dp"
                 android:layout_height="48dp"
-                android:hint="@string/startDate"
-                android:inputType="date"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/eventTitle"
-                app:layout_constraintBottom_toBottomOf="@id/startTime"
-                app:layout_constraintVertical_chainStyle="packed"/>
+                android:layout_weight="1"
+                android:hint="DD"
+                android:textAlignment="center"
+                android:inputType="number" />
+
+            <TextView
+                android:layout_width="15dp"
+                android:layout_height="wrap_content"
+                android:textAlignment="center"
+                android:text="/" />
+
+            <EditText
+                android:id="@+id/startMonthInput"
+                android:layout_width="50dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:hint="MM"
+                android:textAlignment="center"
+                android:inputType="number" />
+
+            <TextView
+                android:layout_width="15dp"
+                android:layout_height="wrap_content"
+                android:textAlignment="center"
+                android:text="/" />
+
+            <EditText
+                android:id="@+id/startYearInput"
+                android:layout_width="100dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:hint="YYYY"
+                android:textAlignment="center"
+                android:inputType="number" />
         </LinearLayout>
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
-            <EditText
-                android:id="@+id/startTime"
+            android:orientation="horizontal">
+            <TextView
                 android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Giờ bắt đầu"
+                android:textSize="20sp"
+                android:fontFamily="@font/roboto_bold"
+                android:textColor="@color/black">
+            </TextView>
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:id="@+id/startTime">
+
+            <EditText
+                android:id="@+id/startHourInput"
+                android:layout_width="50dp"
                 android:layout_height="48dp"
-                android:hint="@string/startTime"
-                android:inputType="time"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/startDate" />
+                android:layout_weight="1"
+                android:hint="hh"
+                android:textAlignment="center"
+                android:inputType="number" />
+
+            <TextView
+                android:layout_width="15dp"
+                android:layout_height="wrap_content"
+                android:textAlignment="center"
+                android:text=":" />
+
+            <EditText
+                android:id="@+id/startMinuteInput"
+                android:layout_width="50dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:hint="mm"
+                android:textAlignment="center"
+                android:inputType="number" />
         </LinearLayout>
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
-            <EditText
-                android:id="@+id/endDate"
+            android:orientation="horizontal">
+            <TextView
                 android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Ngày kết thúc"
+                android:textSize="20sp"
+                android:fontFamily="@font/roboto_bold"
+                android:textColor="@color/black">
+            </TextView>
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:id="@+id/endDate">
+
+            <EditText
+                android:id="@+id/endDayInput"
+                android:layout_width="50dp"
                 android:layout_height="48dp"
-                android:hint="@string/endDate"
-                android:inputType="date"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/startTime" />
+                android:layout_weight="1"
+                android:hint="DD"
+                android:textAlignment="center"
+                android:inputType="number" />
+
+            <TextView
+                android:layout_width="15dp"
+                android:layout_height="wrap_content"
+                android:textAlignment="center"
+                android:text="/" />
+
+            <EditText
+                android:id="@+id/endMonthInput"
+                android:layout_width="50dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:hint="MM"
+                android:textAlignment="center"
+                android:inputType="number" />
+
+            <TextView
+                android:layout_width="15dp"
+                android:layout_height="wrap_content"
+                android:textAlignment="center"
+                android:text="/" />
+
+            <EditText
+                android:id="@+id/endYearInput"
+                android:layout_width="100dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:hint="YYYY"
+                android:textAlignment="center"
+                android:inputType="number" />
         </LinearLayout>
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
-            <EditText
-                android:id="@+id/endTime"
+            android:orientation="horizontal">
+            <TextView
                 android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Giờ kết thúc"
+                android:textSize="20sp"
+                android:fontFamily="@font/roboto_bold"
+                android:textColor="@color/black">
+            </TextView>
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:id="@+id/endTime">
+
+            <EditText
+                android:id="@+id/endHourInput"
+                android:layout_width="50dp"
                 android:layout_height="48dp"
-                android:hint="@string/endTime"
-                android:inputType="time"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/endDate" />
+                android:layout_weight="1"
+                android:hint="hh"
+                android:textAlignment="center"
+                android:inputType="number" />
+
+            <TextView
+                android:layout_width="15dp"
+                android:layout_height="wrap_content"
+                android:textAlignment="center"
+                android:text=":" />
+
+            <EditText
+                android:id="@+id/endMinuteInput"
+                android:layout_width="50dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:hint="mm"
+                android:textAlignment="center"
+                android:inputType="number" />
         </LinearLayout>
         <LinearLayout
             android:layout_width="match_parent"
