@@ -16,12 +16,10 @@ constraintlayout = "2.1.4"
 googleGmsGoogleServices = "4.4.2"
 playServicesAuth = "21.2.0"
 swiperefreshlayout = "1.1.0"
-webkit = "1.12.1"
 firebaseAuthKtx = "23.0.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
-androidx-webkit = { module = "androidx.webkit:webkit", version.ref = "webkit" }
 google-api-client-android = { module = "com.google.api-client:google-api-client-android", version.ref = "googleApiClientAndroid" }
 google-api-services-calendar = { module = "com.google.apis:google-api-services-calendar", version.ref = "googleApiServicesCalendar" }
 google-http-client-jackson2 = { module = "com.google.http-client:google-http-client-jackson2", version.ref = "googleHttpClientJackson2" }
