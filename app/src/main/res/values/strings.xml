@@ -28,7 +28,7 @@
     <string name="logout">Đăng xuất</string>
     <string name="setting">Cài đặt</string>
     <string name="userProfile">Thông tin người dùng</string>
-    <string name="home">Trang chủ</string>
+<!--    <string name="home">Trang chủ</string>-->
 
     <string name="open_nav">Mở Navigation Drawer</string>
     <string name="close_nav">Đóng Navigation Drawer</string>

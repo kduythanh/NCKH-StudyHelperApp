@@ -12,10 +12,11 @@ import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import com.example.nlcs.NoteFunction.NoteFunctionActivity
 import com.example.nlcs.databinding.ActivityMainBinding
+import com.example.nlcs.ui.activities.FlashcardActivity
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
-import com.example.nlcs.ui.activities.FlashcardActivity
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -50,6 +51,11 @@ class MainActivity : AppCompatActivity() {
 
         updateNavHeader()
 
+        binding.card1.setOnClickListener{
+            val intent = Intent(this, FlashcardActivity::class.java)
+            startActivity(intent)
+        }
+
         binding.card2.setOnClickListener{
             val intent = Intent(this, MindMapMenuActivity::class.java)
             startActivity(intent)
@@ -57,37 +63,11 @@ class MainActivity : AppCompatActivity() {
 
         binding.card5.setOnClickListener{
             val intent = Intent(this, NoteFunctionActivity::class.java)
-
-
-        binding.card1.setOnClickListener{
-            val intent = Intent(this, FlashcardActivity::class.java)
-
             startActivity(intent)
         }
 
         binding.navigationView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId){
-                R.id.nav_home -> {
-                    if (!isCurrentActivity(MainActivity::class.java)) {
-                        startActivity(Intent(this, MainActivity::class.java))
-                    }
-                    drawerLayout.closeDrawer(GravityCompat.START)
-                    true
-                }
-                R.id.nav_user_profile -> {
-                    if (!isCurrentActivity(MainActivity::class.java)) {
-                        startActivity(Intent(this, MainActivity::class.java))
-                    }
-                    drawerLayout.closeDrawer(GravityCompat.START)
-                    true
-                }
-                R.id.nav_setting -> {
-                    if (!isCurrentActivity(MainActivity::class.java)) {
-                        startActivity(Intent(this, MainActivity::class.java))
-                    }
-                    drawerLayout.closeDrawer(GravityCompat.START)
-                    true
-                }
                 R.id.nav_logout -> {
                     drawerLayout.closeDrawer(GravityCompat.START)
                     firebaseAuth.signOut()
@@ -112,7 +92,6 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
-
     }
 
     private fun updateNavHeader() {
@@ -123,7 +102,6 @@ class MainActivity : AppCompatActivity() {
         if (currentUser != null) {
             emailTextView.text = currentUser.email // Set the email in the TextView
         }
-
     }
 
     private fun isCurrentActivity(activityClass: Class<*>): Boolean {
