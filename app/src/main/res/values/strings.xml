@@ -50,6 +50,33 @@
 
     <string name="ReminderDesc">Reminder</string>
     <string name="Reminder">Nhắc nhở</string>
+    <string name="ReminderTitleTextView">Tạo sự kiện/nhắc nhở mới</string>
+    <string name="editReminderTitleTextView">Sửa thông tin sự kiện/nhắc nhở</string>
+    <string name="ReminderAddButton">Thêm nhắc nhở</string>
+    <string name="reminderEditButton">Sửa nhắc nhở</string>
+    <string name="reminderDeleteButton">Xóa nhắc nhở</string>
+    <string name="previous_week">Tuần trước</string>
+    <string name="next_week">Tuần sau</string>
+    <string name="week_navigation_text">Tuần trước - Tuần sau</string>
+    <string name="reminderEventTitle">Tên sự kiện/nhắc nhở</string>
+    <string name="reminderDateAndTime">Ngày, giờ diễn ra</string>
+    <string name="exit_description">Thoát</string>
+
+    <string name="participantsEmails">Email các thành viên (phân tách bằng dấu phẩy)</string>
+    <string name="endTime">Giờ kết thúc (hh:mm)</string>
+    <string name="endDate">Ngày kết thúc (dd/mm/yyyy)</string>
+    <string name="startTime">Giờ bắt đầu (hh:mm)</string>
+    <string name="startDate">Ngày bắt đầu (dd/mm/yyyy)</string>
+    <string name="eventTitle">Tên sự kiện/nhắc nhở</string>
+    <string name="cancelEventButton">Hủy bỏ</string>
+    <string name="saveEventButton">Lưu</string>
+
+    <string name="editEventTitle">Tên sự kiện/nhắc nhở</string>
+    <string name="editStartDate">Ngày bắt đầu (dd/mm/yyyy)</string>
+    <string name="editStartTime">Giờ bắt đầu (hh:mm)</string>
+    <string name="editEndDate">Ngày kết thúc (dd/mm/yyyy)</string>
+    <string name="editEndTime">Giờ kết thúc (hh:mm)</string>
+    <string name="menu">Menu</string>
 
     <string name="UserImageDesc">User Image</string>
     <string name="Hello">Xin chào,</string>

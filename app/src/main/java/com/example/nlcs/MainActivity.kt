@@ -54,9 +54,12 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(this, MindMapMenuActivity::class.java)
             startActivity(intent)
         }
-
         binding.card5.setOnClickListener{
             val intent = Intent(this, NoteFunctionActivity::class.java)
+            startActivity(intent)
+        }
+        binding.card6.setOnClickListener{
+            val intent = Intent(this, ReminderMenuActivityAPI::class.java)
             startActivity(intent)
         }
 
