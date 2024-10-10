@@ -1,5 +1,10 @@
 [versions]
 agp = "8.5.0"
+firebaseBom = "33.4.0"
+googleApiClientGsonVersion = "1.32.1"
+googleGoogleApiClientAndroid = "1.32.1"
+googleGoogleApiServicesCalendarVersion = "v3-rev411-1.25.0"
+gson = "2.11.0"
 kotlin = "1.9.0"
 coreKtx = "1.10.1"
 junit = "4.13.2"
@@ -10,16 +15,21 @@ material = "1.10.0"
 activity = "1.8.0"
 constraintlayout = "2.1.4"
 googleGmsGoogleServices = "4.4.1"
-firebaseAuth = "23.0.0"
+firebaseAuthKtx = "23.0.0"
 firebaseFirestoreKtx = "25.0.0"
 firebaseStorageKtx = "21.0.0"
+playServicesAuth = "21.0.0"
+swiperefreshlayout = "1.1.0"
 glide = "4.16.0"
-firebaseDatabaseKtx = "21.0.0"
-firebaseFirestore = "25.0.0"
 neo4jJavaDriver = "4.4.11"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
+google-api-client-android-v1321 = { module = "com.google.api-client:google-api-client-android", version.ref = "googleGoogleApiClientAndroid" }
+google-api-client-gson-v1321 = { module = "com.google.api-client:google-api-client-gson", version.ref = "googleApiClientGsonVersion" }
+google-api-services-calendar-vv3rev4111250 = { module = "com.google.apis:google-api-services-calendar", version.ref = "googleGoogleApiServicesCalendarVersion" }
+gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
@@ -27,12 +37,12 @@ androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
-firebase-auth = { group = "com.google.firebase", name = "firebase-auth", version.ref = "firebaseAuth" }
+firebase-auth-ktx = { group = "com.google.firebase", name = "firebase-auth-ktx", version.ref = "firebaseAuthKtx" }
 firebase-firestore-ktx = { group = "com.google.firebase", name = "firebase-firestore-ktx", version.ref = "firebaseFirestoreKtx" }
 firebase-storage-ktx = { group = "com.google.firebase", name = "firebase-storage-ktx", version.ref = "firebaseStorageKtx" }
 glide = { module = "com.github.bumptech.glide:glide", version.ref = "glide" }
-firebase-database-ktx = { group = "com.google.firebase", name = "firebase-database-ktx", version.ref = "firebaseDatabaseKtx" }
-firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore", version.ref = "firebaseFirestore" }
+androidx-swiperefreshlayout = { group = "androidx.swiperefreshlayout", name = "swiperefreshlayout", version.ref = "swiperefreshlayout" }
+play-services-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "playServicesAuth" }
 neo4j-java-driver = { module = "org.neo4j.driver:neo4j-java-driver", version.ref = "neo4jJavaDriver" }
 
 [plugins]
