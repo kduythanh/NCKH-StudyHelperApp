@@ -1,16 +1,9 @@
 [versions]
 agp = "8.5.0"
 firebaseBom = "33.4.0"
-googleApiClient = "2.7.0"
-googleApiClientAndroidVersion = "1.34.2"
-googleApiClientGson = "1.33.0"
 googleApiClientGsonVersion = "1.32.1"
-googleApiServicesCalendarVersion = "v3-rev20210830-1.32.1"
-googleAuthLibraryOauth2Http = "1.23.0"
 googleGoogleApiClientAndroid = "1.32.1"
-googleGoogleApiServicesCalendar = "v3-rev305-1.25.0"
 googleGoogleApiServicesCalendarVersion = "v3-rev411-1.25.0"
-grpcProtobuf = "1.62.2"
 gson = "2.11.0"
 kotlin = "1.9.0"
 coreKtx = "1.10.1"
@@ -25,28 +18,17 @@ googleGmsGoogleServices = "4.4.1"
 firebaseAuthKtx = "23.0.0"
 firebaseFirestoreKtx = "25.0.0"
 firebaseStorageKtx = "21.0.0"
-firebaseDatabaseKtx = "21.0.0"
 playServicesAuth = "21.0.0"
 swiperefreshlayout = "1.1.0"
-googleApiClientAndroid = "2.7.0"
-googleApiServicesCalendar = "v3-rev20240906-2.0.0"
-googleHttpClientJackson2 = "1.45.0"
 glide = "4.16.0"
-
 neo4jJavaDriver = "4.4.11"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
-google-api-client = { module = "com.google.api-client:google-api-client", version.ref = "googleApiClient" }
 google-api-client-android-v1321 = { module = "com.google.api-client:google-api-client-android", version.ref = "googleGoogleApiClientAndroid" }
-google-api-client-gson = { module = "com.google.api-client:google-api-client-gson", version.ref = "googleApiClientGson" }
 google-api-client-gson-v1321 = { module = "com.google.api-client:google-api-client-gson", version.ref = "googleApiClientGsonVersion" }
-google-api-services-calendar-vv3rev3051250 = { module = "com.google.apis:google-api-services-calendar", version.ref = "googleGoogleApiServicesCalendar" }
 google-api-services-calendar-vv3rev4111250 = { module = "com.google.apis:google-api-services-calendar", version.ref = "googleGoogleApiServicesCalendarVersion" }
-grpc-okhttp = { module = "io.grpc:grpc-okhttp", version.ref = "grpcProtobuf" }
-grpc-protobuf = { module = "io.grpc:grpc-protobuf", version.ref = "grpcProtobuf" }
-grpc-stub = { module = "io.grpc:grpc-stub", version.ref = "grpcProtobuf" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
