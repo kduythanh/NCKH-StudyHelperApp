@@ -37,4 +37,7 @@
     <color name="background_4">#ff9dfb</color>
     <color name="background_5">#f7ff9d</color>
     <color name="background_6">#ffd89d</color>
+
+    <color name="forest_green">#228B22</color>
+    <color name="tree_green">#006400</color>
 </resources>

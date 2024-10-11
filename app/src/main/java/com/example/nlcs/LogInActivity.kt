@@ -5,10 +5,12 @@ import android.os.Bundle
 import android.util.Patterns
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import com.example.nlcs.databinding.ActivityLogInBinding
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
+import android.content.Context
 
 
 class LogInActivity : AppCompatActivity() {
@@ -21,6 +23,8 @@ class LogInActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityLogInBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+//        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
 
         // Initialize Firebase Auth
         firebaseAuth = Firebase.auth
@@ -56,22 +60,45 @@ class LogInActivity : AppCompatActivity() {
     }
 
     // Login account in firebase
+//    private fun loginAccountInFirebase(mail: String, passwd: String){
+//        firebaseAuth.signInWithEmailAndPassword(mail, passwd).addOnCompleteListener(this){ task ->
+//            if(task.isSuccessful){
+//                if(firebaseAuth.currentUser?.isEmailVerified == true){
+//                    val intent = Intent(this, MainActivity::class.java)
+//                    startActivity(intent)
+//                }else{
+//                    Toast.makeText(this, "Email not verified, please verify your email!", Toast.LENGTH_SHORT).show()
+//                }
+//            }else{
+//                Toast.makeText(this, task.exception?.localizedMessage, Toast.LENGTH_SHORT).show()
+//            }
+//        }
+//    }
+
+
+    // Login account in firebase
     private fun loginAccountInFirebase(mail: String, passwd: String){
-        firebaseAuth.signInWithEmailAndPassword(mail, passwd).addOnCompleteListener(this){ task ->
-            if(task.isSuccessful){
-                if(firebaseAuth.currentUser?.isEmailVerified == true){
+        firebaseAuth.signInWithEmailAndPassword(mail, passwd).addOnCompleteListener(this) { task ->
+            if (task.isSuccessful) {
+                if (firebaseAuth.currentUser?.isEmailVerified == true) {
+                    // Lưu userID vào SharedPreferences
+                    val userId = firebaseAuth.currentUser?.uid
+                    val prefs = getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
+                    prefs.edit().putString("userID", userId).apply()
+
+                    // Chuyển hướng đến MainActivity
                     val intent = Intent(this, MainActivity::class.java)
                     startActivity(intent)
-                }else{
+                    finish() // Đóng màn hình đăng nhập
+                } else {
                     Toast.makeText(this, "Email not verified, please verify your email!", Toast.LENGTH_SHORT).show()
                 }
-            }else{
+            } else {
                 Toast.makeText(this, task.exception?.localizedMessage, Toast.LENGTH_SHORT).show()
             }
         }
     }
 
-    // Validate account
     private fun validateAccount(mail: String, passwd: String): Boolean{
         if(!Patterns.EMAIL_ADDRESS.matcher(mail).matches()){
             binding.LogInEmailEditText.error = "Invalid email format"

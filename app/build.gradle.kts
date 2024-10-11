@@ -17,11 +17,19 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
-
     buildTypes {
         release {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+        }
+    }
+    packagingOptions {
+        resources {
+            excludes += "META-INF/DEPENDENCIES"
+            excludes += "META-INF/LICENSE"
+            excludes += "META-INF/LICENSE.txt"
+            excludes += "META-INF/NOTICE"
+            excludes += "META-INF/NOTICE.txt"
         }
     }
     compileOptions {
@@ -35,23 +43,16 @@ android {
     buildFeatures {
         viewBinding = true
     }
+
 }
 
 dependencies {
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
-    implementation(libs.firebase.auth)
-    implementation(libs.firebase.firestore)
-    implementation(libs.firebase.crashlytics.buildtools)
     implementation(libs.androidx.ui.graphics.android)
-    implementation(libs.androidx.room.ktx)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
 
 
     // Import the BoM for the Firebase platform
@@ -128,4 +129,20 @@ dependencies {
     implementation ("com.google.code.findbugs:jsr305:3.0.2")
     implementation ("org.conscrypt:conscrypt-android:2.5.2")
     implementation ("com.github.Kennyc1012:BottomSheetMenu:5.1.1")
+    
+    implementation(libs.androidx.swiperefreshlayout)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth.ktx)
+    implementation(libs.firebase.firestore.ktx)
+    implementation(libs.firebase.storage.ktx)
+    implementation(libs.play.services.auth)
+    implementation(libs.glide)
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
+    implementation(libs.neo4j.java.driver)
+    implementation(libs.google.api.client.android.v1321)
+    implementation(libs.google.api.services.calendar.vv3rev4111250)
+    implementation(libs.gson)
+    implementation(libs.google.api.client.gson.v1321)
 }
