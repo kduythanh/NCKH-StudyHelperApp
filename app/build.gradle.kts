@@ -102,6 +102,8 @@ dependencies {
 
     //Card stack view
     implementation (project(":cardstackview"))
+    //implementation (libs.card.stack.view)
+
 
     //circle progress bar
     implementation ("com.github.jakob-grabner:Circle-Progress-View:1.4")
