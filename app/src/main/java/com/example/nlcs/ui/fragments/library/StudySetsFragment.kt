@@ -25,12 +25,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class StudySetsFragment : Fragment() {
-    // Use a backing property for non-nullable binding
     private var _binding: FragmentStudySetsBinding? = null
     private val binding get() = _binding!!
     private lateinit var firebaseAuth: FirebaseAuth
-
-
     private var flashCards: ArrayList<FlashCard> = ArrayList()
     private lateinit var flashCardDAO: FlashCardDAO
     private var setsAdapter: SetCopyAdapter? = null
@@ -38,7 +35,6 @@ class StudySetsFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         flashCardDAO = FlashCardDAO(requireActivity())
-
     }
 
     override fun onCreateView(
@@ -49,17 +45,12 @@ class StudySetsFragment : Fragment() {
         return binding.root
     }
 
-    @SuppressLint("NotifyDataSetChanged")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        CoroutineScope(Dispatchers.Main).launch {
-            setupView()
-        }
-
-
+        setupView()
     }
 
-    private suspend fun setupView() {
+    private fun setupView() {
         binding.createSetBtn.setOnClickListener {
             startActivity(
                 Intent(
@@ -67,11 +58,28 @@ class StudySetsFragment : Fragment() {
                 )
             )
         }
+
         firebaseAuth = Firebase.auth
         val userId = firebaseAuth.currentUser?.uid ?: ""
-        flashCards = flashCardDAO.getAllFlashCardByUserId(userId)
-        updateVisibility()
-        setupRecyclerView()
+
+        // Launching a coroutine to call the suspend function
+        lifecycleScope.launch {
+            refreshData(userId) // Pass userId to refreshData
+        }
+    }
+
+    private suspend fun refreshData(userId: String) {
+        // Clear the current flashCards
+        flashCards.clear()
+
+        // Fetch new data
+        val newCards = flashCardDAO.getAllFlashCardByUserId(userId)
+        if (newCards != null) {
+            flashCards.addAll(newCards) // Add new data
+        }
+
+        updateVisibility() // Update visibility based on new data
+        setupRecyclerView() // Setup the RecyclerView with updated data
     }
 
     private fun updateVisibility() {
@@ -84,46 +92,20 @@ class StudySetsFragment : Fragment() {
         }
     }
 
-    @SuppressLint("NotifyDataSetChanged")
     private fun setupRecyclerView() {
-        val linearLayoutManager =
-            LinearLayoutManager(requireContext(), RecyclerView.VERTICAL, false)
-        binding.setsRv.layoutManager = linearLayoutManager
-        setsAdapter = SetCopyAdapter(requireContext(), flashCards)
-        binding.setsRv.adapter = setsAdapter
-        setsAdapter?.notifyDataSetChanged()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        // Use lifecycleScope to launch coroutines tied to the fragment's lifecycle
-        refreshData()
-    }
-
-    @SuppressLint("NotifyDataSetChanged")
-    private fun refreshData() {
-        CoroutineScope(Dispatchers.Main).launch {
-            // Initialize firebaseAuth if needed
-            firebaseAuth = Firebase.auth
-            val userId = firebaseAuth.currentUser?.uid ?: ""
-
-            // Ensure flashCards is initialized before using it
-            flashCards = flashCards ?: ArrayList() // Initialize if not already initialized
-
-            flashCards.clear() // Clear current data
-            flashCardDAO.getAllFlashCardByUserId(userId)?.let {
-                flashCards.addAll(it) // Add new data
-            }
-
-            setsAdapter?.notifyDataSetChanged()
-            updateVisibility() // Make sure this method doesn't depend on uninitialized properties
+        if (setsAdapter == null) { // Check if the adapter is already created
+            setsAdapter = SetCopyAdapter(requireContext(), flashCards)
+            binding.setsRv.layoutManager = LinearLayoutManager(requireContext(), RecyclerView.VERTICAL, false)
+            binding.setsRv.adapter = setsAdapter
+        } else {
+            setsAdapter?.notifyDataSetChanged() // Notify changes if adapter already exists
         }
     }
 
 
     override fun onDestroyView() {
         super.onDestroyView()
-        // Avoid memory leaks by nullifying the binding
-        _binding = null
+        _binding = null // Avoid memory leaks
     }
 }
+
