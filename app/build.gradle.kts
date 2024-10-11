@@ -102,8 +102,8 @@ dependencies {
     implementation ("androidx.gridlayout:gridlayout:1.0.0")
 
     //Card stack view
-    implementation (project(":cardstackview"))
-    //implementation (libs.card.stack.view)
+    //implementation (project(":cardstackview"))
+    implementation ("com.github.yuyakaido:CardStackView:2.3.4")
 
 
     //circle progress bar

@@ -22,5 +22,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "NCKH"
 include(":app")
-include (":cardstackview")
+//include (":cardstackview")
  
