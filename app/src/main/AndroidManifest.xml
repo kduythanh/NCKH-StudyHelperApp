@@ -8,7 +8,7 @@
     <uses-permission android:name="android.permission.VIBRATE"/>
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
     <application
         android:allowBackup="true"
@@ -21,24 +21,35 @@
         android:theme="@style/Theme.NCKH"
         tools:targetApi="31">
         <activity
-            android:name=".FocusActivity"
+            android:name=".NoteFunction.NoteFunctionAdjustActivity"
             android:exported="false" />
         <activity
             android:name=".FlashCardActivity"
             android:exported="false" />
+
+        <activity
+            android:name=".NoteFunction.NoteFunctionActivity"
+            android:exported="true" >
+        </activity>
         <activity
             android:name=".ReminderMenuActivityAPI"
             android:exported="false" />
-
+        <activity
+            android:name=".MindMapActivity"
+            android:exported="false"
+            android:screenOrientation="landscape"/>
         <activity
             android:name=".MindMapMenuActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:launchMode="singleTop"/>
         <activity
             android:name=".ForgotPasswordActivity"
             android:exported="false" />
         <activity
             android:name=".LogInActivity"
-            android:exported="false" />
+            android:exported="true" >
+
+        </activity>
         <activity
             android:name=".SignUpActivity"
             android:exported="false" />
@@ -53,7 +64,8 @@
             android:exported="false" />
         <activity
             android:name=".MainActivity"
-            android:exported="false" />
+            android:exported="false"
+            />
         <activity
             android:name=".TimeSelectionActivity"
             android:exported="false" />

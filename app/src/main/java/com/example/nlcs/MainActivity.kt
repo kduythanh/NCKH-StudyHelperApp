@@ -112,6 +112,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         })
+
     }
 
     private fun updateNavHeader() {
@@ -120,7 +121,11 @@ class MainActivity : AppCompatActivity() {
 
         val currentUser = firebaseAuth.currentUser
         if (currentUser != null) {
-            emailTextView.text = currentUser.email
+            emailTextView.text = currentUser.email // Set the email in the TextView
         }
+    }
+
+    private fun isCurrentActivity(activityClass: Class<*>): Boolean {
+        return activityClass == this::class.java
     }
 }

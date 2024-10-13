@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    tools:context=".NoteFunction.NoteFunctionActivity">
+
+    <!-- ImageView to display the logo centered in the background with reduced opacity -->
+<!--    <ImageView-->
+<!--        android:id="@+id/backgroundImage"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_gravity="center"-->
+<!--        android:alpha="0.1"-->
+<!--        android:scaleType="centerInside"-->
+<!--        android:src="@drawable/ic_ctu_logo" /> &lt;!&ndash; 10% opacity (similar to CSS opacity: 0.1) &ndash;&gt;-->
+
+    <!-- Your content stacked above the image -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <include
+            android:id="@+id/toolbar"
+            layout="@layout/functionmess_toolbar" />
+
+        <EditText
+            android:id="@+id/edtFind"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="6dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginEnd="16dp"
+            android:padding="12dp"
+            android:textSize="20sp"
+            android:background="@drawable/rounder_corner"
+            android:hint="Nhập tiêu đề cần tìm" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/RecycleView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="10dp" />
+    </LinearLayout>
+</FrameLayout>

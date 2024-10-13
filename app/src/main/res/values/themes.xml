@@ -6,7 +6,11 @@
     </style>
 
     <style name="Theme.NCKH" parent="Base.Theme.NCKH" />
-    <style name="ToolBarTheme" parent="@style/ThemeOverlay.MaterialComponents">
-        <item name="colorControlNormal">@color/toolbar_color_control_normal</item>
+    <style name="NavigationViewTitleStyle" parent="Widget.Design.NavigationView">
+        <item name="android:textSize">18sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/black</item>
+        <item name="android:padding">16dp</item>
     </style>
+
 </resources>
