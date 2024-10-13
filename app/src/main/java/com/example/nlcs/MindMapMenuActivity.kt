@@ -5,11 +5,11 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.example.nlcs.databinding.ActivityMindmapBinding
+import com.example.nlcs.databinding.ActivityMindMapMenuBinding
 
 class MindMapMenuActivity : AppCompatActivity() {
 
-    private var binding: ActivityMindmapBinding? = null
+    private var binding: ActivityMindMapMenuBinding ?= null
     // Declare usageTracker to use UsageTracker class
     private lateinit var usageTracker: UsageTracker
     // Setting saving time start at 0
@@ -23,7 +23,7 @@ class MindMapMenuActivity : AppCompatActivity() {
 
         enableEdgeToEdge()
 
-        binding = ActivityMindmapBinding.inflate(layoutInflater)
+        binding = ActivityMindMapMenuBinding.inflate(layoutInflater)
         setContentView(binding?.root)
 
         // Set up Toolbar
