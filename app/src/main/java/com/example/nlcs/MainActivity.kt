@@ -1,11 +1,13 @@
 package com.example.nlcs
 
+import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.GravityCompat
@@ -35,7 +37,7 @@ class MainActivity : AppCompatActivity() {
         firebaseAuth = Firebase.auth
 
         setSupportActionBar(binding.toolbar)
-
+        supportActionBar?.setDisplayShowTitleEnabled(false)
         drawerLayout = binding.drawerLayout
         val toggle = ActionBarDrawerToggle(this, drawerLayout, binding.toolbar, R.string.open_nav, R.string.close_nav)
         drawerLayout.addDrawerListener(toggle)
@@ -89,14 +91,21 @@ class MainActivity : AppCompatActivity() {
 
 
         binding.navigationView.setNavigationItemSelectedListener { menuItem ->
-            when (menuItem.itemId) {
+            when (menuItem.itemId){
                 R.id.nav_logout -> {
                     drawerLayout.closeDrawer(GravityCompat.START)
-                    firebaseAuth.signOut()
-                    val intent = Intent(this, LogInActivity::class.java)
+                    binding.navigationView.menu.findItem(R.id.nav_logout).isChecked = false
+                    showLogoutConfirmationDialog()
+                    true
+                }
+                R.id.nav_changePassword -> {
+                    // Đóng navigation drawer
+                    drawerLayout.closeDrawer(GravityCompat.START)
+                    // Xóa trạng thái đã chọn của menu item
+                    binding.navigationView.menu.findItem(R.id.nav_changePassword).isChecked = false
+                    // Chuyển đến activity đổi mật khẩu
+                    val intent = Intent(this, ChangePasswordActivity::class.java)
                     startActivity(intent)
-                    Toast.makeText(this, "Logged Out", Toast.LENGTH_SHORT).show()
-                    finish()
                     true
                 }
                 else -> false
@@ -114,7 +123,28 @@ class MainActivity : AppCompatActivity() {
         })
 
     }
+    // Hàm hiển thị hộp thoại xác nhận
+    private fun showLogoutConfirmationDialog() {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Xác nhận đăng xuất")
+        builder.setMessage("Bạn có chắc chắn muốn đăng xuất khỏi tài khoản?")
 
+        builder.setPositiveButton("Có") { _: DialogInterface, _: Int ->
+            // Thực hiện đăng xuất
+            firebaseAuth.signOut()
+            val intent = Intent(this, LogInActivity::class.java)
+            startActivity(intent)
+            Toast.makeText(this, "Đăng xuất thành công!", Toast.LENGTH_SHORT).show()
+            finish()
+        }
+
+        builder.setNegativeButton("Không") { dialog: DialogInterface, _: Int ->
+            dialog.dismiss() // Đóng hộp thoại
+        }
+
+        val dialog = builder.create()
+        dialog.show()
+    }
     private fun updateNavHeader() {
         val headerView = binding.navigationView.getHeaderView(0)
         val emailTextView: TextView = headerView.findViewById(R.id.nav_header_email)
@@ -123,9 +153,5 @@ class MainActivity : AppCompatActivity() {
         if (currentUser != null) {
             emailTextView.text = currentUser.email // Set the email in the TextView
         }
-    }
-
-    private fun isCurrentActivity(activityClass: Class<*>): Boolean {
-        return activityClass == this::class.java
     }
 }

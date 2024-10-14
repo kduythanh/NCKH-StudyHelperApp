@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">NKCH</string>
+    <string name="app_name">NCKH</string>
     <string name="logo_description">CTU logo</string>
 
     <string name="signUp">Đăng kí</string>
@@ -13,7 +13,7 @@
 
     <string name="loginLink">Đăng nhập</string>
     <string name="login">ĐĂNG NHẬP</string>
-    <string name="loginTitle">Đăng Nhập</string>
+    <string name="loginTitle">Đăng nhập</string>
     <string name="haveNoAccount">Chưa có tài khoản?\ </string>
 
     <string name="signUpLink">Tạo tài khoản</string>
@@ -33,11 +33,11 @@
     <string name="open_nav">Mở Navigation Drawer</string>
     <string name="close_nav">Đóng Navigation Drawer</string>
 
-    <string name="FlashCardsDesc">Flash Cards</string>
-    <string name="FlashCards">Flash cards</string>
+    <string name="FlashCardsDesc">Flashcards</string>
+    <string name="FlashCards">Flashcards</string>
 
-    <string name="MindMapDesc">Mind Map</string>
-    <string name="MindMap">Mind map</string>
+    <string name="MindMapDesc">Sơ đồ tư duy</string>
+    <string name="MindMap">Sơ đồ tư duy</string>
 
     <string name="FocusDesc">Focus Mode</string>
     <string name="Focus">Hẹn giờ tập trung</string>
@@ -115,5 +115,12 @@
     <string name="ChildNode">Ý tưởng con</string>
 
     <string name="FillerText">Filler Text</string>
+
+    <string name="changePassword">Đổi mật khẩu</string>
+    <string name="currentPassword">Mật khẩu hiện tại</string>
+    <string name="newPassword">Mật khẩu mới</string>
+    <string name="confirmNewPassword">Xác nhận mật khẩu mới</string>
+    <string name="changePasswordConfirmButton">ĐỔI MẬT KHẨU</string>
+
 
 </resources>

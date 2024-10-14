@@ -51,6 +51,7 @@ class MindMapMenuActivity : AppCompatActivity(), MindMapListener {
         // Initializing some variables
         firebaseAuth = FirebaseAuth.getInstance()
         setSupportActionBar(binding?.toolbar)
+        supportActionBar?.setDisplayShowTitleEnabled(false)
         recyclerView = binding?.mindMapMenuRecycleView ?: return
         mindMapList = arrayListOf()
 

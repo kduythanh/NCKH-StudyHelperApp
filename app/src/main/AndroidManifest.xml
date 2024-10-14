@@ -54,7 +54,10 @@
             android:name=".LogInActivity"
             android:exported="true" >
         </activity>
-
+        <activity
+            android:name=".ChangePasswordActivity"
+            android:exported="false">
+        </activity>
         <activity
             android:name=".FocusActivity"
             android:exported="true" >
