@@ -43,7 +43,7 @@
     <string name="Focus">Hẹn giờ tập trung</string>
 
     <string name="ProgressTrackerDesc">Progress Tracker</string>
-    <string name="ProgressTracker">Theo dỗi tiến trình</string>
+    <string name="ProgressTracker">Theo dõi tiến trình</string>
 
     <string name="NoteDesc">Note</string>
     <string name="Note">Ghi chú</string>
@@ -82,6 +82,7 @@
     <string name="Hello">Xin chào,</string>
     <string name="UserName">-Tên người dùng-</string>
 
+    <string name="image">start image</string>
     <string name="AddButton">Nút Add</string>
     <string name="Done">Hoàn Thành</string>
 

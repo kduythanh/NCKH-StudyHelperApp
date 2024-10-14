@@ -1,0 +1,328 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:gravity=""
+    android:orientation="vertical"
+    tools:context=".TimeDown">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbarTimeDown"
+        android:layout_width="0dp"
+        android:layout_height="?android:attr/actionBarSize"
+        android:background="@color/background_3"
+        android:theme="@style/ToolBarTheme"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <!-- Thêm TextView để hiển thị tiêu đề -->
+        <TextView
+            android:id="@+id/toolbar_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:text="Hẹn giờ tập trung"
+            android:textColor="@color/black"
+            android:textSize="25sp"
+            android:textStyle="bold" />
+
+    </androidx.appcompat.widget.Toolbar>
+
+    <TextView
+        android:id="@+id/imageText"
+        android:layout_width="wrap_content"
+        android:layout_height="200dp"
+        android:fontFamily="@font/roboto_light"
+        android:gravity="center"
+        android:lineSpacingExtra="15dp"
+        android:text="Mỗi phút tập trung là một bước\n gần hơn đến ước mơ của bạn"
+        android:textColor="@color/brown"
+        android:textSize="25dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/toolbarTimeDown" />
+
+
+    <!-- Character -->
+    <LinearLayout
+        android:id="@+id/characterClock"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageText">
+        <!-- hour -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical">
+
+
+            <TextView
+
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="45dp"
+                android:layout_marginVertical="4dp"
+                android:maxLines="1"
+                android:text="Giờ"
+                android:textColor="@color/black"
+                android:textSize="12pt" />
+
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="4dp"
+                android:maxLength="1"
+                android:maxLines="1"
+                android:text=""
+                android:textColor="@color/black"
+                android:textSize="20pt"
+                android:textStyle="bold" />
+
+
+        </LinearLayout>
+        <!-- minute -->
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginVertical="4dp"
+                android:maxLines="1"
+                android:text="Phút"
+                android:textColor="@color/black"
+                android:textSize="12pt" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="4dp"
+                android:maxLength="1"
+                android:maxLines="1"
+                android:text=""
+                android:textColor="@color/black"
+                android:textSize="20pt"
+                android:textStyle="bold" />
+
+
+        </LinearLayout>
+
+        <!-- second -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="40dp"
+                android:layout_marginVertical="4dp"
+                android:maxLines="1"
+                android:text="Giây"
+                android:textColor="@color/black"
+                android:textSize="12pt" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+
+    <!-- Number -->
+    <LinearLayout
+        android:id="@+id/groupMinMax"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/characterClock">
+        <!-- hour -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/textViewHour"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="20dp"
+                android:layout_marginVertical="4dp"
+                android:maxLength="2"
+                android:maxLines="1"
+                android:text="00"
+                android:textColor="@color/black"
+                android:textSize="20pt"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="4dp"
+                android:maxLength="1"
+                android:maxLines="1"
+                android:text=":"
+                android:textColor="@color/black"
+                android:textSize="20pt"
+                android:textStyle="bold" />
+
+
+        </LinearLayout>
+        <!-- minute -->
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="6dp"
+            android:gravity="center"
+            android:orientation="vertical">
+
+
+            <TextView
+                android:id="@+id/textViewMinute"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="20dp"
+                android:layout_marginVertical="4dp"
+                android:maxLength="2"
+                android:maxLines="1"
+                android:text="00"
+                android:textColor="@color/black"
+                android:textSize="20pt"
+                android:textStyle="bold" />
+
+            <!--            <Button-->
+            <!--                android:id="@+id/buttonMinuteMinus"-->
+            <!--                android:layout_width="wrap_content"-->
+            <!--                android:layout_height="wrap_content"-->
+            <!--                android:backgroundTint="#666666"-->
+            <!--                android:text="-"-->
+            <!--                android:textColor="@color/white"-->
+            <!--                android:textSize="12pt" />-->
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="4dp"
+                android:maxLength="1"
+                android:maxLines="1"
+                android:text=":"
+                android:textColor="@color/black"
+                android:textSize="20pt"
+                android:textStyle="bold" />
+
+
+        </LinearLayout>
+
+        <!-- second -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/textViewSecond"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="20dp"
+                android:layout_marginVertical="4dp"
+                android:maxLength="2"
+                android:maxLines="1"
+                android:text="00"
+                android:textColor="@color/black"
+                android:textSize="20pt"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/flStart"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:layout_marginTop="160dp"
+        android:background="@drawable/item_color_accent_border_ripple_background"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/groupMinMax">
+
+        <Button
+            android:id="@+id/buttonResume"
+            android:layout_width="wrap_content"
+            android:layout_height="110dp"
+            android:layout_gravity="center"
+            android:backgroundTint="@color/white"
+            android:text="TIẾP TỤC"
+            android:textAllCaps="false"
+            android:textColor="@color/black"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.498"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/groupMinMax"
+            app:layout_constraintVertical_bias="0.413" />
+
+    </FrameLayout>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

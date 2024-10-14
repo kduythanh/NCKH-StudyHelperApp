@@ -48,6 +48,10 @@ import java.util.Locale
 import java.util.TimeZone
 import java.util.Calendar as JavaCalendar
 
+import androidx.activity.enableEdgeToEdge
+import com.example.nlcs.databinding.ActivityReminderBinding
+
+
 class ReminderMenuActivityAPI : AppCompatActivity() {
     private lateinit var googleSignInClient: GoogleSignInClient
     private lateinit var credential: GoogleAccountCredential
@@ -62,10 +66,27 @@ class ReminderMenuActivityAPI : AppCompatActivity() {
     private var currentWeekStartDate: JavaCalendar = JavaCalendar.getInstance()
 
 
+    private var binding: ActivityReminderBinding? = null
+    // Declare usageTracker to use UsageTracker class
+    private lateinit var usageTracker: UsageTracker
+    // Setting saving time start at 0
+    private var startTime: Long = 0
+
+
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // import class usageTracker to count using time
+        usageTracker = UsageTracker(this)
+
+        enableEdgeToEdge()
+
+        binding = ActivityReminderBinding.inflate(layoutInflater)
+        // setContentView(binding?.root)
+
         setContentView(R.layout.activity_reminder_menu_api)
+        
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN) // Cấu hình Google Sign-In
             .requestEmail()
             .requestScopes(Scope(CalendarScopes.CALENDAR))
@@ -530,5 +551,34 @@ class ReminderMenuActivityAPI : AppCompatActivity() {
     companion object {
         const val REQUEST_CODE_SIGN_IN = 1001
         private const val TAG = "ReminderMenuActivityAPI"
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Lưu thời gian bắt đầu (mốc thời gian hiện tại) để tính thời gian sử dụng khi Activity bị tạm dừng
+        startTime = System.currentTimeMillis()
+
+    }
+
+
+    override fun onPause() {
+        super.onPause()
+
+        // Tính toán thời gian sử dụng Ghi chú
+        val endTime = System.currentTimeMillis()
+        val durationInMillis = endTime - startTime
+        val durationInSeconds = (durationInMillis / 1000).toInt() // Chuyển đổi thời gian từ milliseconds sang giây
+
+        // Kiểm tra nếu thời gian sử dụng hợp lệ (lớn hơn 0 giây) thì lưu vào UsageTracker
+        if (durationInSeconds > 0) {
+            usageTracker.addUsageTime("Nhắc nhở", durationInSeconds)
+        } else {
+            usageTracker.addUsageTime("Nhắc nhở", 0)
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        binding = null
     }
 }

@@ -17,6 +17,39 @@
     <color name="background_5">#f7ff9d</color>
     <color name="background_6">#ffd89d</color>
 
+
+    <color name="blue">#0000FF</color>
+    <color name="lightBlue">#B8E5F4</color>
+
+    <color name="colorPrimary">#B2212121</color>
+    <color name="colorPrimaryDark">#B2212121</color>
+    <color name="colorAccent">#008F24</color>
+    <color name="lightGrey">#C4C4C4</color>
+
+
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+    <color name="toolbar_color_control_normal">#000000</color>
+
+    <color name="max_blue">#30d9ef</color>
+    <color name="min_blue">#96e8f3</color>
+    <color name="light_blue">#C8EBF3</color>
+
+    <color name="light_green">#9DFFD6</color>
+    <color name="pink">#F79AAA</color>
+    <color name="blue_bei">#87CEFA</color>
+    <color name="high_blue">#1E90FF</color>
+    <color name="orange_500">#FF5722</color>
+    <color name="total_usage_time">#0BA825</color>
+    <color name="another_color">#FF5722</color>
+    <color name="light_yellow">#FED55F</color>
+    <color name="brown">#CE7950</color>
+
+
+
     <color name="forest_green">#228B22</color>
     <color name="tree_green">#006400</color>
 </resources>

@@ -42,6 +42,7 @@ android {
 
     buildFeatures {
         viewBinding = true
+        dataBinding = true
     }
 
 }
@@ -52,6 +53,14 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
+    implementation(libs.androidx.recyclerview)
+    implementation(libs.firebase.database.ktx)
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+    implementation("com.github.PhilJay:MPAndroidChart:3.1.0")
+    implementation ("com.google.code.gson:gson:2.10.1")
+    implementation ("androidx.recyclerview:recyclerview:1.2.1")
+    implementation ("com.google.firebase:firebase-database-ktx")
+    
     implementation(libs.androidx.swiperefreshlayout)
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth.ktx)

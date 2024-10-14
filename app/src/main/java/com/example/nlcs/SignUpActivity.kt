@@ -54,6 +54,11 @@ class SignUpActivity : AppCompatActivity() {
     private fun createAccountFirebase(mail: String, passwd: String){
         firebaseAuth.createUserWithEmailAndPassword(mail, passwd).addOnCompleteListener(this){ task ->
             if(task.isSuccessful){
+
+//                val userId = firebaseAuth.currentUser?.uid
+//                val prefs = getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
+//                prefs.edit().putString("userID", userId).apply()  // Lưu userID vào SharedPreferences
+
                 Toast.makeText(this, "Account created", Toast.LENGTH_SHORT).show()
                 // Send verification email
                 firebaseAuth.currentUser?.sendEmailVerification()
