@@ -42,6 +42,7 @@ android {
 
     buildFeatures {
         viewBinding = true
+        dataBinding = true
     }
 
 }
@@ -129,6 +130,13 @@ dependencies {
     implementation ("com.google.code.findbugs:jsr305:3.0.2")
     implementation ("org.conscrypt:conscrypt-android:2.5.2")
     implementation ("com.github.Kennyc1012:BottomSheetMenu:5.1.1")
+    implementation(libs.androidx.recyclerview)
+    implementation(libs.firebase.database.ktx)
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+    implementation("com.github.PhilJay:MPAndroidChart:3.1.0")
+    implementation ("com.google.code.gson:gson:2.10.1")
+    implementation ("androidx.recyclerview:recyclerview:1.2.1")
+    implementation ("com.google.firebase:firebase-database-ktx")
     
     implementation(libs.androidx.swiperefreshlayout)
     implementation(platform(libs.firebase.bom))

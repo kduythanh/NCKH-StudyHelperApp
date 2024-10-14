@@ -8,19 +8,9 @@
         android:checkableBehavior="single">
 
         <item
-            android:id="@+id/nav_home"
-            android:icon="@drawable/ic_home"
-            android:title="@string/home"/>
-
-        <item
-            android:id="@+id/nav_user_profile"
-            android:icon="@drawable/ic_user"
-            android:title="@string/userProfile"/>
-
-        <item
-            android:id="@+id/nav_setting"
+            android:id="@+id/nav_changePassword"
             android:icon="@drawable/ic_setting"
-            android:title="@string/setting"/>
+            android:title="@string/changePassword"/>
 
         <item
             android:id="@+id/nav_logout"

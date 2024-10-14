@@ -16,26 +16,34 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.nlcs.R
+import com.example.nlcs.UsageTracker
+import com.example.nlcs.databinding.ActivityNoteFunctionAcitivityBinding
 import com.example.nlcs.databinding.ActivityNoteFunctionAddBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 
 class NoteFunctionAddActivity : AppCompatActivity() {
-    private lateinit var binding: ActivityNoteFunctionAddBinding
+    private var binding: ActivityNoteFunctionAddBinding? = null
+
+    // Declare usageTracker to use UsageTracker class
+    private lateinit var usageTracker: UsageTracker
+    // Setting saving time start at 0
+    private var startTime: Long = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        usageTracker = UsageTracker(this)
         // Prevent dark mode
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         // Inflate the layout using view binding
         binding = ActivityNoteFunctionAddBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-        setSupportActionBar(binding.toolbar.root)
+        setContentView(binding?.root)
+        setSupportActionBar(binding?.toolbar?.root)
 
-        binding.toolbar.title.text = "Thêm ghi chú"
+        binding?.toolbar?.title?.text = "Thêm ghi chú"
 
-        binding.toolbar.BackArrow.setOnClickListener {
+        binding?.toolbar?.BackArrow?.setOnClickListener {
             finish() // Return to the previous activity
         }
 
@@ -45,9 +53,9 @@ class NoteFunctionAddActivity : AppCompatActivity() {
         // Remove text watchers for enabling/disabling save button
         // setupTextWatchers()
 
-        binding.toolbar.AddMessage.setOnClickListener {
-            val title = binding.edtTitle.text.toString().trim()
-            val content = binding.edtContent.text.toString().trim()
+        binding?.toolbar?.AddMessage?.setOnClickListener {
+            val title = binding?.edtTitle?.text.toString().trim()
+            val content = binding?.edtContent?.text.toString().trim()
 
             // Input validation: Check if title and content are not empty
             if (title.isEmpty() || content.isEmpty()) {
@@ -90,5 +98,34 @@ class NoteFunctionAddActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Lưu thời gian bắt đầu (mốc thời gian hiện tại) để tính thời gian sử dụng khi Activity bị tạm dừng
+        startTime = System.currentTimeMillis()
+
+    }
+
+
+    override fun onPause() {
+        super.onPause()
+
+        // Tính toán thời gian sử dụng Ghi chú
+        val endTime = System.currentTimeMillis()
+        val durationInMillis = endTime - startTime
+        val durationInSeconds = (durationInMillis / 1000).toInt() // Chuyển đổi thời gian từ milliseconds sang giây
+
+        // Kiểm tra nếu thời gian sử dụng hợp lệ (lớn hơn 0 giây) thì lưu vào UsageTracker
+        if (durationInSeconds > 0) {
+            usageTracker.addUsageTime("Ghi chú", durationInSeconds)
+        } else {
+            usageTracker.addUsageTime("Ghi chú", 0)
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        binding = null
     }
 }

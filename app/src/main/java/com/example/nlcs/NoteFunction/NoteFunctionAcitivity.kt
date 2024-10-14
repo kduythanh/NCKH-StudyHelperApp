@@ -19,14 +19,21 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.nlcs.R
+import com.example.nlcs.UsageTracker
 import com.example.nlcs.databinding.ActivityNoteFunctionAcitivityBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
 class NoteFunctionActivity : AppCompatActivity() {
-    private lateinit var binding: ActivityNoteFunctionAcitivityBinding
+    private var binding: ActivityNoteFunctionAcitivityBinding ? = null
     private var arrayItem: MutableList<Message> = mutableListOf() // Full list of messages
     private lateinit var myAdapter: MyAdapter // Adapter instance
+
+
+    // Declare usageTracker to use UsageTracker class
+    private lateinit var usageTracker: UsageTracker
+    // Setting saving time start at 0
+    private var startTime: Long = 0
 
     companion object {
         const val KEY = "KEY"
@@ -53,25 +60,29 @@ class NoteFunctionActivity : AppCompatActivity() {
                         }
                     }
                     // Refresh the filtered list and update the adapter
-                    filterMessages(binding.edtFind.text.toString())
+                    filterMessages(binding?.edtFind?.text.toString())
                 }
             }
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // import class usageTracker to count using time
+        usageTracker = UsageTracker(this)
+
         // Prevent dark mode
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         // Inflate the layout using view binding
         binding = ActivityNoteFunctionAcitivityBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        setContentView(binding?.root)
 
         // Set toolbar
-        setSupportActionBar(binding.toolbar.root)
-        binding.toolbar.title.text = "Quản lý ghi chú"
+        setSupportActionBar(binding?.toolbar?.root)
+        binding?.toolbar?.title?.text = "Quản lý ghi chú"
 
         // Set up RecyclerView layout and adapter
-        binding.RecycleView.layoutManager = LinearLayoutManager(this)
+        binding?.RecycleView?.layoutManager = LinearLayoutManager(this)
 //        binding.RecycleView.addItemDecoration(
 //            DividerItemDecoration(this, DividerItemDecoration.VERTICAL)
 //        )
@@ -94,7 +105,7 @@ class NoteFunctionActivity : AppCompatActivity() {
         }
 
         // Set the adapter to the RecyclerView
-        binding.RecycleView.adapter = myAdapter
+        binding?.RecycleView?.adapter = myAdapter
 
         // Firebase Firestore retrieval
         val db = FirebaseFirestore.getInstance()
@@ -115,25 +126,25 @@ class NoteFunctionActivity : AppCompatActivity() {
                     arrayItem.add(message)
                 }
                 // Update the adapter's data
-                filterMessages(binding.edtFind.text.toString())
+                filterMessages(binding?.edtFind?.text.toString())
             }
             .addOnFailureListener { exception ->
                 Log.w("FirestoreError", "Error getting documents.", exception)
             }
 
         // Back Arrow Handling
-        binding.toolbar.BackArrow.setOnClickListener {
+        binding?.toolbar?.BackArrow?.setOnClickListener {
             onBackPressed()
         }
 
         // Handle AddMessage button click
-        binding.toolbar.AddMessage.setOnClickListener {
+        binding?.toolbar?.AddMessage?.setOnClickListener {
             val intent = Intent(this, NoteFunctionAddActivity::class.java)
             startCheckType.launch(intent)
         }
 
         // Add search functionality to the EditText field
-        binding.edtFind.addTextChangedListener(object : TextWatcher {
+        binding?.edtFind?.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
@@ -156,6 +167,35 @@ class NoteFunctionActivity : AppCompatActivity() {
         }
         // Update the adapter's data
         myAdapter.setItems(filteredList)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Lưu thời gian bắt đầu (mốc thời gian hiện tại) để tính thời gian sử dụng khi Activity bị tạm dừng
+        startTime = System.currentTimeMillis()
+
+    }
+
+
+    override fun onPause() {
+        super.onPause()
+
+        // Tính toán thời gian sử dụng Ghi chú
+        val endTime = System.currentTimeMillis()
+        val durationInMillis = endTime - startTime
+        val durationInSeconds = (durationInMillis / 1000).toInt() // Chuyển đổi thời gian từ milliseconds sang giây
+
+        // Kiểm tra nếu thời gian sử dụng hợp lệ (lớn hơn 0 giây) thì lưu vào UsageTracker
+        if (durationInSeconds > 0) {
+            usageTracker.addUsageTime("Ghi chú", durationInSeconds)
+        } else {
+            usageTracker.addUsageTime("Ghi chú", 0)
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        binding = null
     }
 }
 

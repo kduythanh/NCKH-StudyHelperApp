@@ -99,6 +99,8 @@ class LogInActivity : AppCompatActivity() {
         }
     }
 
+
+    // Validate account
     private fun validateAccount(mail: String, passwd: String): Boolean{
         if(!Patterns.EMAIL_ADDRESS.matcher(mail).matches()){
             binding.LogInEmailEditText.error = "Invalid email format"

@@ -4,6 +4,9 @@
         <!-- Customize your light theme here. -->
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
     </style>
+    <style name="ToolBarTheme" parent="@style/ThemeOverlay.MaterialComponents">
+        <item name="colorControlNormal">@color/toolbar_color_control_normal</item>
+    </style>
 
     <style name="Theme.NCKH" parent="Base.Theme.NCKH" />
     <style name="NavigationViewTitleStyle" parent="Widget.Design.NavigationView">

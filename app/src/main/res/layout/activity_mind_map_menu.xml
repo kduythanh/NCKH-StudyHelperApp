@@ -19,11 +19,20 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@color/background_2"
-            app:title="@string/MindMap"
             app:titleTextColor="@color/black"
             android:theme="@style/ThemeOverlay.AppCompat.DayNight.ActionBar"
             app:navigationIcon="@drawable/ic_back_arrow"
-            android:layout_alignParentTop="true"/>
+            android:layout_alignParentTop="true">
+            <TextView
+                android:id="@+id/toolbar_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/MindMap"
+                android:textColor="@color/black"
+                android:textSize="25sp"
+                android:fontFamily="@font/roboto_bold"
+                android:layout_gravity="center" />
+        </androidx.appcompat.widget.Toolbar>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/mindMapMenuRecycleView"

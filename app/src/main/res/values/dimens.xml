@@ -15,4 +15,6 @@
     <dimen name="_4ssp">4sp</dimen>
     <dimen name="_18ssp">18sp</dimen>
     <dimen name="_24sp">24sp</dimen>
+    <dimen name="main_screen_main_layout_padding">5dp</dimen>
+    <dimen name="default_button_text_size">25sp</dimen>
 </resources>
