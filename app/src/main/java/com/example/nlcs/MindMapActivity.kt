@@ -18,26 +18,35 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import com.example.nlcs.databinding.ActivityMindMapBinding
+import com.example.nlcs.databinding.ActivityMindMapMenuBinding
 
 class MindMapActivity : AppCompatActivity() {
 
-    private lateinit var binding: ActivityMindMapBinding
+    private var binding: ActivityMindMapBinding? = null
     private lateinit var neo4jService: Neo4jService
     private val neo4jUri = "bolt+s://25190e75.databases.neo4j.io"
     private val neo4jUser = "neo4j"
     private val neo4jPassword = "j_j-RCzouI3et4G2bvF0RTW83eXCws-aoQJstrQgUts"
 
+    // Declare usageTracker to use UsageTracker class
+    private lateinit var usageTracker: UsageTracker
+    // Setting saving time start at 0
+    private var startTime: Long = 0
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // import class usageTracker to count using time
+        usageTracker = UsageTracker(this)
+
         binding = ActivityMindMapBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        setContentView(binding?.root)
 
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
 
         // Enable the back arrow
-        setSupportActionBar(binding.toolbar)
+        setSupportActionBar(binding?.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        binding.toolbar.setNavigationOnClickListener {
+        binding?.toolbar?.setNavigationOnClickListener {
             updateAllNodesTitles()
             finish()
         }
@@ -54,7 +63,7 @@ class MindMapActivity : AppCompatActivity() {
         fetchAndDisplayAllNodes(mindMapID)
 
         // Set up the done button click listener
-        binding.doneButton.setOnClickListener {
+        binding?.doneButton?.setOnClickListener {
             updateAllNodesTitles()
             finish()
         }
@@ -63,11 +72,11 @@ class MindMapActivity : AppCompatActivity() {
     // Update all node titles
     private fun updateAllNodesTitles() {
         val nodeUpdates = mutableListOf<Map<String, String>>()
-        val parentLayout = binding.zoomableView.findViewById<RelativeLayout>(R.id.mindMapContent)
+        val parentLayout = binding?.zoomableView?.findViewById<RelativeLayout>(R.id.mindMapContent)
         // Iterate through each child view of the parent layout
-        for (i in 0 until parentLayout.childCount) {
-            val nodeView = parentLayout.getChildAt(i) // Get the child view at the current index.
-            val nodeTitleEditText = nodeView.findViewById<EditText>(R.id.MindMapNode)
+        for (i in 0 until parentLayout?.childCount!!) {
+            val nodeView = parentLayout?.getChildAt(i) // Get the child view at the current index.
+            val nodeTitleEditText = nodeView?.findViewById<EditText>(R.id.MindMapNode)
 
             if (nodeTitleEditText != null) { // Add a null check here
                 val newTitle = nodeTitleEditText.text.toString()
@@ -100,8 +109,8 @@ class MindMapActivity : AppCompatActivity() {
             val parentChildMap = neo4jService.fetchParentChildRelationships(mindMapID)
 
             runOnUiThread {
-                val parentLayout = binding.zoomableView.findViewById<RelativeLayout>(R.id.mindMapContent)
-                val lineDrawingView = binding.zoomableView.findViewById<LineDrawingView>(R.id.lineDrawingView)
+                val parentLayout = binding?.zoomableView?.findViewById<RelativeLayout>(R.id.mindMapContent)
+                val lineDrawingView = binding?.zoomableView?.findViewById<LineDrawingView>(R.id.lineDrawingView)
 
                 if (lineDrawingView == null) {
                     Log.e("MindMapActivity", "LineDrawingView is null!")
@@ -145,7 +154,7 @@ class MindMapActivity : AppCompatActivity() {
                         true
                     }
 
-                    parentLayout.addView(nodeView)
+                    parentLayout?.addView(nodeView)
 
                     nodeView.post {
                         val width = nodeView.width
@@ -175,7 +184,7 @@ class MindMapActivity : AppCompatActivity() {
                         }
                     }
 
-                    parentLayout.setOnDragListener { _, event ->
+                    parentLayout?.setOnDragListener { _, event ->
                         when (event.action) {
                             DragEvent.ACTION_DRAG_STARTED -> true
 
@@ -303,8 +312,8 @@ class MindMapActivity : AppCompatActivity() {
     // Add a newly added child node to view
     @SuppressLint("ClickableViewAccessibility")
     private fun addChildNodeToView(node: Map<String, Any>, parentID: String?) {
-        val parentLayout = binding.zoomableView.findViewById<RelativeLayout>(R.id.mindMapContent)
-        val lineDrawingView = binding.zoomableView.findViewById<LineDrawingView>(R.id.lineDrawingView)
+        val parentLayout = binding?.zoomableView?.findViewById<RelativeLayout>(R.id.mindMapContent)
+        val lineDrawingView = binding?.zoomableView?.findViewById<LineDrawingView>(R.id.lineDrawingView)
 
         if (lineDrawingView == null) {
             Log.e("MindMapActivity", "LineDrawingView is null!")
@@ -349,7 +358,7 @@ class MindMapActivity : AppCompatActivity() {
             }
         }
 
-        parentLayout.setOnDragListener { _, event ->
+        parentLayout?.setOnDragListener { _, event ->
             when (event.action) {
                 DragEvent.ACTION_DRAG_STARTED -> true
 
@@ -380,7 +389,7 @@ class MindMapActivity : AppCompatActivity() {
             }
         }
 
-        parentLayout.addView(nodeView)
+        parentLayout?.addView(nodeView)
 
         // Store dimensions and position after the view has been laid out
         nodeView.post {
@@ -419,10 +428,10 @@ class MindMapActivity : AppCompatActivity() {
             runOnUiThread {
 
                 // Remove the node view from the layout
-                val parentLayout = binding.zoomableView.findViewById<RelativeLayout>(R.id.mindMapContent)
+                val parentLayout = binding?.zoomableView?.findViewById<RelativeLayout>(R.id.mindMapContent)
                 var nodeView: View? = null
 
-                for (i in 0 until parentLayout.childCount) {
+                for (i in 0 until parentLayout?.childCount!!) {
                     val childView = parentLayout.getChildAt(i)
                     val tag = childView.getTag(R.id.node_id_tag)
 
@@ -453,7 +462,7 @@ class MindMapActivity : AppCompatActivity() {
             neo4jService.deleteBranch(nodeID)
             runOnUiThread {
                 // Remove the branch node and its descendants from the view
-                val parentLayout = binding.zoomableView.findViewById<RelativeLayout>(R.id.mindMapContent)
+                val parentLayout = binding?.zoomableView?.findViewById<RelativeLayout>(R.id.mindMapContent)
 
                 removeBranchViews(parentLayout, nodeID)
 
@@ -468,10 +477,10 @@ class MindMapActivity : AppCompatActivity() {
 
     // Helper function to recursively remove branch views from the layout
 // Helper function to recursively remove branch views from the layout
-    private fun removeBranchViews(parentLayout: RelativeLayout, nodeID: String) {
+    private fun removeBranchViews(parentLayout: RelativeLayout?, nodeID: String) {
         // Iterate over all child views to find the one with the matching nodeID tag
         var nodeView: View? = null
-        for (i in 0 until parentLayout.childCount) {
+        for (i in 0 until parentLayout?.childCount!!) {
             val childView = parentLayout.getChildAt(i)
             val tag = childView.getTag(R.id.node_id_tag)
 
@@ -493,6 +502,34 @@ class MindMapActivity : AppCompatActivity() {
         for (childID in childIDs) {
             removeBranchViews(parentLayout, childID)
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Lưu thời gian bắt đầu (mốc thời gian hiện tại) để tính thời gian sử dụng khi Activity bị tạm dừng
+        startTime = System.currentTimeMillis()
+    }
+
+    override fun onPause() {
+        super.onPause()
+
+        // Tính toán thời gian sử dụng Sơ đồ tư duy
+        val endTime = System.currentTimeMillis()
+        val durationInMillis = endTime - startTime
+        val durationInSeconds = (durationInMillis / 1000).toInt() // Chuyển đổi thời gian từ milliseconds sang giây
+
+        // Kiểm tra nếu thời gian sử dụng hợp lệ (lớn hơn 0 giây) thì lưu vào UsageTracker
+        if (durationInSeconds > 0) {
+            usageTracker.addUsageTime("Sơ đồ tư duy", durationInSeconds)
+        } else {
+            usageTracker.addUsageTime("Sơ đồ tư duy", 0)
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // Đặt binding thành null an toàn khi Activity bị hủy
+        binding = null
     }
 }
 

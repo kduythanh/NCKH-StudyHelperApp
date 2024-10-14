@@ -13,21 +13,14 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.nlcs.databinding.ActivityMindMapMenuBinding
-import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import java.util.UUID
-
-
 import androidx.activity.enableEdgeToEdge
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-
 
 class MindMapMenuActivity : AppCompatActivity(), MindMapListener {
 
-    private lateinit var binding: ActivityMindMapMenuBinding
+    private var binding: ActivityMindMapMenuBinding? = null
     private lateinit var firebaseAuth: FirebaseAuth
     private lateinit var recyclerView: RecyclerView
     private lateinit var mindMapList: ArrayList<MindMap>
@@ -36,8 +29,6 @@ class MindMapMenuActivity : AppCompatActivity(), MindMapListener {
     private val neo4jUser = "neo4j"
     private val neo4jPassword = "j_j-RCzouI3et4G2bvF0RTW83eXCws-aoQJstrQgUts"
 
-
-    private var binding: ActivityMindMapMenuBinding ?= null
     // Declare usageTracker to use UsageTracker class
     private lateinit var usageTracker: UsageTracker
     // Setting saving time start at 0
@@ -51,20 +42,21 @@ class MindMapMenuActivity : AppCompatActivity(), MindMapListener {
 
         enableEdgeToEdge()
 
+        // Khởi tạo binding an toàn
         binding = ActivityMindMapMenuBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        setContentView(binding?.root)
 
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
 
         // Initializing some variables
-        firebaseAuth = Firebase.auth
-        setSupportActionBar(binding.toolbar)
-        recyclerView = binding.mindMapMenuRecycleView
+        firebaseAuth = FirebaseAuth.getInstance()
+        setSupportActionBar(binding?.toolbar)
+        recyclerView = binding?.mindMapMenuRecycleView ?: return
         mindMapList = arrayListOf()
 
         // Enable the back arrow
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        binding.toolbar.setNavigationOnClickListener { finish() }
+        binding?.toolbar?.setNavigationOnClickListener { finish() }
 
         // Initialize the adapter
         mindMapAdapter = MindMapAdapter(mindMapList, this, this)
@@ -73,13 +65,11 @@ class MindMapMenuActivity : AppCompatActivity(), MindMapListener {
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = mindMapAdapter
 
-
-
         // Fetch the mind maps from Firestore
         fetchMindMaps()
 
         // Open the dialog that adds a new mind map when the button is clicked
-        binding.mindMapAddButton.setOnClickListener{
+        binding?.mindMapAddButton?.setOnClickListener {
             val dialogView = layoutInflater.inflate(R.layout.dialog_add_mind_map, null)
             val dialog = AlertDialog.Builder(this)
                 .setView(dialogView)
@@ -88,10 +78,10 @@ class MindMapMenuActivity : AppCompatActivity(), MindMapListener {
             // Setting the click listeners for the confirm button
             dialogView.findViewById<Button>(R.id.dialogAddButtonConfirm).setOnClickListener {
                 val title = dialogView.findViewById<EditText>(R.id.dialogAddMindMapItemEditText).text.toString()
-                if(title.isNotEmpty()){
+                if (title.isNotEmpty()) {
                     createMindMapInFireBase(title)
                     dialog.dismiss()
-                }else{
+                } else {
                     Toast.makeText(this, "Xin hãy nhập tên cho mind map!", Toast.LENGTH_SHORT).show()
                 }
             }
@@ -106,7 +96,7 @@ class MindMapMenuActivity : AppCompatActivity(), MindMapListener {
     }
 
     // Create a new mind map in Firestore
-    private fun createMindMapInFireBase(title: String){
+    private fun createMindMapInFireBase(title: String) {
         val db = FirebaseFirestore.getInstance()
         val mindMapId = UUID.randomUUID().toString()
         val mindMap = hashMapOf(
@@ -119,16 +109,15 @@ class MindMapMenuActivity : AppCompatActivity(), MindMapListener {
         db.collection("mindMapTemp")
             .add(mindMap)
             .addOnSuccessListener {
-                Toast.makeText(this, "Tạo mind map thành công!" , Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Tạo mind map thành công!", Toast.LENGTH_SHORT).show()
                 // Create a Master Node upon creating a new Mind Map item
                 val userId = firebaseAuth.currentUser?.uid
-                if(userId != null){
-
-                    val y = binding.mindMapMenuRecycleView.width.toFloat() / 2f - binding.toolbar.height.toFloat() - 45f
-                    val x = binding.mindMapMenuRecycleView.height.toFloat() / 2f
+                if (userId != null) {
+                    val y = binding?.mindMapMenuRecycleView?.width?.toFloat()?.div(2f) ?: 0f - (binding?.toolbar?.height?.toFloat() ?: 0f) - 45f
+                    val x = binding?.mindMapMenuRecycleView?.height?.toFloat()?.div(2f) ?: 0f
 
                     val neo4jService = Neo4jService(neo4jUri, neo4jUser, neo4jPassword)
-                    neo4jService.createNode("Nút chính", mindMapId, x , y)
+                    neo4jService.createNode("Nút chính", mindMapId, x, y)
                     neo4jService.close()
                 }
 
@@ -180,7 +169,6 @@ class MindMapMenuActivity : AppCompatActivity(), MindMapListener {
         super.onResume()
         // Lưu thời gian bắt đầu (mốc thời gian hiện tại) để tính thời gian sử dụng khi Activity bị tạm dừng
         startTime = System.currentTimeMillis()
-
     }
 
     override fun onPause() {
@@ -201,6 +189,7 @@ class MindMapMenuActivity : AppCompatActivity(), MindMapListener {
 
     override fun onDestroy() {
         super.onDestroy()
+        // Đặt binding thành null an toàn khi Activity bị hủy
         binding = null
     }
 }

@@ -53,7 +53,6 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
-    implementation(libs.firebase.auth)
     implementation(libs.androidx.recyclerview)
     implementation(libs.firebase.database.ktx)
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")

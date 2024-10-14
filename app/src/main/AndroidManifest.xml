@@ -39,6 +39,11 @@
             android:exported="false"
             android:screenOrientation="landscape"/>
         <activity
+            android:name=".NoteFunction.NoteFunctionAddActivity"
+            android:exported="false" >
+        </activity>
+
+        <activity
             android:name=".MindMapMenuActivity"
             android:exported="false"
             android:launchMode="singleTop"/>
@@ -48,7 +53,11 @@
         <activity
             android:name=".LogInActivity"
             android:exported="true" >
+        </activity>
 
+        <activity
+            android:name=".FocusActivity"
+            android:exported="true" >
         </activity>
         <activity
             android:name=".SignUpActivity"
@@ -58,9 +67,6 @@
             android:exported="false" />
         <activity
             android:name=".StatisticsActivity"
-            android:exported="false" />
-        <activity
-            android:name=".NoteFunction.NoteFunctionActivity"
             android:exported="false" />
         <activity
             android:name=".MainActivity"
