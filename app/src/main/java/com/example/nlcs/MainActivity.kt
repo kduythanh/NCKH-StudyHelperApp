@@ -92,27 +92,6 @@ class MainActivity : AppCompatActivity() {
 
         binding.navigationView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId){
-                R.id.nav_home -> {
-                    if (!isCurrentActivity(MainActivity::class.java)) {
-                        startActivity(Intent(this, MainActivity::class.java))
-                    }
-                    drawerLayout.closeDrawer(GravityCompat.START)
-                    true
-                }
-                R.id.nav_user_profile -> {
-                    if (!isCurrentActivity(MainActivity::class.java)) {
-                        startActivity(Intent(this, MainActivity::class.java))
-                    }
-                    drawerLayout.closeDrawer(GravityCompat.START)
-                    true
-                }
-                R.id.nav_setting -> {
-                    if (!isCurrentActivity(MainActivity::class.java)) {
-                        startActivity(Intent(this, MainActivity::class.java))
-                    }
-                    drawerLayout.closeDrawer(GravityCompat.START)
-                    true
-                }
                 R.id.nav_logout -> {
                     drawerLayout.closeDrawer(GravityCompat.START)
                     binding.navigationView.menu.findItem(R.id.nav_logout).isChecked = false

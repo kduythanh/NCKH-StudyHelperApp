@@ -5,11 +5,11 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
-import androidx.navigation.Navigation.findNavController
 import androidx.navigation.ui.NavigationUI
 
 import com.example.nlcs.R
 import com.example.nlcs.databinding.ActivityFlashcardBinding
+
 import com.example.nlcs.preferen.UserSharePreferences
 
 class FlashcardActivity : AppCompatActivity() {
