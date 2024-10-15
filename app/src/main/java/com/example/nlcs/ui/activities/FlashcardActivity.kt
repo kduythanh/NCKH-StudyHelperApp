@@ -21,7 +21,6 @@ class FlashcardActivity : AppCompatActivity() {
     // Setting saving time start at 0
     private var startTime: Long = 0
 
-    var userSharePreferences: UserSharePreferences? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,7 +32,6 @@ class FlashcardActivity : AppCompatActivity() {
     }
 
     private fun setupNavigation() {
-        userSharePreferences = UserSharePreferences(this)
 
         // Initialize the navController
         val navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main)
