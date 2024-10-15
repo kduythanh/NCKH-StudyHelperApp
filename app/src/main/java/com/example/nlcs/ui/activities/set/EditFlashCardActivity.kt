@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.nlcs.R
+import com.example.nlcs.UsageTracker
 import com.example.nlcs.adapter.card.CardAdapter
 import com.example.nlcs.data.dao.CardDAO
 import com.example.nlcs.data.dao.FlashCardDAO
@@ -46,8 +47,15 @@ class EditFlashCardActivity : AppCompatActivity() {
     private lateinit var cardAdapter: CardAdapter
     private var cards: ArrayList<Card> = ArrayList()
     private var listIdCard: ArrayList<String> = ArrayList()
+
+    // Declare usageTracker to use UsageTracker class
+    private lateinit var usageTracker: UsageTracker
+    // Setting saving time start at 0
+    private var startTime: Long = 0
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        usageTracker = UsageTracker(this)
         setContentView(binding.root)
 
         setSupportActionBar(binding.toolbar)
@@ -361,6 +369,28 @@ class EditFlashCardActivity : AppCompatActivity() {
     private fun getCurrentDateOldApi(): String {
         val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
         return sdf.format(Date())
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Lưu thời gian bắt đầu (mốc thời gian hiện tại) để tính thời gian sử dụng khi Activity bị tạm dừng
+        startTime = System.currentTimeMillis()
+    }
+
+    override fun onPause() {
+        super.onPause()
+
+        // Tính toán thời gian sử dụng Sơ đồ tư duy
+        val endTime = System.currentTimeMillis()
+        val durationInMillis = endTime - startTime
+        val durationInSeconds = (durationInMillis / 1000).toInt() // Chuyển đổi thời gian từ milliseconds sang giây
+
+        // Kiểm tra nếu thời gian sử dụng hợp lệ (lớn hơn 0 giây) thì lưu vào UsageTracker
+        if (durationInSeconds > 0) {
+            usageTracker.addUsageTime("Thẻ ghi nhớ", durationInSeconds)
+        } else {
+            usageTracker.addUsageTime("Thẻ ghi nhớ", 0)
+        }
     }
 
 }

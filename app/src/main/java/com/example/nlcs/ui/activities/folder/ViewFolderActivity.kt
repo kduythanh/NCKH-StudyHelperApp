@@ -12,6 +12,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.nlcs.R
+import com.example.nlcs.UsageTracker
 import com.example.nlcs.adapter.flashcard.SetFolderViewAdapter
 import com.example.nlcs.data.dao.FolderDAO
 import com.example.nlcs.data.model.FlashCard
@@ -31,14 +32,20 @@ import kotlinx.coroutines.launch
 
 class ViewFolderActivity : AppCompatActivity(), BottomSheetListener {
     private val binding by lazy { ActivityViewFolderBinding.inflate(layoutInflater) }
+
     private val folderDAO by lazy { FolderDAO(this) }
     private lateinit var adapter: SetFolderViewAdapter
+
+    // Declare usageTracker to use UsageTracker class
+    private lateinit var usageTracker: UsageTracker
+    // Setting saving time start at 0
+    private var startTime: Long = 0
 
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(binding.root)
-
+        setContentView(binding?.root)
+        usageTracker = UsageTracker(this)
         setupToolbar()
         setupFolderDetails()
         setupRecyclerView()
@@ -46,9 +53,9 @@ class ViewFolderActivity : AppCompatActivity(), BottomSheetListener {
     }
 
     private fun setupToolbar() {
-        setSupportActionBar(binding.toolbar)
+        setSupportActionBar(binding?.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        binding.toolbar.setNavigationOnClickListener {
+        binding?.toolbar?.setNavigationOnClickListener {
             onBackPressedDispatcher.onBackPressed()
         }
     }
@@ -64,12 +71,12 @@ class ViewFolderActivity : AppCompatActivity(), BottomSheetListener {
             folderDAO.getFolderById(id) { folder ->
                 if (folder != null) {
                     // Update folder name UI
-                    binding.folderNameTv.text = folder.name
+                    binding?.folderNameTv?.text = folder.name
                 }
 
                 // Fetch flashcards asynchronously and update the flashcard count
                 folderDAO.getAllFlashCardByFolderId(id) { flashCards ->
-                    binding.termCountTv.text = "${flashCards.size} Học phần"
+                    binding?.termCountTv?.text = "${flashCards.size} Học phần"
                 }
             }
         } else {
@@ -95,8 +102,8 @@ class ViewFolderActivity : AppCompatActivity(), BottomSheetListener {
 
                 // Set up the RecyclerView layout manager and adapter
                 val linearLayoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
-                binding.setRv.layoutManager = linearLayoutManager
-                binding.setRv.adapter = adapter
+                binding?.setRv?.layoutManager = linearLayoutManager
+                binding?.setRv?.adapter = adapter
 
                 // Notify the adapter that the data has changed
                 adapter.notifyDataSetChanged()
@@ -110,7 +117,7 @@ class ViewFolderActivity : AppCompatActivity(), BottomSheetListener {
 
     private fun setupLearnButton() {
         val id = intent.getStringExtra("id")
-        binding.learnThisFolderBtn.setOnClickListener {
+        binding?.learnThisFolderBtn?.setOnClickListener {
             val newIntent = Intent(this, QuizFolderActivity::class.java)
             newIntent.putExtra("id", id)
             startActivity(newIntent)
@@ -284,12 +291,12 @@ class ViewFolderActivity : AppCompatActivity(), BottomSheetListener {
                                 ).show()
 
                                 // Update UI with new folder name
-                                binding.folderNameTv.text = folder.name
+                                binding?.folderNameTv?.text = folder.name
 
                                 // Fetch and update flashcard count asynchronously
                                 folderDAO.getAllFlashCardByFolderId(folderId) { flashCards ->
                                     runOnUiThread {
-                                        binding.termCountTv.text = "${flashCards.size} flashcards"
+                                        binding?.termCountTv?.text = "${flashCards.size} flashcards"
                                     }
                                 }
 
@@ -318,6 +325,8 @@ class ViewFolderActivity : AppCompatActivity(), BottomSheetListener {
     @SuppressLint("NotifyDataSetChanged")
     override fun onResume() {
         super.onResume()
+        // Lưu thời gian bắt đầu (mốc thời gian hiện tại) để tính thời gian sử dụng khi Activity bị tạm dừng
+        startTime = System.currentTimeMillis()
 
         // Retrieve the folder ID from the intent
         val id = intent.getStringExtra("id")
@@ -333,8 +342,8 @@ class ViewFolderActivity : AppCompatActivity(), BottomSheetListener {
                 // Set up the RecyclerView
                 val linearLayoutManager =
                     LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
-                binding.setRv.layoutManager = linearLayoutManager
-                binding.setRv.adapter = adapter
+                binding?.setRv?.layoutManager = linearLayoutManager
+                binding?.setRv?.adapter = adapter
 
                 // Notify the adapter that the data has changed
                 adapter.notifyDataSetChanged()
@@ -343,6 +352,23 @@ class ViewFolderActivity : AppCompatActivity(), BottomSheetListener {
         // Set up folder details
         setupFolderDetails()
     }
+
+    override fun onPause() {
+        super.onPause()
+
+        // Tính toán thời gian sử dụng Sơ đồ tư duy
+        val endTime = System.currentTimeMillis()
+        val durationInMillis = endTime - startTime
+        val durationInSeconds = (durationInMillis / 1000).toInt() // Chuyển đổi thời gian từ milliseconds sang giây
+
+        // Kiểm tra nếu thời gian sử dụng hợp lệ (lớn hơn 0 giây) thì lưu vào UsageTracker
+        if (durationInSeconds > 0) {
+            usageTracker.addUsageTime("Thẻ ghi nhớ", durationInSeconds)
+        } else {
+            usageTracker.addUsageTime("Thẻ ghi nhớ", 0)
+        }
+    }
+
 }
 
 

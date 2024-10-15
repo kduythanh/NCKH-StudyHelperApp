@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AlertDialog
 import com.example.nlcs.R
+import com.example.nlcs.UsageTracker
 import com.example.nlcs.data.dao.CardDAO
 import com.example.nlcs.data.dao.FolderDAO
 import com.example.nlcs.data.model.Card
@@ -21,6 +22,8 @@ class QuizFolderActivity : AppCompatActivity() {
     private val binding by lazy {
         ActivityQuizFolderBinding.inflate(layoutInflater)
     }
+
+//    private var binding: ActivityQuizFolderBinding? = null
     private val cardDAO by lazy {
         CardDAO(this)
     }
@@ -36,13 +39,19 @@ class QuizFolderActivity : AppCompatActivity() {
     }
     private var dialogCorrect: AlertDialog.Builder? = null
 
+    // Declare usageTracker to use UsageTracker class
+    private lateinit var usageTracker: UsageTracker
+    // Setting saving time start at 0
+    private var startTime: Long = 0
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(binding.root)
+        usageTracker = UsageTracker(this)
+        setContentView(binding?.root)
 
 
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        binding.toolbar.setNavigationOnClickListener {
+        binding?.toolbar?.setNavigationOnClickListener {
             onBackPressedDispatcher.onBackPressed()
         }
         CoroutineScope(Dispatchers.Main).launch { setUpProgressBar() }
@@ -61,14 +70,14 @@ class QuizFolderActivity : AppCompatActivity() {
             increaseProgress()
             true
         } else {
-            wrongDialog(correctAnswer, binding.tvQuestion.text.toString(), selectedAnswer)
+            wrongDialog(correctAnswer, binding?.tvQuestion?.text.toString(), selectedAnswer)
             setNextQuestion()
             false
         }
     }
 
     private fun increaseProgress() {
-        binding.timelineProgress.progress = progress
+        binding?.timelineProgress?.progress = progress
     }
 
     private suspend fun setUpProgressBar(): Int {
@@ -95,7 +104,7 @@ class QuizFolderActivity : AppCompatActivity() {
         } else {
             setNextQuestion()
             val max = randomCard.size
-            binding.timelineProgress.max = max
+            binding?.timelineProgress?.max = max
             return max
         }
         return 0
@@ -135,39 +144,39 @@ class QuizFolderActivity : AppCompatActivity() {
             correctAnswer = correctCard.back.toString()
 
             withContext(Dispatchers.Main) {
-                binding.tvQuestion.text = question
-                binding.optionOne.text = allCards[0].back
-                binding.optionTwo.text = allCards[1].back
-                binding.optionThree.text = allCards[2].back
-                binding.optionFour.text = allCards[3].back
+                binding?.tvQuestion?.text = question
+                binding?.optionOne?.text = allCards[0].back
+                binding?.optionTwo?.text = allCards[1].back
+                binding?.optionThree?.text = allCards[2].back
+                binding?.optionFour?.text = allCards[3].back
 
-                binding.optionOne.setOnClickListener {
+                binding?.optionOne?.setOnClickListener {
                     correctCard.id?.let { it1 ->
-                        checkAnswer(binding.optionOne.text.toString(),
+                        checkAnswer(binding?.optionOne?.text.toString(),
                             it1
                         )
                     }
                 }
 
-                binding.optionTwo.setOnClickListener {
+                binding?.optionTwo?.setOnClickListener {
                     correctCard.id?.let { it1 ->
-                        checkAnswer(binding.optionTwo.text.toString(),
+                        checkAnswer(binding?.optionTwo?.text.toString(),
                             it1
                         )
                     }
                 }
 
-                binding.optionThree.setOnClickListener {
+                binding?.optionThree?.setOnClickListener {
                     correctCard.id?.let { it1 ->
-                        checkAnswer(binding.optionThree.text.toString(),
+                        checkAnswer(binding?.optionThree?.text.toString(),
                             it1
                         )
                     }
                 }
 
-                binding.optionFour.setOnClickListener {
+                binding?.optionFour?.setOnClickListener {
                     correctCard.id?.let { it1 ->
-                        checkAnswer(binding.optionFour.text.toString(),
+                        checkAnswer(binding?.optionFour?.text.toString(),
                             it1
                         )
                     }
@@ -181,7 +190,7 @@ class QuizFolderActivity : AppCompatActivity() {
 
     private suspend fun finishQuiz(status: Int) { //1 quiz, 2 learn
 
-        binding.timelineProgress.progress = setUpProgressBar()
+        binding?.timelineProgress?.progress = setUpProgressBar()
         runOnUiThread {
             if (status == 1) {
                 PopupDialog.getInstance(this)
@@ -240,10 +249,30 @@ class QuizFolderActivity : AppCompatActivity() {
         super.onDestroy()
         job.cancel()
         dialogCorrect?.create()?.dismiss()
+        // Đặt binding thành null an toàn khi Activity bị hủy
+//        binding = null
     }
 
-}
+    override fun onResume() {
+        super.onResume()
+        // Lưu thời gian bắt đầu (mốc thời gian hiện tại) để tính thời gian sử dụng khi Activity bị tạm dừng
+        startTime = System.currentTimeMillis()
+    }
 
-private fun <E> List<E>.addAll(allCardByFlashCardId: List<E>) {
+    override fun onPause() {
+        super.onPause()
+
+        // Tính toán thời gian sử dụng Sơ đồ tư duy
+        val endTime = System.currentTimeMillis()
+        val durationInMillis = endTime - startTime
+        val durationInSeconds = (durationInMillis / 1000).toInt() // Chuyển đổi thời gian từ milliseconds sang giây
+
+        // Kiểm tra nếu thời gian sử dụng hợp lệ (lớn hơn 0 giây) thì lưu vào UsageTracker
+        if (durationInSeconds > 0) {
+            usageTracker.addUsageTime("Thẻ ghi nhớ", durationInSeconds)
+        } else {
+            usageTracker.addUsageTime("Thẻ ghi nhớ", 0)
+        }
+    }
 
 }

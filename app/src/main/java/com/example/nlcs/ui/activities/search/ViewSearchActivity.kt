@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.nlcs.UsageTracker
 import com.example.nlcs.adapter.flashcard.SetAllAdapter
 import com.example.nlcs.data.dao.FlashCardDAO
 import com.example.nlcs.data.model.FlashCard
@@ -21,9 +22,15 @@ class ViewSearchActivity : AppCompatActivity() {
     private var flashCardDAO: FlashCardDAO? = null
     private var setAllAdapter: SetAllAdapter? = null
 
+    // Declare usageTracker to use UsageTracker class
+    private lateinit var usageTracker: UsageTracker
+    // Setting saving time start at 0
+    private var startTime: Long = 0
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        usageTracker = UsageTracker(this)
         // Initialize View Binding synchronously
         binding = ActivityViewSearchBinding.inflate(layoutInflater)
         setContentView(binding!!.root)
@@ -99,5 +106,33 @@ class ViewSearchActivity : AppCompatActivity() {
         binding!!.enterTopicTv.visibility = if (isSearchEmpty) View.VISIBLE else View.GONE
         binding!!.noResultTv.visibility =
             if (isSearchEmpty || !isFlashCardsEmpty) View.GONE else View.VISIBLE
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Lưu thời gian bắt đầu (mốc thời gian hiện tại) để tính thời gian sử dụng khi Activity bị tạm dừng
+        startTime = System.currentTimeMillis()
+    }
+
+    override fun onPause() {
+        super.onPause()
+
+        // Tính toán thời gian sử dụng Sơ đồ tư duy
+        val endTime = System.currentTimeMillis()
+        val durationInMillis = endTime - startTime
+        val durationInSeconds = (durationInMillis / 1000).toInt() // Chuyển đổi thời gian từ milliseconds sang giây
+
+        // Kiểm tra nếu thời gian sử dụng hợp lệ (lớn hơn 0 giây) thì lưu vào UsageTracker
+        if (durationInSeconds > 0) {
+            usageTracker.addUsageTime("Thẻ ghi nhớ", durationInSeconds)
+        } else {
+            usageTracker.addUsageTime("Thẻ ghi nhớ", 0)
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // Đặt binding thành null an toàn khi Activity bị hủy
+        binding = null
     }
 }

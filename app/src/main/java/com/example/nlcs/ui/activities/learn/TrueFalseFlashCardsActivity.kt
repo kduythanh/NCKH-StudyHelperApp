@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
 import com.example.nlcs.R
+import com.example.nlcs.UsageTracker
 import com.example.nlcs.data.dao.CardDAO
 import com.example.nlcs.data.model.Card
 import com.example.nlcs.databinding.ActivityTrueFalseFlashCardsBinding
@@ -19,15 +20,24 @@ import kotlinx.coroutines.launch
 
 class TrueFalseFlashCardsActivity : AppCompatActivity() {
     private val binding by lazy { ActivityTrueFalseFlashCardsBinding.inflate(layoutInflater) }
+
+//    private var binding: ActivityTrueFalseFlashCardsBinding? = null
     private val cardDAO by lazy { CardDAO(this) }
     private lateinit var cardList: ArrayList<Card>
     private var progress = 0
+
+    // Declare usageTracker to use UsageTracker class
+    private lateinit var usageTracker: UsageTracker
+    // Setting saving time start at 0
+    private var startTime: Long = 0
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        usageTracker = UsageTracker(this)
         CoroutineScope(Dispatchers.Main).launch {
-            setContentView(binding.root)
-            setSupportActionBar(binding.toolbar)
-            binding.toolbar.setNavigationOnClickListener {
+            setContentView(binding?.root)
+            setSupportActionBar(binding?.toolbar)
+            binding?.toolbar?.setNavigationOnClickListener {
                 onBackPressedDispatcher.onBackPressed()
 
             }
@@ -41,7 +51,7 @@ class TrueFalseFlashCardsActivity : AppCompatActivity() {
         val id = intent.getStringExtra("id")
             cardList = id?.let { cardDAO.getCardByIsLearned(it, 0) } as ArrayList<Card>
 
-        binding.timelineProgress.max = cardList.size
+        binding?.timelineProgress?.max = cardList.size
         return cardList.size
     }
 
@@ -61,21 +71,21 @@ class TrueFalseFlashCardsActivity : AppCompatActivity() {
         val incorrectAnswer = cardListAll?.shuffled()?.take(1)
 
         val random = (0..1).random()
-        binding.questionTv.text = randomCard.front
+        binding?.questionTv?.text = randomCard.front
 
         if (random == 0) {
-            binding.answerTv.text = randomCard.back
+            binding?.answerTv?.text = randomCard.back
         } else {
-            binding.answerTv.text = incorrectAnswer?.get(0)?.back
+            binding?.answerTv?.text = incorrectAnswer?.get(0)?.back
         }
 
-        binding.trueBtn.setOnClickListener {
+        binding?.trueBtn?.setOnClickListener {
             CoroutineScope(Dispatchers.Main).launch {
                 handleAnswer(random, randomCard, incorrectAnswer, true)
             }
         }
 
-        binding.falseBtn.setOnClickListener {
+        binding?.falseBtn?.setOnClickListener {
             CoroutineScope(Dispatchers.Main).launch {
                 handleAnswer(random, randomCard, incorrectAnswer, false)
             }
@@ -107,11 +117,11 @@ class TrueFalseFlashCardsActivity : AppCompatActivity() {
     }
 
     private fun increaseProgress() {
-        binding.timelineProgress.progress = progress
+        binding?.timelineProgress?.progress = progress
     }
 
     private suspend fun finishQuiz() { //1 quiz, 2 learn
-        binding.timelineProgress.progress = setUpProgressBar()
+        binding?.timelineProgress?.progress = setUpProgressBar()
         runOnUiThread {
 
             PopupDialog.getInstance(this)
@@ -175,5 +185,33 @@ class TrueFalseFlashCardsActivity : AppCompatActivity() {
 
         }
         builder.show()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Lưu thời gian bắt đầu (mốc thời gian hiện tại) để tính thời gian sử dụng khi Activity bị tạm dừng
+        startTime = System.currentTimeMillis()
+    }
+
+    override fun onPause() {
+        super.onPause()
+
+        // Tính toán thời gian sử dụng Sơ đồ tư duy
+        val endTime = System.currentTimeMillis()
+        val durationInMillis = endTime - startTime
+        val durationInSeconds = (durationInMillis / 1000).toInt() // Chuyển đổi thời gian từ milliseconds sang giây
+
+        // Kiểm tra nếu thời gian sử dụng hợp lệ (lớn hơn 0 giây) thì lưu vào UsageTracker
+        if (durationInSeconds > 0) {
+            usageTracker.addUsageTime("Thẻ ghi nhớ", durationInSeconds)
+        } else {
+            usageTracker.addUsageTime("Thẻ ghi nhớ", 0)
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // Đặt binding thành null an toàn khi Activity bị hủy
+//        binding = null
     }
 }

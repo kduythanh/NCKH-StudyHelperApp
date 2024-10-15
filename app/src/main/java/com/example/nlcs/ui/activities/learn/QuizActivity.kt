@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.example.nlcs.R
+import com.example.nlcs.UsageTracker
 import com.example.nlcs.data.dao.CardDAO
 import com.example.nlcs.data.model.Card
 import com.example.nlcs.databinding.ActivityQuizBinding
@@ -25,6 +26,8 @@ class QuizActivity : AppCompatActivity() {
     private val binding by lazy {
         ActivityQuizBinding.inflate(layoutInflater)
     }
+
+//    private var binding: ActivityQuizBinding? = null
     private val cardDAO by lazy {
         CardDAO(this)
     }
@@ -36,18 +39,24 @@ class QuizActivity : AppCompatActivity() {
     private val job = Job()
     private val scope = CoroutineScope(Dispatchers.Main + job)
 
+    // Declare usageTracker to use UsageTracker class
+    private lateinit var usageTracker: UsageTracker
+    // Setting saving time start at 0
+    private var startTime: Long = 0
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        usageTracker = UsageTracker(this)
         CoroutineScope(Dispatchers.Main).launch {
-            setContentView(binding.root)
+            setContentView(binding?.root)
             id = intent.getStringExtra("id") ?: ""
             supportActionBar?.setDisplayHomeAsUpEnabled(true)
-            binding.toolbar.setNavigationOnClickListener {
+            binding?.toolbar?.setNavigationOnClickListener {
                 onBackPressedDispatcher.onBackPressed()
             }
             setNextQuestion()
             val max = cardDAO.getCardByIsLearned(id, 0).size
-            binding.timelineProgress.max = max
+            binding?.timelineProgress?.max = max
         }
     }
 
@@ -72,14 +81,14 @@ class QuizActivity : AppCompatActivity() {
             setUpProgressBar()
             true
         } else {
-            wrongDialog(correctAnswer, binding.tvQuestion.text.toString(), selectedAnswer)
+            wrongDialog(correctAnswer, binding?.tvQuestion?.text.toString(), selectedAnswer)
             setNextQuestion()
             false
         }
     }
 
     private fun setUpProgressBar() {
-        binding.timelineProgress.progress = progress
+        binding?.timelineProgress?.progress = progress
     }
 
 
@@ -104,40 +113,40 @@ class QuizActivity : AppCompatActivity() {
             correctAnswer = correctCard.back.toString()
 
             withContext(Dispatchers.Main) {
-                binding.tvQuestion.text = question
-                binding.optionOne.text = allCards[0].back
-                binding.optionTwo.text = allCards[1].back
-                binding.optionThree.text = allCards[2].back
-                binding.optionFour.text = allCards[3].back
+                binding?.tvQuestion?.text = question
+                binding?.optionOne?.text = allCards[0].back
+                binding?.optionTwo?.text = allCards[1].back
+                binding?.optionThree?.text = allCards[2].back
+                binding?.optionFour?.text = allCards[3].back
 
                 // In ra log để kiểm tra ID của correctCard
                 Log.d("QuizDebug", "correctCard.id: ${correctCard.id}")
 
-                binding.optionOne.setOnClickListener {
+                binding?.optionOne?.setOnClickListener {
                     correctCard.id?.let { it1 ->
                         Log.d("QuizDebug", "Option One Selected - correctCard.id: $it1")
-                        checkAnswer(binding.optionOne.text.toString(), it1)
+                        checkAnswer(binding?.optionOne?.text.toString(), it1)
                     } ?: Log.e("QuizDebug", "correctCard.id is null for Option One")
                 }
 
-                binding.optionTwo.setOnClickListener {
+                binding?.optionTwo?.setOnClickListener {
                     correctCard.id?.let { it1 ->
                         Log.d("QuizDebug", "Option Two Selected - correctCard.id: $it1")
-                        checkAnswer(binding.optionTwo.text.toString(), it1)
+                        checkAnswer(binding?.optionTwo?.text.toString(), it1)
                     } ?: Log.e("QuizDebug", "correctCard.id is null for Option Two")
                 }
 
-                binding.optionThree.setOnClickListener {
+                binding?.optionThree?.setOnClickListener {
                     correctCard.id?.let { it1 ->
                         Log.d("QuizDebug", "Option Three Selected - correctCard.id: $it1")
-                        checkAnswer(binding.optionThree.text.toString(), it1)
+                        checkAnswer(binding?.optionThree?.text.toString(), it1)
                     } ?: Log.e("QuizDebug", "correctCard.id is null for Option Three")
                 }
 
-                binding.optionFour.setOnClickListener {
+                binding?.optionFour?.setOnClickListener {
                     correctCard.id?.let { it1 ->
                         Log.d("QuizDebug", "Option Four Selected - correctCard.id: $it1")
-                        checkAnswer(binding.optionFour.text.toString(), it1)
+                        checkAnswer(binding?.optionFour?.text.toString(), it1)
                     } ?: Log.e("QuizDebug", "correctCard.id is null for Option Four")
                 }
 
@@ -215,7 +224,31 @@ class QuizActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         job.cancel()
+
+        // Đặt binding thành null an toàn khi Activity bị hủy
+//        binding = null
     }
 
+    override fun onResume() {
+        super.onResume()
+        // Lưu thời gian bắt đầu (mốc thời gian hiện tại) để tính thời gian sử dụng khi Activity bị tạm dừng
+        startTime = System.currentTimeMillis()
+    }
+
+    override fun onPause() {
+        super.onPause()
+
+        // Tính toán thời gian sử dụng Sơ đồ tư duy
+        val endTime = System.currentTimeMillis()
+        val durationInMillis = endTime - startTime
+        val durationInSeconds = (durationInMillis / 1000).toInt() // Chuyển đổi thời gian từ milliseconds sang giây
+
+        // Kiểm tra nếu thời gian sử dụng hợp lệ (lớn hơn 0 giây) thì lưu vào UsageTracker
+        if (durationInSeconds > 0) {
+            usageTracker.addUsageTime("Thẻ ghi nhớ", durationInSeconds)
+        } else {
+            usageTracker.addUsageTime("Thẻ ghi nhớ", 0)
+        }
+    }
 }
 
