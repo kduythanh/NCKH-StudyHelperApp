@@ -14,9 +14,9 @@
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
-        android:icon="@mipmap/ic_launcher"
+
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
+
         android:supportsRtl="true"
         android:theme="@style/Theme.NCKH"
         tools:targetApi="31">
@@ -73,13 +73,52 @@
             android:exported="false" />
         <activity
             android:name=".MainActivity"
+            android:exported="false"/>
+        <activity
+            android:name=".ui.activities.learn.TrueFalseFlashCardsActivity"
+            android:exported="false"/>
+        <activity
+            android:name=".ui.activities.learn.QuizFolderActivity"
+            android:exported="false"/>
+        <activity
+            android:name=".ui.activities.set.EditFlashCardActivity"
+            android:exported="false"/>
+        <activity
+            android:name=".ui.activities.set.ViewSetActivity"
+            android:exported="false"/>
+        <activity
+            android:name=".ui.activities.set.AddFlashCardActivity"
+            android:exported="false"/>
+        <activity
+            android:name=".ui.activities.folder.ViewFolderActivity"
+            android:exported="false"/>
+        <activity
+            android:name=".ui.activities.learn.SelectDefineActivity"
+            android:exported="false"/>
+        <activity
+            android:name=".ui.activities.folder.AddToFolderActivity"
+            android:exported="false"/>
+        <activity
+            android:name=".ui.activities.learn.QuizActivity"
+            android:exported="false"/>
+        <activity
+            android:name=".ui.activities.learn.LearnActivity"
+            android:exported="false"/>
+        <activity
+            android:name=".ui.activities.create.CreateFolderActivity"
+            android:exported="false"/>
+        <activity
+            android:name=".ui.activities.create.CreateSetActivity"
+            android:exported="false"/>
+        <activity
+            android:name=".ui.activities.search.ViewSearchActivity"
+            android:exported="false"/>
+        <activity
+            android:name=".ui.activities.FlashcardActivity"
             android:exported="false"
-            />
+            android:windowSoftInputMode="adjustNothing"/>
         <activity
             android:name=".TimeSelectionActivity"
-            android:exported="false" />
-        <activity
-            android:name=".TrackingProgressActivity"
             android:exported="false" />
         <activity
             android:name=".SplashActivity"
@@ -90,6 +129,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".TrackingProgressActivity"
+            android:exported="false" />
 
     </application>
 

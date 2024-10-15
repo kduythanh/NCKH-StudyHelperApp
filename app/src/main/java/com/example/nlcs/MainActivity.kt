@@ -17,6 +17,7 @@ import com.example.nlcs.databinding.ActivityMainBinding
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
+import com.example.nlcs.ui.activities.FlashcardActivity
 
 class MainActivity : AppCompatActivity() {
 
@@ -50,15 +51,14 @@ class MainActivity : AppCompatActivity() {
                 drawerLayout.openDrawer(binding.navigationView)
             }
         }
-
         updateNavHeader()
 
-        // Set click listener for the Flash card
-        binding.card1.setOnClickListener {
-            val intent = Intent(this, FlashCardActivity::class.java)
+
+        binding.card1.setOnClickListener{
+            val intent = Intent(this, FlashcardActivity::class.java)
             startActivity(intent)
         }
-
+       
         // Set click listener for the Mind map
         binding.card2.setOnClickListener {
             val intent = Intent(this, MindMapMenuActivity::class.java)

@@ -1,0 +1,15 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdk 34
+
+    defaultConfig {
+        namespace 'com.example.nlcs.cardstackview'
+        minSdk 24
+        targetSdk 33
+    }
+}
+
+dependencies {
+    implementation 'androidx.recyclerview:recyclerview:1.3.2'
+}
