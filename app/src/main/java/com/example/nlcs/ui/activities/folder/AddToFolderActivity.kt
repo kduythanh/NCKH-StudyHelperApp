@@ -36,12 +36,18 @@ class AddToFolderActivity : AppCompatActivity() {
 
     @SuppressLint("NotifyDataSetChanged")
     override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
 
-            super.onCreate(savedInstanceState)
-            usageTracker = UsageTracker(this)
-            setContentView(binding?.root)
-            setupToolbar()
+        // Properly initialize the binding object before using it
+        binding = ActivityAddToFolderBinding.inflate(layoutInflater) // Assuming you're using ViewBinding
+
+        // Set the content view with the non-null binding
+        setContentView(binding!!.root)
+
+        // Now, you can safely launch the coroutine and call your setup functions
         CoroutineScope(Dispatchers.Main).launch {
+            usageTracker = UsageTracker(this@AddToFolderActivity)
+            setupToolbar()
             setupRecyclerView()
             setupCreateNewFolder()
         }

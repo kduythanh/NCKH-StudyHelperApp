@@ -89,7 +89,7 @@ class AddFlashCardActivity : AppCompatActivity() {
         when (item.itemId) {
             R.id.done -> {
                 onBackPressedDispatcher.onBackPressed()
-                Toast.makeText(this, "Đã thêm vào thư mục\n", Toast.LENGTH_SHORT).show()
+             //   Toast.makeText(this, "Đã thêm vào thư mục\n", Toast.LENGTH_SHORT).show()
             }
         }
         return super.onOptionsItemSelected(item)
