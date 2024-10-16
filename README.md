@@ -5,4 +5,3 @@
 - Progress tracker
 - Notes and checklists
 - Reminder and notification
-- Revert to previous version
