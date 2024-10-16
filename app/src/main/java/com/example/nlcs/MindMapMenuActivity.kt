@@ -114,11 +114,12 @@ class MindMapMenuActivity : AppCompatActivity(), MindMapListener {
                 // Create a Master Node upon creating a new Mind Map item
                 val userId = firebaseAuth.currentUser?.uid
                 if (userId != null) {
-                    val y = binding?.mindMapMenuRecycleView?.width?.toFloat()?.div(2f) ?: 0f - (binding?.toolbar?.height?.toFloat() ?: 0f) - 45f
+                    val y = binding?.mindMapMenuRecycleView?.width?.toFloat()?.div(2f)
+                        ?: (0f - (binding?.toolbar?.height?.toFloat() ?: 0f) )
                     val x = binding?.mindMapMenuRecycleView?.height?.toFloat()?.div(2f) ?: 0f
 
                     val neo4jService = Neo4jService(neo4jUri, neo4jUser, neo4jPassword)
-                    neo4jService.createNode("Nút chính", mindMapId, x, y)
+                    neo4jService.createNode("Nút chính", mindMapId, x, y - 165f)
                     neo4jService.close()
                 }
 

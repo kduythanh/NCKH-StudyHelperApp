@@ -240,7 +240,7 @@ class MindMapActivity : AppCompatActivity() {
                 val parentX = (position["x"] as Float).toFloat()
                 val parentY = (position["y"] as Float).toFloat()
 
-                val newChildNode = neo4jService.addChildNode(parentNodeID, childTitle, mindMapID, parentX, parentY + 250f)
+                val newChildNode = neo4jService.addChildNode(parentNodeID, childTitle, mindMapID, parentX, parentY + 190f)
                 if (newChildNode != null) {
                     runOnUiThread {
                         // Display the new child node in the UI
@@ -306,7 +306,7 @@ class MindMapActivity : AppCompatActivity() {
         popupWindow.elevation = 10f
         val location = IntArray(2)
         view.getLocationOnScreen(location)
-        popupWindow.showAtLocation(view, Gravity.NO_GRAVITY, location[0] - 80, location[1] - 150)
+        popupWindow.showAtLocation(view, Gravity.NO_GRAVITY, location[0] - 80, location[1] - 100)
     }
 
     // Add a newly added child node to view
