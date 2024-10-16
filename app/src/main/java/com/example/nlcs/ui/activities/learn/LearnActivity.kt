@@ -54,7 +54,7 @@ class LearnActivity : AppCompatActivity(), CardStackListener {
         createCards { cards ->
             if (cards.isEmpty()) {
                 showHide()
-                Toast.makeText(this@LearnActivity, "No card to learn", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@LearnActivity, "Không có thẻ để học!", Toast.LENGTH_SHORT).show()
             } else {
                 // Update UI with card size
                 getSize { size ->
@@ -75,7 +75,7 @@ class LearnActivity : AppCompatActivity(), CardStackListener {
             binding?.keepLearnBtn?.setOnClickListener {
                 createCards { updatedCards ->
                     if (updatedCards.isEmpty()) {
-                        Toast.makeText(this@LearnActivity, "No card to learn", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@LearnActivity, "Không có thẻ để học!", Toast.LENGTH_SHORT).show()
                     } else {
                         showContainer()
                         getSize { size ->
@@ -194,7 +194,7 @@ class LearnActivity : AppCompatActivity(), CardStackListener {
                             Log.d("CardDAO", "Card with ID: $cardId updated successfully")
                         } else {
                             Log.e("CardDAO", "Failed to update card with ID: $cardId")
-                            Toast.makeText(this@LearnActivity, "Failed to update status", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this@LearnActivity, "Cập nhật trạng thái thất bại!", Toast.LENGTH_SHORT).show()
                         }
                     }
                 }
@@ -209,7 +209,7 @@ class LearnActivity : AppCompatActivity(), CardStackListener {
                             Log.d("CardDAO", "Card with ID: $cardId updated successfully")
                         } else {
                             Log.e("CardDAO", "Failed to update card with ID: $cardId")
-                            Toast.makeText(this@LearnActivity, "Failed to update status", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this@LearnActivity, "Cập nhật trạng thái thất bại!", Toast.LENGTH_SHORT).show()
                         }
                     }
                 }
@@ -218,7 +218,7 @@ class LearnActivity : AppCompatActivity(), CardStackListener {
                 }
             }
         } else {
-            Toast.makeText(this@LearnActivity, "No card to rewind", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this@LearnActivity, "Không có thẻ để quay lại!", Toast.LENGTH_SHORT).show()
         }
 
         // Safely update the size
@@ -361,7 +361,7 @@ class LearnActivity : AppCompatActivity(), CardStackListener {
             val sizeInt = cards.size // Tính toán số lượng card
             onSizeCalculated(sizeInt)
             size = sizeInt.toString() // Gán giá trị cho biến size
-            binding?.cardsLeftTv?.text = "Cards left: $size" // Hiển thị lên UI
+            binding?.cardsLeftTv?.text = "Số thẻ còn lại: $size" // Hiển thị lên UI
         }
     }
 

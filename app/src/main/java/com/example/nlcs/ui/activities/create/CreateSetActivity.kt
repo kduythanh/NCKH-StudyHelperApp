@@ -128,7 +128,7 @@ class CreateSetActivity : AppCompatActivity() {
                 cardAdapter!!.notifyItemInserted(cards!!.size - 1)
                 updateTotalCards()
             } else {
-                Toast.makeText(this, "Please enter front and back", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Vui lòng nhập thông tin mặt trước, mặt sau thẻ!", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -191,7 +191,7 @@ class CreateSetActivity : AppCompatActivity() {
                 updateTotalCards()
             } else {
                 // If the position isn't valid, show a message or handle the error appropriately
-                Toast.makeText(applicationContext, "Error restoring item", Toast.LENGTH_LONG).show()
+                Toast.makeText(applicationContext, "Lỗi khi khôi phục!", Toast.LENGTH_LONG).show()
             }
         }
         snackbar.setActionTextColor(Color.YELLOW)
@@ -260,7 +260,7 @@ class CreateSetActivity : AppCompatActivity() {
         // Lưu flashcard và nhận về document ID (flashcard_id)
         val flashcardId = saveFlashCard(subject, description)
         if (flashcardId == null) {
-            Toast.makeText(this, "Insert flashcard failed", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Thêm flashcard thất bại!", Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -297,13 +297,13 @@ class CreateSetActivity : AppCompatActivity() {
 
         if (front.isEmpty()) {
             binding!!.cardsLv.requestFocus()
-            Toast.makeText(this, "Please enter front", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Vui lòng nhập thông tin mặt trước!", Toast.LENGTH_SHORT).show()
             return false
         }
 
         if (back.isEmpty()) {
             binding!!.cardsLv.requestFocus()
-            Toast.makeText(this, "Please enter back", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Vui lòng nhập thông tin mặt sau!", Toast.LENGTH_SHORT).show()
             return false
         }
 
@@ -319,7 +319,7 @@ class CreateSetActivity : AppCompatActivity() {
 
         // Chèn card vào Firestore qua CardDAO
         if (cardDAO.insertCard(card) <= 0) {
-            Toast.makeText(this, "Insert card failed with flashcardId: $flashcardId", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Thêm flashcard thất bại với mã: $flashcardId", Toast.LENGTH_SHORT).show()
             return false
         }
 

@@ -362,7 +362,7 @@
                 android:background="@drawable/button_sign_in"
                 android:textStyle="bold"
                 android:elevation="1dp"
-                android:textColor="@color/black"
+                android:textColor="@color/white"
                 android:text="@string/reset_learning"
                 app:layout_constraintTop_toBottomOf="@id/keep_learn_btn"
                 app:layout_constraintStart_toStartOf="parent"

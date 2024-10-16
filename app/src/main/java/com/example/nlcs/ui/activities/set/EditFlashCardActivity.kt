@@ -149,7 +149,7 @@ class EditFlashCardActivity : AppCompatActivity() {
                                     listIdCard.remove(deletedItem.id)
                                     Toast.makeText(
                                         this@EditFlashCardActivity,
-                                        "Card deleted successfully" + deletedItem.id,
+                                        "Xóa thẻ thành công với id " + deletedItem.id,
                                         Toast.LENGTH_SHORT
                                     ).show()
                                 }
@@ -253,7 +253,7 @@ class EditFlashCardActivity : AppCompatActivity() {
         }
 
         if (cards.size < 2) {
-            showToast("Please enter at least 2 cards")
+            showToast("Vui lòng nhập ít nhất 2 thẻ!")
             return
         }
 
@@ -262,7 +262,7 @@ class EditFlashCardActivity : AppCompatActivity() {
         // Loop through the cards and ensure all have valid data
         for (card in cards) {
             if (card.front.isNullOrEmpty() || card.back.isNullOrEmpty()) {
-                showToast("Please enter both question and answer")
+                showToast("Vui lòng nhập cả câu hỏi và câu trả lời!")
                 updateCardView(cards.indexOf(card)) // Show which card needs editing
                 return
             }
@@ -273,14 +273,14 @@ class EditFlashCardActivity : AppCompatActivity() {
             // Sử dụng suspend fun checkCardExist để kiểm tra sự tồn tại của card_id
             if (card.id?.let { cardDAO.checkCardExist(it) } == true) {
                 if (cardDAO.updateCardById(card) <= 0) {
-                    showToast("Error updating card")
+                    showToast("Lỗi khi cập nhật thẻ")
                     return
                 }
             } else {
                 card.id = genUUID()
                 card.created_at = getCurrentDate()
                 if (cardDAO.insertCard(card) <= 0) {
-                    showToast("Error inserting card")
+                    showToast("Lỗi khi thêm thẻ")
                     return
                 }
             }
@@ -288,7 +288,7 @@ class EditFlashCardActivity : AppCompatActivity() {
     // Deleting extra cards from listIdCard
         for (cardId in listIdCard) {
             if (cardDAO.deleteCardById(cardId) < 0) {
-                showToast("Error deleting card")
+                showToast("Lỗi khi xóa thẻ")
                 return
             }
         }
@@ -303,15 +303,15 @@ class EditFlashCardActivity : AppCompatActivity() {
             it.updated_at = getCurrentDate()
 
             if (flashCardDAO.updateFlashCard(it) <= 0) {
-                showToast("Error updating flashcard")
+                showToast("Lỗi khi cập nhật thẻ")
                 return
             }
         } ?: run {
-            showToast("Flashcard not found")
+            showToast("Không tìm thấy thẻ")
             return
         }
 
-        showToast("Flashcard updated successfully")
+        showToast("Cập nhật thẻ thành công!")
         finish()
     }
 

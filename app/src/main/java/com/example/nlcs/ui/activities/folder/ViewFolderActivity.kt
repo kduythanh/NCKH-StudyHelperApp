@@ -187,7 +187,7 @@ class ViewFolderActivity : AppCompatActivity(), BottomSheetListener {
         PopupDialog.getInstance(this)
             .setStyle(Styles.STANDARD)
             .setHeading("Xóa thư mục")
-            .setDescription("Are you sure you want to delete this folder?")
+            .setDescription("Bạn có chắc chắn muốn xóa thư mục này?")
             .setPopupDialogIcon(R.drawable.ic_delete)
             .setCancelable(true)
             .showDialog(object : OnDialogButtonClickListener() {
@@ -303,7 +303,7 @@ class ViewFolderActivity : AppCompatActivity(), BottomSheetListener {
                                 dialog.dismiss() // Close the dialog after success
                             } else {
                                 // Handle the case where folder update failed
-                                Toast.makeText(this, "Update folder failed", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(this, "Cập nhật thư mục thất bại!", Toast.LENGTH_SHORT).show()
                                 dialog.dismiss()
                                 onBackPressedDispatcher.onBackPressed() // Go back if update fails
                             }

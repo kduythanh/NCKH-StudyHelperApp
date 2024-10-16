@@ -91,7 +91,7 @@
     <string name="cancel">Cancel</string>
     <string name="sign_in_in">Sign in</string>
 
-    <string name="Flashcardhome">Home</string>
+    <string name="Flashcardhome">Trang chủ</string>
     <string name="users">Users</string>
     <string name="library">Thư viện</string>
     <string name="profile">Profile</string>
@@ -127,7 +127,7 @@
     <string name="still_learning">Vẫn đang học</string>
     <string name="terms_left">Thuật ngữ còn lại</string>
     <string name="keep_learning">Tiếp tục học</string>
-    <string name="reset_learning">Học lại FlashCards</string>
+    <string name="reset_learning">Học lại bộ thẻ này</string>
     <string name="culminate">culminate</string>
     <string name="focus_on_learning">Tập trung vào việc học của bạn với một lộ trình</string>
     <string name="create_a_folder">Tạo thư mục</string>
@@ -164,18 +164,18 @@
     <string name="review_error">Bạn cần lưu lại flashcard này để học</string>
     <string name="review_success">Tạo thành công!</string>
     <string name="view">View</string>
-    <string name="edit_error">No permisson</string>
+    <string name="edit_error">Không có quyền truy cập</string>
     <string name="create_your_own_set">Tạo học phần của riêng bạn</string>
     <string name="finish">Chúc mừng!</string>
     <string name="finish_quiz">Bạn đã hoàn thành</string>
     <string name="reset_error">Đặt lại lỗi!</string>
     <string name="enter_a_topic_or_keywords_n_tips_the_more_specific_the_better">Nhập chủ đề hoặc từ khóa \n Mẹo: Càng cụ thể thì càng tốt!</string>
     <string name="no_result_for_your_search_n_please_try_again">Không có kết quả nào cho tìm kiếm của bạn, \n vui lòng thử lại.</string>
-    <string name="cards_left_30">Thẻ còn lại: 30</string>
+    <string name="cards_left_30">Thẻ còn lại: 0</string>
     <string name="add_sets">Thêm học phần</string>
     <string name="question">Câu hỏi</string>
     <string name="true_false">True or False</string>
-    <string name="true_false_description">Học siêu nhanh</string>
+    <string name="true_false_description">Kiểm tra khả năng phân biệt của bạn</string>
     <string name="your_progress">Tiến trình của bạn</string>
     <string name="review_your_progress_and_see_how_much_you_ve_learned">Xem lại tiến trình của bạn và xem bạn đã học được bao nhiêu.</string>
     <string name="not_learn_37_terms">Chưa học: 37 terms</string>

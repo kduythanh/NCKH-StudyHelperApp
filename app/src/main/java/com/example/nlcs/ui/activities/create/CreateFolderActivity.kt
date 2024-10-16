@@ -77,7 +77,7 @@ class CreateFolderActivity : AppCompatActivity() {
                 // Call insertFolder and handle the result
                 val success = folderDAO.insertFolder(folder)
                 if (success) {
-                    Toast.makeText(this, "Folder created", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Folder được tạo thành công!", Toast.LENGTH_SHORT).show()
                     startActivity(
                         Intent(this, ViewFolderActivity::class.java).putExtra(
                             "id",
@@ -86,7 +86,7 @@ class CreateFolderActivity : AppCompatActivity() {
                     )
                     finish()
                 } else {
-                    Toast.makeText(this, "Folder not created", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Không thể tạo Folder!", Toast.LENGTH_SHORT).show()
                 }
             }
         }

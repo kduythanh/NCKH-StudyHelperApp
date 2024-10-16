@@ -22,8 +22,8 @@ class MyViewPagerAdapter(fm: FragmentManager, behavior: Int) :
 
     override fun getPageTitle(position: Int): CharSequence? {
         return when (position) {
-            0 -> "Study sets"
-            1 -> "Folders"
+            0 -> "Học phần"
+            1 -> "Thư mục"
             else -> ""
         }
     }
