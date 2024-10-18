@@ -59,7 +59,7 @@ class SignUpActivity : AppCompatActivity() {
 //                val prefs = getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
 //                prefs.edit().putString("userID", userId).apply()  // Lưu userID vào SharedPreferences
 
-                Toast.makeText(this, "Account created", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Đăng ký tài khoản thành công!", Toast.LENGTH_SHORT).show()
                 // Send verification email
                 firebaseAuth.currentUser?.sendEmailVerification()
                 firebaseAuth.signOut()
@@ -74,17 +74,17 @@ class SignUpActivity : AppCompatActivity() {
     private fun validateAccount(mail: String, passwd: String, confirmPasswd: String): Boolean{
 
         if(!Patterns.EMAIL_ADDRESS.matcher(mail).matches()){
-            binding.signUpEmailEditText.error = "Invalid email format"
+            binding.signUpEmailEditText.error = "Định dạng email không hợp lệ"
             return false
         }
 
         if(passwd.length < 6){
-            binding.signUpPasswordEditText.error = "Password must be at least 6 characters"
+            binding.signUpPasswordEditText.error = "Mật khẩu phải có ít nhất 6 ký tự"
             return false
         }
 
         if(passwd != confirmPasswd){
-            binding.signUpConfirmPasswordEditText.error = "Passwords do not match"
+            binding.signUpConfirmPasswordEditText.error = "Mật khẩu 2 lần nhập không khớp!"
             return false
         }
         return true

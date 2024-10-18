@@ -1,8 +1,8 @@
 <resources>
     <string name="app_name">NCKH</string>
-    <string name="logo_description">CTU logo</string>
+    <string name="logo_description">Logo app</string>
 
-    <string name="signUp">Đăng kí</string>
+    <string name="signUp">Đăng ký</string>
     <string name="email">Email</string>
     <string name="password">Mật khẩu</string>
     <string name="confirmPassword">Xác nhận mật khẩu</string>

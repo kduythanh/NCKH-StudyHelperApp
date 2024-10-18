@@ -85,7 +85,7 @@ class LogInActivity : AppCompatActivity() {
                     val userId = firebaseAuth.currentUser?.uid
                     val prefs = getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
                     prefs.edit().putString("userID", userId).apply()
-
+                    Toast.makeText(this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show()
                     // Chuyển hướng đến MainActivity
                     val intent = Intent(this, MainActivity::class.java)
                     startActivity(intent)
