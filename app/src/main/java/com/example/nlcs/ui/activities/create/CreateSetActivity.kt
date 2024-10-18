@@ -256,7 +256,13 @@ class CreateSetActivity : AppCompatActivity() {
         } else {
             binding!!.subjectTil.error = null
         }
-
+        // Kiểm tra xem có ít nhất một thẻ hợp lệ
+        if (cards.isNullOrEmpty() || cards!!.all { card ->
+                card.GetFront()?.toString()?.trim().isNullOrEmpty() || card.GetBack()?.toString()?.trim().isNullOrEmpty()
+            }) {
+            Toast.makeText(this, "Vui lòng nhập ít nhất một thẻ hợp lệ!", Toast.LENGTH_SHORT).show()
+            return
+        }
         // Lưu flashcard và nhận về document ID (flashcard_id)
         val flashcardId = saveFlashCard(subject, description)
         if (flashcardId == null) {
@@ -292,8 +298,8 @@ class CreateSetActivity : AppCompatActivity() {
 
     //Save cards
     private suspend fun saveCard(card: Card, flashcardId: String): Boolean {
-        val front: String = card.GetFront().toString()
-        val back: String = card.GetBack().toString()
+        val front: String = card.GetFront()?.toString()?.trim() ?: ""
+        val back: String = card.GetBack()?.toString()?.trim() ?: ""
 
         if (front.isEmpty()) {
             binding!!.cardsLv.requestFocus()
@@ -337,10 +343,9 @@ class CreateSetActivity : AppCompatActivity() {
             flashCard.updated_at = getCurrentDate()
 
 
-        // Set trạng thái công khai hoặc riêng tư
-        binding!!.privateSwitch.setOnCheckedChangeListener { _, isChecked ->
-            flashCard.SetIs_public(if (isChecked) 1 else 0)
-        }
+        // Lấy trạng thái công khai hoặc riêng tư tại thời điểm lưu
+        val isPublic = if (binding!!.privateSwitch.isChecked) 1 else 0
+        flashCard.SetIs_public(isPublic)
 
         // Gọi insertFlashCard và nhận về document ID sau khi thêm thành công
         return try {
