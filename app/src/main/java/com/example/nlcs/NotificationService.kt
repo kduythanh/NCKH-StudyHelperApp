@@ -45,7 +45,7 @@ class NotificationService(private val context: Context) {
         val notification = NotificationCompat.Builder(context, channelId)
             .setContentTitle("Sự kiện sắp diễn ra!")
             .setContentText("Sự kiện: $eventTitle sẽ diễn ra vào lúc $formattedTime!")
-            .setSmallIcon(R.drawable.ic_ctu_logo) // Thay thế bằng icon của bạn
+            .setSmallIcon(R.drawable.ic_logo_app_1) // Thay thế bằng icon của bạn
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
             .build()
