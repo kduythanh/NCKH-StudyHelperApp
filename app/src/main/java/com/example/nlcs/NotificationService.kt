@@ -9,6 +9,7 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import com.google.api.services.calendar.model.EventDateTime
+import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
@@ -35,7 +36,7 @@ class NotificationService(private val context: Context) {
     fun sendNotification(eventTitle: String, eventStartTime: EventDateTime) {
         // Giả sử eventStartTime chứa thời gian dưới dạng chuỗi ISO 8601
         val dateTimeString = eventStartTime.dateTime.toString() // Cần thay đổi phù hợp với cách bạn lấy thời gian
-        val zonedDateTime = ZonedDateTime.parse(dateTimeString) // Sử dụng ZonedDateTime để phân tích chuỗi
+        val zonedDateTime = ZonedDateTime.parse(dateTimeString).withZoneSameInstant(ZoneId.of("Asia/Ho_Chi_Minh")) // Sử dụng ZonedDateTime để phân tích chuỗi
         // Định dạng lại thời gian theo dạng giờ:phút:giây
         val formatter = DateTimeFormatter.ofPattern("HH:mm")
         val formattedTime = zonedDateTime.format(formatter)
