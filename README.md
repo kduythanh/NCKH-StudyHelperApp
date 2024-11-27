@@ -30,5 +30,5 @@ Chân thành cảm ơn sự đóng góp của các thành viên sau vào đề t
 
 ## HƯỚNG DẪN SỬ DỤNG
 
-Vui lòng xem chi tiết trong báo cáo dưới đây: **Hiện tại chưa có!**
+Nhấn vào [đây](https://github.com/kduythanh/NCKH-StudyHelperApp/blob/main/V%C4%83n%20b%E1%BA%A3n%20c%C3%B3%20li%C3%AAn%20quan/1b.THS2024-67_Bao%20cao%20tong%20ket%20de%20tai.pdf) để xem chi tiết hướng dẫn sử dụng trong báo cáo.
 
